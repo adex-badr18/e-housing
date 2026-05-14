@@ -37,6 +37,51 @@ export interface HousingType {
   updatedAt?: string;
 }
 
+export type CurrentHousingStatus = 'HAS_ALLOCATION' | 'NO_ALLOCATION';
+export type Gender = 'MALE' | 'FEMALE';
+
+export type MaritalStatus = 'SINGLE' | 'MARRIED' | 'DIVORCED' | 'WIDOWED';
+
+export interface StaffProfile {
+  id: string;
+  userId: string;
+  staffId: string;
+  department: string;
+  faculty: string;
+  rank: string;
+  salaryGradeLevel: string;
+  employmentDate: string;
+  maritalStatus: MaritalStatus;
+  numberOfDependents: number;
+  currentHousingStatus: CurrentHousingStatus;
+  middleName?: string;
+  gender?: Gender;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface HousingUnit {
+  id: string;
+  name: string;
+  housingTypeId: string;
+  status: 'VACANT' | 'OCCUPIED' | 'UNDER_MAINTENANCE';
+}
+
+export interface HousingApplication {
+  id: string;
+  userId: string;
+  status: 'PENDING' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED';
+}
+
+export interface HousingExitRequest {
+  id: string;
+  userId: string;
+  isCleared: boolean;
+  housingInspectionStatus: 'PENDING' | 'PASSED' | 'FAILED';
+  electricalInspectionStatus: 'PENDING' | 'PASSED' | 'FAILED';
+  estateInspectionStatus: 'PENDING' | 'PASSED' | 'FAILED';
+}
+
 // Initial mock data
 const initialUsers: User[] = [
   { id: '1', firstName: 'Super', lastName: 'Admin', email: 'super@oauife.edu.ng', password: 'password', role: 'SUPER_ADMIN', isActive: true, mustChangePassword: false, phoneNumber: '08000000001' },
@@ -84,14 +129,61 @@ const initialHousingTypes: HousingType[] = [
   },
 ];
 
+const initialStaffProfiles: StaffProfile[] = [
+  {
+    id: 'sp-1',
+    userId: '6',
+    staffId: 'STF-001',
+    department: 'Computer Science',
+    faculty: 'Technology',
+    rank: 'Senior Lecturer',
+    salaryGradeLevel: 'CONUASS 5',
+    employmentDate: '2015-08-01',
+    maritalStatus: 'MARRIED',
+    numberOfDependents: 3,
+    currentHousingStatus: 'NO_ALLOCATION',
+    middleName: 'Okoro',
+    gender: 'MALE',
+  }
+];
+
+const initialHousingUnits: HousingUnit[] = [
+  { id: 'hu-1', name: 'Qtrs 14', housingTypeId: 'ht-1', status: 'VACANT' },
+  { id: 'hu-2', name: 'Qtrs 15', housingTypeId: 'ht-1', status: 'OCCUPIED' },
+  { id: 'hu-3', name: 'Blk A1', housingTypeId: 'ht-2', status: 'VACANT' },
+];
+
+const initialHousingApplications: HousingApplication[] = [
+  { id: 'app-1', userId: '6', status: 'PENDING' },
+];
+
+const initialExitRequests: HousingExitRequest[] = [
+  { 
+    id: 'ex-1', 
+    userId: '7', 
+    isCleared: false, 
+    housingInspectionStatus: 'PENDING',
+    electricalInspectionStatus: 'PENDING',
+    estateInspectionStatus: 'PENDING'
+  }
+];
+
 // Definition for our in-memory DB
 export class MockDB {
   public users: User[];
   public housingTypes: HousingType[];
+  public staffProfiles: StaffProfile[];
+  public housingUnits: HousingUnit[];
+  public housingApplications: HousingApplication[];
+  public exitRequests: HousingExitRequest[];
 
   constructor() {
     this.users = [...initialUsers];
     this.housingTypes = [...initialHousingTypes];
+    this.staffProfiles = [...initialStaffProfiles];
+    this.housingUnits = [...initialHousingUnits];
+    this.housingApplications = [...initialHousingApplications];
+    this.exitRequests = [...initialExitRequests];
   }
 
   // Utility to find user by email

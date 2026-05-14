@@ -5,11 +5,18 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const { pathname } = req.nextUrl;
   
-  if (!isLoggedIn && pathname !== '/login') {
+  // Public routes that don't require authentication
+  const isPublicRoute = pathname === '/' || 
+                        pathname === '/login' || 
+                        pathname === '/admin/login' || 
+                        pathname === '/register';
+  
+  if (!isLoggedIn && !isPublicRoute) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
   
-  if (isLoggedIn && pathname === '/login') {
+  if (isLoggedIn && (pathname === '/login' || pathname === '/admin/login')) {
+    // Basic redirect for logged-in users trying to access login pages
     return NextResponse.redirect(new URL('/dashboard', req.url));
   }
   
@@ -19,7 +26,6 @@ export default auth((req) => {
   }
 });
 
-// Optionally, don't invoke Middleware on some paths
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\.png|.*\\.jpg).*)'],
 };

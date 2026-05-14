@@ -33,14 +33,16 @@ Additional data for staff users.
 - id
 - userId (FK → User)
 - staffId
+- middleName (nullable)
+- gender (MALE | FEMALE)
 - department
 - faculty
 - rank
 - salaryGradeLevel
 - employmentDate
-- maritalStatus
+- maritalStatus ("SINGLE" | "MARRIED" | "DIVORCED" | "WIDOWED")
 - numberOfDependents
-- currentHousingStatus
+- currentHousingStatus (HAS_ALLOCATION | NO_ALLOCATION) -> strictly system managed
 - createdAt
 - updatedAt
 

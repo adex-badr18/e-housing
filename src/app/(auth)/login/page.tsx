@@ -6,6 +6,8 @@ import { signIn } from 'next-auth/react';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import Link from 'next/link';
+import Image from 'next/image';
 
 import {
   Card,
@@ -20,8 +22,8 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
 const loginSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address." }),
-  password: z.string().min(1, { message: "Password is required." }),
+  email: z.email({ error: "Please enter a valid email address." }),
+  password: z.string().min(1, { error: "Password is required." }),
 });
 
 type LoginSchema = z.infer<typeof loginSchema>;
@@ -74,12 +76,31 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-      <Card className="w-full max-w-md shadow-lg border-0">
-        <CardHeader className="space-y-2 text-center pb-8 border-b">
-          <CardTitle className="text-3xl font-bold tracking-tight">Welcome Back</CardTitle>
-          <CardDescription className="text-sm pb-2">
-            Sign in to your Staff Quarters account.
+    <div className="min-h-screen flex items-center justify-center bg-[rgba(27,34,50,0.03)] p-4">
+      {/* Back to home */}
+      <Link
+        href="/"
+        className="fixed top-5 left-5 flex items-center gap-1.5 text-sm text-[rgb(27,34,50)]/60 hover:text-[rgb(27,34,50)] transition-colors"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6"/></svg>
+        Back to Home
+      </Link>
+
+      <Card className="w-full max-w-md shadow-lg border-0" style={{ borderTop: "4px solid rgb(27,34,50)" }}>
+        <CardHeader className="space-y-3 text-center pb-6 border-b">
+          {/* OAU mini-logo */}
+          <div className="flex justify-center mb-4">
+            <Image 
+              src="/oaulogo.png" 
+              alt="OAU Logo" 
+              width={180}
+              height={30}
+              className="h-20 w-auto object-contain"
+            />
+          </div>
+          <CardTitle className="text-2xl font-bold tracking-tight text-[rgb(27,34,50)]">Staff Portal</CardTitle>
+          <CardDescription className="text-sm pb-1">
+            Sign in with your OAU staff credentials.
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
@@ -88,6 +109,7 @@ export default function LoginPage() {
               <Label htmlFor="email">Email</Label>
               <Input 
                 id="email"
+                className="py-5"
                 type="email"
                 placeholder="name@oauife.edu.ng" 
                 {...register("email")} 
@@ -101,6 +123,7 @@ export default function LoginPage() {
               <Label htmlFor="password">Password</Label>
               <Input 
                 id="password"
+                className="py-5"
                 type="password" 
                 placeholder="••••••••" 
                 {...register("password")} 
@@ -110,7 +133,7 @@ export default function LoginPage() {
               )}
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full py-5" disabled={isLoading}>
               {isLoading ? "Signing in..." : "Sign in"}
             </Button>
           </form>

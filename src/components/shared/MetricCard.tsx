@@ -15,12 +15,14 @@ interface MetricCardProps {
 
 export function MetricCard({ title, value, description, icon: Icon, trend }: MetricCardProps) {
   return (
-    <Card>
+    <Card className="border-t-[3px] border-t-oau-gold shadow-sm hover:shadow-md transition-shadow">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">
+        <CardTitle className="text-sm font-semibold text-oau-navy">
           {title}
         </CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
+        <div className="h-8 w-8 rounded-full bg-oau-navy/5 flex items-center justify-center">
+          <Icon className="h-4 w-4 text-oau-gold" />
+        </div>
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>

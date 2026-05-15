@@ -24,9 +24,9 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Super Admin Dashboard</h1>
-        <p className="text-muted-foreground">Overview of system metrics and user management.</p>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight text-oau-navy">Super Admin Portal</h1>
+        <p className="text-muted-foreground mt-1">Overview of system metrics and user management.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

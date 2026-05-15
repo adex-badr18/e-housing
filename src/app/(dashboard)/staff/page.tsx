@@ -25,26 +25,26 @@ export default async function StaffDashboardPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Staff Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back, {user?.firstName} {user?.lastName}.</p>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight text-oau-navy">Staff Portal</h1>
+        <p className="text-muted-foreground mt-1">Welcome back, {user?.firstName} {user?.lastName}. Here is an overview of your housing status.</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* Quick Action Links */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
+        <Card className="border-t-4 border-t-oau-gold shadow-md">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-oau-navy">Quick Actions</CardTitle>
             <CardDescription>Shortcut to system operations</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
-            <Link href="/staff/profile" className={buttonVariants({ variant: "outline", className: "w-full justify-start" })}>
+            <Link href="/staff/profile" className={buttonVariants({ variant: "outline", className: "w-full justify-start hover:bg-oau-navy/5 hover:text-oau-navy hover:border-oau-navy/20" })}>
               Update Staff Profile
             </Link>
-            <Link href="/staff/applications" className={buttonVariants({ variant: "outline", className: "w-full justify-start" })}>
+            <Link href="/staff/applications" className={buttonVariants({ className: "w-full justify-start bg-oau-navy text-oau-cream hover:bg-oau-navy/90" })}>
               Apply for Housing
             </Link>
-            <Link href="/staff/exit" className={buttonVariants({ variant: "outline", className: "w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50" })}>
+            <Link href="/staff/exit" className={buttonVariants({ variant: "outline", className: "w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-200 mt-2" })}>
               Initiate Housing Exit
             </Link>
           </CardContent>

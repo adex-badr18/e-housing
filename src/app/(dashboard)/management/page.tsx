@@ -25,9 +25,9 @@ export default async function ManagementDashboardPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Management Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back, {session?.user?.name?.split(' ')[0] || 'User'}.</p>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight text-oau-navy">Management Portal</h1>
+        <p className="text-muted-foreground mt-1">Welcome back, {session?.user?.name?.split(' ')[0] || 'User'}. Here is an overview of the housing system.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useTransition } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import {
@@ -72,8 +72,8 @@ export function HousingTypeDialog({
     reset,
     formState: { errors },
   } = useForm<HousingTypeFormValues>({
-    resolver: zodResolver(housingTypeSchema) as any,
-    defaultValues: defaults as any,
+    resolver: zodResolver(housingTypeSchema) as Resolver<HousingTypeFormValues>,
+    defaultValues: defaults,
   });
 
   // Populate form when editing
@@ -145,7 +145,7 @@ export function HousingTypeDialog({
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-6 mt-2">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-2">
           {/* Basic Info */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">

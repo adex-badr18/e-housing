@@ -7,6 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Mail } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+
 
 import {
   Card,
@@ -86,7 +88,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[rgba(27,34,50,0.03)] p-4 py-12">
       {/* Back to home */}
-      <a
+      <Link
         href="/"
         className="fixed top-5 left-5 flex items-center gap-1.5 text-sm text-[rgb(27,34,50)]/60 hover:text-[rgb(27,34,50)] transition-colors"
       >
@@ -94,7 +96,7 @@ export default function RegisterPage() {
           <path d="m15 18-6-6 6-6" />
         </svg>
         Back to Home
-      </a>
+      </Link>
 
       <Card
         className="w-full max-w-md shadow-lg border-0"
@@ -265,12 +267,12 @@ export default function RegisterPage() {
           {/* Sign in link */}
           <p className="text-center text-sm text-muted-foreground pt-1">
             Already registered?{" "}
-            <a
+            <Link
               href="/login"
               className="font-medium text-[rgb(27,34,50)] underline-offset-4 hover:underline"
             >
               Sign in
-            </a>
+            </Link>
           </p>
         </CardContent>
       </Card>

@@ -325,7 +325,7 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
             <DialogTitle className="text-destructive">Delete Housing Type</DialogTitle>
             <DialogDescription>
               Are you sure you want to permanently delete{' '}
-              <span className="font-semibold text-foreground">"{deleteTarget?.name}"</span>?
+              <span className="font-semibold text-foreground">&quot;{deleteTarget?.name}&quot;</span>?
               This action cannot be undone. Housing types with active units cannot be deleted.
             </DialogDescription>
           </DialogHeader>

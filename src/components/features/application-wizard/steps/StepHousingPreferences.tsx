@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { BedDouble, Bath, Star, Home, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface StepHousingPreferencesProps {
-  form: UseFormReturn<ApplicationWizardValues, any, any>;
+  form: UseFormReturn<ApplicationWizardValues>;
   eligibleTypes: HousingType[];
 }
 

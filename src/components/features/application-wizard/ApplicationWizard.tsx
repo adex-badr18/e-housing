@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { applicationWizardSchema, type ApplicationWizardValues } from '@/lib/validations/housing';
@@ -70,7 +70,7 @@ export function ApplicationWizard({
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<ApplicationWizardValues>({
-    resolver: zodResolver(applicationWizardSchema) as any,
+    resolver: zodResolver(applicationWizardSchema) as Resolver<ApplicationWizardValues>,
     mode: 'onChange',
     defaultValues: {
       rank: profile?.rank ?? '',

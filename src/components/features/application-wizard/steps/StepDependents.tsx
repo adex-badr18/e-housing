@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Users, UserPlus, Trash2, Heart, Info } from 'lucide-react';
 
 interface StepDependentsProps {
-  form: UseFormReturn<ApplicationWizardValues, any, any>;
+  form: UseFormReturn<ApplicationWizardValues>;
 }
 
 export function StepDependents({ form }: StepDependentsProps) {
@@ -97,7 +97,7 @@ export function StepDependents({ form }: StepDependentsProps) {
           <div className="text-center py-8 rounded-xl border border-dashed border-border text-muted-foreground text-sm">
             <Users className="h-8 w-8 mx-auto opacity-20 mb-2" />
             <p>No dependents added yet.</p>
-            <p className="text-xs mt-1">Click "Add Dependent" to add children or other dependents.</p>
+            <p className="text-xs mt-1">Click &quot;Add Dependent&quot; to add children or other dependents.</p>
           </div>
         ) : (
           <div className="space-y-3">

@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 
 interface StepReviewProps {
-  form: UseFormReturn<ApplicationWizardValues, any, any>;
+  form: UseFormReturn<ApplicationWizardValues>;
   housingTypes: HousingType[];
 }
 

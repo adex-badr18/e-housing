@@ -15,7 +15,7 @@ import type { ApplicationWizardValues } from '@/lib/validations/housing';
 import { Briefcase, GraduationCap, Users, Info } from 'lucide-react';
 
 interface StepProfessionalProfileProps {
-  form: UseFormReturn<ApplicationWizardValues, any, any>;
+  form: UseFormReturn<ApplicationWizardValues>;
   isProfileComplete: boolean;
 }
 

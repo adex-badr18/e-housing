@@ -5,7 +5,7 @@ import { updateStaffProfile } from '@/lib/mock-api/endpoints/profile';
 import { staffProfileSchema } from '@/lib/validations/profile';
 import { revalidatePath } from 'next/cache';
 
-export async function submitProfileForm(data: any) {
+export async function submitProfileForm(data: unknown) {
   const session = await auth();
 
   if (!session?.user) {

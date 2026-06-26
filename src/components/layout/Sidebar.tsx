@@ -118,17 +118,18 @@ export function Sidebar({ role }: SidebarProps) {
 function getNavItemsForRole(role: Role) {
   if (role === 'STAFF') {
     return [
-      { href: '/dashboard', label: 'Dashboard', icon: Home },
-      { href: '/applications', label: 'My Applications', icon: FileText },
-      { href: '/housing', label: 'My Housing', icon: Building },
+      { href: '/staff', label: 'Dashboard', icon: Home },
+      { href: '/staff/applications', label: 'Apply for Housing', icon: FileText },
+      { href: '/staff/profile', label: 'My Profile', icon: Building },
     ];
   }
-  
+
   // Management Roles
   return [
     { href: '/dashboard', label: 'Dashboard', icon: Home },
     { href: '/admin/applications', label: 'All Applications', icon: FileText },
-    { href: '/admin/inventory', label: 'Housing Config & Inventory', icon: Building },
+    { href: '/admin/inventory', label: 'Housing Inventory', icon: Building },
     { href: '/admin/inspections', label: 'Inspections', icon: CheckSquare },
   ];
 }
+

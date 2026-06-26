@@ -132,6 +132,45 @@ export const applicationSubmitSchema = z.object({
 export type ApplicationSubmitValues = z.infer<typeof applicationSubmitSchema>;
 
 // ---------------------------------------------------------------------------
+// 4b. Housing Application Wizard — full multi-step schema (client-side)
+// ---------------------------------------------------------------------------
+
+export const dependentSchema = z.object({
+  name: z.string().min(2, 'Name is required'),
+  relationship: z.string().min(2, 'Relationship is required'),
+  age: z.coerce.number().int().min(0).max(100).optional(),
+});
+
+export type DependentValues = z.infer<typeof dependentSchema>;
+
+export const applicationWizardSchema = z.object({
+  // Step 1 — Professional Profile (read-only from profile, editable if incomplete)
+  rank: z.string().min(2, 'Rank is required'),
+  salaryGradeLevel: z.string().min(2, 'Grade level is required'),
+  department: z.string().min(2, 'Department is required'),
+  faculty: z.string().min(2, 'Faculty is required'),
+  employmentDate: z.string().min(1, 'Employment date is required'),
+  maritalStatus: maritalStatusSchema,
+  numberOfDependents: z.coerce.number().int().min(0).max(20),
+
+  // Step 2 — Housing Preferences
+  preferredHousingTypeIds: z
+    .array(z.string())
+    .min(1, 'Select at least one preferred housing type')
+    .max(3, 'You can select a maximum of 3 preferred housing types'),
+
+  // Step 3 — Spouse & Dependents
+  spouseName: z.string().optional(),
+  spousePhone: z.string().optional(),
+  dependents: z.array(dependentSchema).optional(),
+
+  // Step 4 — Review
+  additionalNotes: z.string().max(500, 'Notes must be under 500 characters').optional(),
+});
+
+export type ApplicationWizardValues = z.infer<typeof applicationWizardSchema>;
+
+// ---------------------------------------------------------------------------
 // 5. Application Review — stage approval (used by management users)
 // ---------------------------------------------------------------------------
 

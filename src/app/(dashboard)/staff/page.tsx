@@ -21,7 +21,7 @@ export default async function StaffDashboardPage() {
   }
 
   const data = await getStaffDashboardData(session.user.id);
-  const { user, profile, activeApplication, activeExitRequest, currentAllocation } = data;
+  const { user, profile, activeApplication, activeExitNotice, currentUnit } = data;
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -106,17 +106,16 @@ export default async function StaffDashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Current Allocation */}
         <Card className="col-span-1 md:col-span-2 lg:col-span-1">
           <CardHeader>
             <CardTitle>Current Allocation</CardTitle>
           </CardHeader>
           <CardContent>
-            {currentAllocation ? (
+            {currentUnit ? (
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Unit:</span>
-                  <span className="font-medium border border-border px-2 py-0.5 rounded-md">{currentAllocation.name}</span>
+                  <span className="font-medium border border-border px-2 py-0.5 rounded-md">{currentUnit.name}</span>
                 </div>
                 <p className="text-muted-foreground text-xs mt-4">For details about BQ or maintenance, view your housing management portal.</p>
               </div>
@@ -146,25 +145,24 @@ export default async function StaffDashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Exit Application info */}
         <Card>
           <CardHeader>
             <CardTitle>Exit Application</CardTitle>
           </CardHeader>
           <CardContent>
-             {activeExitRequest ? (
+             {activeExitNotice ? (
               <div className="space-y-2 text-sm">
                  <div className="flex justify-between">
                   <span className="text-muted-foreground">Housing Inspection:</span>
-                  <span className="font-medium">{activeExitRequest.housingInspectionStatus}</span>
+                  <span className="font-medium">{activeExitNotice.housingInspectionStatus}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Electrical Inspection:</span>
-                  <span className="font-medium">{activeExitRequest.electricalInspectionStatus}</span>
+                  <span className="font-medium">{activeExitNotice.electricalInspectionStatus}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Estate Inspection:</span>
-                  <span className="font-medium">{activeExitRequest.estateInspectionStatus}</span>
+                  <span className="font-medium">{activeExitNotice.estateInspectionStatus}</span>
                 </div>
               </div>
             ) : (

@@ -50,10 +50,10 @@ export default async function ManagementDashboardPage() {
           description="Awaiting review/scoring"
         />
         <MetricCard
-          title="Pending Inspections"
-          value={metrics.pendingInspections}
+          title="Pending Exit Inspections"
+          value={metrics.pendingHousingInspections + metrics.pendingElectricalInspections + metrics.pendingEstateInspections}
           icon={AlertTriangle}
-          description="Exits lacking inspections"
+          description="Exit notices awaiting inspection"
         />
       </div>
     </div>

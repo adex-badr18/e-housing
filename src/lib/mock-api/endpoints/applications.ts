@@ -71,6 +71,37 @@ export async function getApplicationDetail(applicationId: string): Promise<{
   return { application: { ...application }, reviews: [...reviews], allocation };
 }
 
+/**
+ * Rich detail for the review screen: application + reviews + allocation +
+ * the applicant's User and StaffProfile (for scoring and display).
+ */
+export async function getApplicationWithProfile(applicationId: string): Promise<{
+  application: HousingApplication;
+  reviews: ApplicationReview[];
+  allocation: Allocation | null;
+  applicantUser: import('../db').User | null;
+  applicantProfile: import('../db').StaffProfile | null;
+} | null> {
+  await delay(300);
+  const application = mockDB.findApplicationById(applicationId);
+  if (!application) return null;
+
+  const reviews       = mockDB.getReviewsForApplication(applicationId);
+  const allocation    = mockDB.allocations.find(a => a.applicationId === applicationId) ?? null;
+  const applicantUser = mockDB.findUserById(application.userId) ?? null;
+  const applicantProfile = applicantUser
+    ? (mockDB.staffProfiles.find(p => p.userId === applicantUser.id) ?? null)
+    : null;
+
+  return {
+    application:      { ...application },
+    reviews:          [...reviews],
+    allocation,
+    applicantUser:    applicantUser ? { ...applicantUser } : null,
+    applicantProfile: applicantProfile ? { ...applicantProfile } : null,
+  };
+}
+
 /** Staff: fetch their own application history */
 export async function getApplicationsForUser(userId: string): Promise<HousingApplication[]> {
   await delay(300);

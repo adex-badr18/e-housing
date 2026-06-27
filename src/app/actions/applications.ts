@@ -14,6 +14,7 @@ import {
   getApplicationsForRole,
   getApplicationsForUser,
   getApplicationDetail,
+  getApplicationWithProfile,
 } from '@/lib/mock-api/endpoints/applications';
 import {
   applicationSubmitSchema,
@@ -22,6 +23,71 @@ import {
 } from '@/lib/validations/housing';
 import { writeAuditEntry } from '@/lib/mock-api/endpoints/audit';
 import type { PointsBreakdown } from '@/lib/mock-api/db';
+import { calculateScore, toPointsBreakdown, type ScoringResult } from '@/lib/scoring';
+
+// ---------------------------------------------------------------------------
+// Management: Auto-score an application (Housing Secretary helper)
+// Returns a suggested ScoringResult without persisting anything.
+// The Housing Secretary can review / adjust before submitting the review.
+// ---------------------------------------------------------------------------
+
+export async function autoScoreApplicationAction(
+  applicationId: string
+): Promise<{ success: true; data: ScoringResult } | { success: false; error: string }> {
+  const session = await auth();
+  if (!session?.user) return { success: false, error: 'Unauthorized' };
+  if (session.user.role !== 'HOUSING_SECRETARY' && session.user.role !== 'SUPER_ADMIN') {
+    return { success: false, error: 'Only Housing Secretary can auto-score applications' };
+  }
+
+  try {
+    const detail = await getApplicationWithProfile(applicationId);
+    if (!detail) return { success: false, error: 'Application not found' };
+    if (!detail.applicantProfile) {
+      return { success: false, error: 'Staff profile not found for this applicant — manual scoring required' };
+    }
+
+    const { applicantProfile } = detail;
+    const result = calculateScore({
+      rank:               applicantProfile.rank,
+      salaryGradeLevel:   applicantProfile.salaryGradeLevel,
+      employmentDate:     applicantProfile.employmentDate,
+      numberOfDependents: applicantProfile.numberOfDependents,
+      maritalStatus:      applicantProfile.maritalStatus,
+    });
+
+    return { success: true, data: result };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Failed to calculate score',
+    };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Management: Fetch rich application detail for the review screen
+// ---------------------------------------------------------------------------
+
+export async function getApplicationWithProfileAction(applicationId: string) {
+  const session = await auth();
+  if (!session?.user) return { success: false, error: 'Unauthorized' };
+
+  const allowedRoles = ['SUPER_ADMIN', 'HOUSING_SECRETARY', 'ESTATE_OFFICER', 'DVC_ADMIN'] as const;
+  if (!allowedRoles.includes(session.user.role as typeof allowedRoles[number])) {
+    return { success: false, error: 'Access denied' };
+  }
+
+  try {
+    const detail = await getApplicationWithProfile(applicationId);
+    if (!detail) return { success: false, error: 'Application not found' };
+    return { success: true, data: detail };
+  } catch {
+    return { success: false, error: 'Failed to fetch application detail' };
+  }
+}
+
+
 
 // ---------------------------------------------------------------------------
 // Staff: Submit a housing application

@@ -2,7 +2,7 @@
 
 // =============================================================================
 // Server Actions — Housing Management
-// Covers: housing types, housing units, BQ occupants
+// Covers: housing types, housing units, BQ occupants, allocation & tenancy
 // =============================================================================
 
 import { auth } from '@/lib/auth';
@@ -16,6 +16,7 @@ import {
   addBQOccupant,
   updateBQOccupant,
   removeBQOccupant,
+  getBQsForCurrentOccupant,
 } from '@/lib/mock-api/endpoints/housing';
 import {
   housingTypeSchema,
@@ -23,6 +24,7 @@ import {
   bqOccupantSchema,
 } from '@/lib/validations/housing';
 import { writeAuditEntry } from '@/lib/mock-api/endpoints/audit';
+import { mockDB } from '@/lib/mock-api/db';
 import type { UnitStatus } from '@/lib/mock-api/db';
 
 // ---------------------------------------------------------------------------
@@ -283,5 +285,82 @@ export async function removeBQOccupantAction(bqOccupantId: string) {
     return { success: true };
   } catch (err) {
     return { success: false, error: err instanceof Error ? err.message : 'Failed to remove BQ occupant' };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Staff: Get BQs for logged-in occupant (own unit)
+// ---------------------------------------------------------------------------
+
+export async function getMyBQsAction() {
+  const session = await auth();
+  if (!session?.user) return { success: false as const, error: 'Unauthorized' };
+  if (session.user.role !== 'STAFF') {
+    return { success: false as const, error: 'Only staff can access BQ management' };
+  }
+
+  try {
+    const bqs = await getBQsForCurrentOccupant(session.user.id);
+    return { success: true as const, data: bqs };
+  } catch (err) {
+    return { success: false as const, error: err instanceof Error ? err.message : 'Failed to fetch BQs' };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Staff: Get pending allocation for the logged-in user
+// ---------------------------------------------------------------------------
+
+export async function getMyPendingAllocationAction() {
+  const session = await auth();
+  if (!session?.user) return { success: false as const, error: 'Unauthorized' };
+
+  try {
+    const allocation = mockDB.allocations.find(
+      a => a.userId === session!.user!.id && a.status === 'PENDING'
+    ) ?? null;
+
+    if (!allocation) return { success: true as const, data: null };
+
+    const unit = mockDB.findUnitById(allocation.housingUnitId) ?? null;
+    const housingType = unit
+      ? (mockDB.housingTypes.find(ht => ht.id === unit.housingTypeId) ?? null)
+      : null;
+
+    return {
+      success: true as const,
+      data: { allocation, unit, housingType },
+    };
+  } catch (err) {
+    return { success: false as const, error: err instanceof Error ? err.message : 'Failed to fetch allocation' };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Staff: Get active tenancy agreement
+// ---------------------------------------------------------------------------
+
+export async function getMyTenancyAgreementAction() {
+  const session = await auth();
+  if (!session?.user) return { success: false as const, error: 'Unauthorized' };
+
+  try {
+    const occupancy = mockDB.findActiveOccupancyByUserId(session.user.id) ?? null;
+    if (!occupancy) return { success: true as const, data: null };
+
+    const agreement = mockDB.tenancyAgreements.find(t => t.occupancyId === occupancy.id) ?? null;
+    const unit = mockDB.findUnitById(occupancy.housingUnitId) ?? null;
+    const housingType = unit
+      ? (mockDB.housingTypes.find(ht => ht.id === unit.housingTypeId) ?? null)
+      : null;
+    const user = mockDB.findUserById(session.user.id) ?? null;
+    const profile = mockDB.staffProfiles.find(p => p.userId === session!.user!.id) ?? null;
+
+    return {
+      success: true as const,
+      data: { occupancy, agreement, unit, housingType, user, profile },
+    };
+  } catch (err) {
+    return { success: false as const, error: err instanceof Error ? err.message : 'Failed to fetch tenancy data' };
   }
 }

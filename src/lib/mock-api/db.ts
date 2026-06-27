@@ -616,12 +616,12 @@ const initialOccupancies: Occupancy[] = [
 
 const initialHousingApplications: HousingApplication[] = [
   {
-    // Application that has completed Housing & Estate review — waiting for DVC
+    // app-1 has been fully approved by DVC — allocation now pending with u-7
     id: 'app-1',
     userId: 'u-7',
     preferredHousingTypeIds: ['ht-2', 'ht-1'],
-    status: 'UNDER_REVIEW',
-    currentStage: 'DVC',
+    status: 'APPROVED',
+    currentStage: 'COMPLETED',
     pointsBreakdown: {
       baseTypePoints: 20,
       seniorityBonus: 5,
@@ -631,7 +631,7 @@ const initialHousingApplications: HousingApplication[] = [
     },
     additionalNotes: 'Requesting junior housing close to Science faculty.',
     submittedAt: '2026-05-10T09:00:00.000Z',
-    updatedAt: '2026-06-01T14:30:00.000Z',
+    updatedAt: '2026-06-27T08:00:00.000Z',
   },
   {
     // Freshly submitted application — waiting for Housing Secretary
@@ -685,6 +685,18 @@ const initialAllocations: Allocation[] = [
     allocatedAt: '2024-12-20T08:00:00.000Z',
     respondedAt: '2024-12-22T11:00:00.000Z',
     expiresAt: '2025-01-05T00:00:00.000Z',
+  },
+  {
+    // PENDING allocation for u-7 (Ngozi Okonkwo) following DVC approval of app-1
+    // Expires in ~72 hours from seeding — demonstrates the countdown timer
+    id: 'alc-2',
+    applicationId: 'app-1',
+    userId: 'u-7',
+    housingUnitId: 'hu-3', // Blk A1 — VACANT 2-bedroom junior storey
+    status: 'PENDING',
+    allocatedAt: '2026-06-27T08:00:00.000Z',
+    respondedAt: null,
+    expiresAt: '2026-06-30T08:00:00.000Z', // 72-hour response window
   },
 ];
 

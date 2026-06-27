@@ -20,11 +20,13 @@ import { Role } from '@/lib/mock-api/db';
 import { 
   Home, 
   FileText, 
-  Settings, 
   LogOut, 
   Building,
   CheckSquare,
-  ShieldCheck
+  ShieldCheck,
+  KeyRound,
+  Scroll,
+  DoorOpen,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -120,7 +122,10 @@ function getNavItemsForRole(role: Role) {
     return [
       { href: '/staff', label: 'Dashboard', icon: Home },
       { href: '/staff/applications', label: 'Apply for Housing', icon: FileText },
-      { href: '/staff/profile', label: 'My Profile', icon: Building },
+      { href: '/staff/housing', label: 'Housing Offer', icon: KeyRound },
+      { href: '/staff/tenancy', label: 'Tenancy Agreement', icon: Scroll },
+      { href: '/staff/bq', label: 'BQ Management', icon: Building },
+      { href: '/staff/profile', label: 'My Profile', icon: DoorOpen },
     ];
   }
 

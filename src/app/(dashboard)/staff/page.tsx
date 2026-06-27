@@ -44,6 +44,15 @@ export default async function StaffDashboardPage() {
             <Link href="/staff/applications" className={buttonVariants({ className: "w-full justify-start bg-oau-navy text-oau-cream hover:bg-oau-navy/90" })}>
               Apply for Housing
             </Link>
+            <Link href="/staff/housing" className={buttonVariants({ variant: "outline", className: "w-full justify-start hover:bg-oau-navy/5 hover:text-oau-navy" })}>
+              My Housing Offer
+            </Link>
+            <Link href="/staff/tenancy" className={buttonVariants({ variant: "outline", className: "w-full justify-start hover:bg-oau-navy/5 hover:text-oau-navy" })}>
+              Tenancy Agreement
+            </Link>
+            <Link href="/staff/bq" className={buttonVariants({ variant: "outline", className: "w-full justify-start hover:bg-oau-navy/5 hover:text-oau-navy" })}>
+              BQ Management
+            </Link>
             <Link href="/staff/exit" className={buttonVariants({ variant: "outline", className: "w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-200 mt-2" })}>
               Initiate Housing Exit
             </Link>

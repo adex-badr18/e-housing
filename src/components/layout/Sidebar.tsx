@@ -27,6 +27,8 @@ import {
   KeyRound,
   Scroll,
   DoorOpen,
+  MessageSquareDot,
+  Activity,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -126,15 +128,58 @@ function getNavItemsForRole(role: Role) {
       { href: '/staff/tenancy', label: 'Tenancy Agreement', icon: Scroll },
       { href: '/staff/bq', label: 'BQ Management', icon: Building },
       { href: '/staff/profile', label: 'My Profile', icon: DoorOpen },
+      { href: '/staff/exit', label: 'Housing Exit', icon: LogOut },
     ];
   }
 
-  // Management Roles
+  if (role === 'SUPER_ADMIN') {
+    return [
+      { href: '/dashboard', label: 'Dashboard', icon: Home },
+      { href: '/admin/applications', label: 'All Applications', icon: FileText },
+      { href: '/admin/inventory', label: 'Housing Inventory', icon: Building },
+      { href: '/management/exit', label: 'Exit Pipeline', icon: DoorOpen },
+      { href: '/admin/audit', label: 'Audit Logs', icon: Activity },
+      { href: '/admin/helpdesk', label: 'Helpdesk', icon: MessageSquareDot },
+    ];
+  }
+
+  if (role === 'HOUSING_SECRETARY') {
+    return [
+      { href: '/dashboard', label: 'Dashboard', icon: Home },
+      { href: '/admin/applications', label: 'Applications', icon: FileText },
+      { href: '/management/applications', label: 'Review Queue', icon: CheckSquare },
+      { href: '/management/exit', label: 'Exit Pipeline', icon: DoorOpen },
+    ];
+  }
+
+  if (role === 'ESTATE_OFFICER') {
+    return [
+      { href: '/dashboard', label: 'Dashboard', icon: Home },
+      { href: '/management/applications', label: 'Review Queue', icon: CheckSquare },
+      { href: '/management/exit', label: 'Exit Pipeline', icon: DoorOpen },
+      { href: '/admin/inventory', label: 'Housing Inventory', icon: Building },
+    ];
+  }
+
+  if (role === 'ELECTRICAL_OFFICER') {
+    return [
+      { href: '/dashboard', label: 'Dashboard', icon: Home },
+      { href: '/management/exit', label: 'Exit Pipeline', icon: ShieldCheck },
+    ];
+  }
+
+  if (role === 'DVC_ADMIN') {
+    return [
+      { href: '/dashboard', label: 'Dashboard', icon: Home },
+      { href: '/management/applications', label: 'Review Queue', icon: CheckSquare },
+      { href: '/admin/applications', label: 'All Applications', icon: FileText },
+    ];
+  }
+
+  // Fallback
   return [
     { href: '/dashboard', label: 'Dashboard', icon: Home },
     { href: '/admin/applications', label: 'All Applications', icon: FileText },
     { href: '/admin/inventory', label: 'Housing Inventory', icon: Building },
-    { href: '/admin/inspections', label: 'Inspections', icon: CheckSquare },
   ];
 }
-

@@ -28,7 +28,7 @@ export default async function StaffHousingPage() {
 
   if (!result.success) {
     return (
-      <div className="max-w-2xl mx-auto py-12 text-center space-y-3">
+      <div className="w-full py-12 text-center space-y-3">
         <p className="text-destructive font-medium">{result.error}</p>
         <Link href="/staff" className="text-sm text-primary hover:underline">← Back to Dashboard</Link>
       </div>
@@ -37,7 +37,7 @@ export default async function StaffHousingPage() {
 
   if (!result.data) {
     return (
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="w-full space-y-6">
         <div>
           <Link href="/staff" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1.5 mb-6 group">
             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
@@ -68,14 +68,14 @@ export default async function StaffHousingPage() {
 
   if (!unit || !housingType) {
     return (
-      <div className="max-w-2xl mx-auto py-12 text-center text-muted-foreground">
+      <div className="w-full py-12 text-center text-muted-foreground">
         <p>Unit data could not be loaded. Please contact the Housing Secretariat.</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="w-full space-y-6">
       <div>
         <Link href="/staff" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1.5 mb-6 group">
           <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />

@@ -80,6 +80,9 @@ export function AppStatusBadge({ status }: { status: ApplicationStatus }) {
   );
 }
 
+export { AppStatusBadge as StatusBadge };
+
+
 // ─── BQ Status ────────────────────────────────────────────────────────────────
 
 const bqStatusConfig: Record<BQStatus, { label: string; className: string }> = {

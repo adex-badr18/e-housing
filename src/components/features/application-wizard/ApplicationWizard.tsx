@@ -177,7 +177,7 @@ export function ApplicationWizard({
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
+    <div className="w-full space-y-8">
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Housing Application</h1>

@@ -23,7 +23,7 @@ export default async function StaffExitPage() {
   const activeExitNotice = await getActiveExitNoticeForUser(session.user.id);
 
   return (
-    <div className="flex flex-col gap-8 max-w-2xl">
+    <div className="flex flex-col gap-8 w-full">
       {/* Page header */}
       <div className="flex items-start gap-4">
         <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center shrink-0">

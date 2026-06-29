@@ -31,7 +31,7 @@ export default async function StaffProfilePage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-6 max-w-4xl">
+    <div className="flex flex-col gap-6 w-full">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Staff Profile</h1>
         <p className="text-muted-foreground">Manage your personal and professional information.</p>

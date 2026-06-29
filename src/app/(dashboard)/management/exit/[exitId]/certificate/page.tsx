@@ -52,7 +52,7 @@ export default async function ClearanceCertificatePage({ params }: Props) {
   return (
     <>
       {/* Screen-only controls */}
-      <div className="print:hidden flex items-center justify-between gap-4 mb-8 max-w-4xl">
+      <div className="print:hidden flex items-center justify-between gap-4 mb-8 w-full">
         <Link
           href={`/management/exit/${exitId}`}
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition"
@@ -75,7 +75,7 @@ export default async function ClearanceCertificatePage({ params }: Props) {
           ============================================================ */}
       <div
         id="clearance-certificate"
-        className="max-w-4xl mx-auto bg-white text-gray-900 rounded-2xl shadow-xl overflow-hidden print:shadow-none print:rounded-none"
+        className="w-full bg-white text-gray-900 rounded-2xl shadow-xl overflow-hidden print:shadow-none print:rounded-none"
       >
         {/* Header band */}
         <div className="bg-oau-navy px-10 py-8 text-center">

@@ -24,6 +24,11 @@ export default auth((req) => {
   if (isLoggedIn && pathname.startsWith('/admin') && req.auth?.user?.role === 'STAFF') {
     return NextResponse.redirect(new URL('/dashboard', req.url));
   }
+
+  // Redirect exact hits to legacy pages to the unified dashboard
+  if (isLoggedIn && (pathname === '/admin' || pathname === '/management' || pathname === '/admin/' || pathname === '/management/')) {
+    return NextResponse.redirect(new URL('/dashboard', req.url));
+  }
 });
 
 export const config = {

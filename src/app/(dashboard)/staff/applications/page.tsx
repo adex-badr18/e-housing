@@ -49,7 +49,7 @@ export default async function StaffApplicationsPage() {
   return (
     <Suspense
       fallback={
-        <div className="max-w-3xl mx-auto space-y-6">
+        <div className="w-full space-y-6">
           <DataTableSkeleton columns={1} rows={4} />
         </div>
       }

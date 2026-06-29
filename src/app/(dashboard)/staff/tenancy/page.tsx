@@ -28,7 +28,7 @@ export default async function StaffTenancyPage() {
 
   if (!result.success) {
     return (
-      <div className="max-w-2xl mx-auto py-12 text-center space-y-3">
+      <div className="w-full py-12 text-center space-y-3">
         <p className="text-destructive font-medium">{result.error}</p>
         <Link href="/staff" className="text-sm text-primary hover:underline">← Back to Dashboard</Link>
       </div>
@@ -37,7 +37,7 @@ export default async function StaffTenancyPage() {
 
   if (!result.data || !result.data.unit || !result.data.housingType || !result.data.user) {
     return (
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="w-full space-y-6">
         <div>
           <Link href="/staff" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1.5 mb-6 group">
             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
@@ -67,7 +67,7 @@ export default async function StaffTenancyPage() {
   const { occupancy, agreement, unit, housingType, user, profile } = result.data;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4">
+    <div className="w-full space-y-4">
       <div className="print-hide">
         <Link href="/staff" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1.5 mb-6 group">
           <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />

@@ -72,7 +72,7 @@ export default async function ApplicationReviewPage({
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="w-full space-y-6">
       {/* Back link */}
       <Link
         href="/management/applications"

@@ -47,7 +47,7 @@ export default async function ExitNoticeDetailPage({ params }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-8 max-w-3xl">
+    <div className="flex flex-col gap-8 w-full">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/management/exit" className="hover:text-foreground transition flex items-center gap-1">

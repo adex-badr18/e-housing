@@ -30,7 +30,7 @@ export default async function StaffBQPage() {
   // No active occupancy → not entitled to BQ management
   if (!occupancy) {
     return (
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="w-full space-y-6">
         <div>
           <Link href="/staff" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1.5 mb-6 group">
             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
@@ -62,7 +62,7 @@ export default async function StaffBQPage() {
   // Unit has no BQs
   if (!housingType?.hasBQ || housingType.numberOfBQ === 0) {
     return (
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="w-full space-y-6">
         <div>
           <Link href="/staff" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1.5 mb-6 group">
             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
@@ -85,7 +85,7 @@ export default async function StaffBQPage() {
   const bqs = await getBQsForCurrentOccupant(session.user.id);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="w-full space-y-6">
       <div>
         <Link href="/staff" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1.5 mb-6 group">
           <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />

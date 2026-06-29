@@ -43,7 +43,7 @@ export function StageStepper({ currentStage }: StageStepperProps) {
         const isLast = idx === STEPS.length - 1;
 
         return (
-          <div key={step.key} className="flex-1 flex items-start">
+          <div key={step.key} className={cn("flex items-start", !isLast ? "flex-1" : "flex-none")}>
             {/* Step circle + connector */}
             <div className="flex flex-col items-center">
               {/* Circle */}

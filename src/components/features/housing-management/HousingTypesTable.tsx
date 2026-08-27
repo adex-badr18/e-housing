@@ -50,7 +50,7 @@ type SortDir = 'asc' | 'desc';
 
 interface HousingTypesTableProps {
   initialData: HousingType[];
-  onDataChange?: () => void;
+  onDataChange?: (record: HousingType) => void;
 }
 
 function SortIcon({ field, active, dir }: { field: string; active: boolean; dir: SortDir }) {
@@ -73,10 +73,9 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
   const [deleteTarget, setDeleteTarget] = useState<HousingType | null>(null);
   const [isPendingDelete, startDeleteTransition] = useTransition();
 
-  // Refresh local data after mutation
-  const refresh = async () => {
-    // Optimistically pull fresh data from server — page will revalidate
-    onDataChange?.();
+  // Propagate mutation upstream if needed
+  const refresh = (record?: HousingType) => {
+    onDataChange?.(record!);
   };
 
   const handleSort = (field: SortField) => {
@@ -265,7 +264,7 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
                     <ActiveBadge isActive={ht.isActive} />
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center justify-end gap-1">
                       <Button
                         id={`ht-edit-${ht.id}`}
                         variant="ghost"
@@ -298,9 +297,10 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
         open={createOpen}
         onOpenChange={setCreateOpen}
         mode="create"
-        onSuccess={() => {
-          // Re-fetch would happen here; for now update optimistically from server component revalidation
-          refresh();
+        onSuccess={(newType) => {
+          setData((prev) => [...prev, newType]);
+          setCreateOpen(false);
+          refresh(newType);
         }}
       />
 
@@ -310,11 +310,10 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
         onOpenChange={(o) => !o && setEditTarget(null)}
         mode="edit"
         existing={editTarget ?? undefined}
-        onSuccess={() => {
-          if (editTarget) {
-            setEditTarget(null);
-            refresh();
-          }
+        onSuccess={(updated) => {
+          setData((prev) => prev.map((ht) => (ht.id === updated.id ? updated : ht)));
+          setEditTarget(null);
+          refresh(updated);
         }}
       />
 

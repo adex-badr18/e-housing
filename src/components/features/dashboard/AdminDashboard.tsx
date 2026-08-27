@@ -94,12 +94,12 @@ export async function AdminDashboard() {
         <DashboardSection
           title="Recent Applications"
           description="Latest housing applications submitted to the system"
-          href="/admin/applications"
+          href="/management/applications"
         >
           <SnapshotTable
             rows={recentApplications}
             getRowKey={r => r.id}
-            getRowHref={r => `/admin/applications/${r.id}`}
+            getRowHref={r => `/management/applications/${r.id}`}
             emptyMessage="No applications found."
             columns={[
               {

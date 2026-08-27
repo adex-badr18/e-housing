@@ -21,28 +21,32 @@ import {
   SelectItem,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { createHousingUnitAction } from '@/app/actions/housing';
+import { createHousingUnitAction, updateHousingUnitAction } from '@/app/actions/housing';
 import { toast } from 'sonner';
-import type { HousingType } from '@/lib/mock-api/db';
+import type { HousingType, HousingUnit } from '@/lib/mock-api/db';
 import { Building2, Home, BedDouble } from 'lucide-react';
 
 interface HousingUnitDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   housingTypes: HousingType[];
-  onSuccess?: () => void;
+  mode: 'create' | 'edit';
+  existing?: HousingUnit;
+  onSuccess?: (record: HousingUnit) => void;
 }
 
 export function HousingUnitDialog({
   open,
   onOpenChange,
   housingTypes,
+  mode,
+  existing,
   onSuccess,
 }: HousingUnitDialogProps) {
   const [isPending, startTransition] = useTransition();
-  const [name, setName] = useState('');
-  const [housingTypeId, setHousingTypeId] = useState('');
-  const [status, setStatus] = useState<'VACANT' | 'OCCUPIED' | 'UNDER_MAINTENANCE'>('VACANT');
+  const [name, setName] = useState(existing?.name ?? '');
+  const [housingTypeId, setHousingTypeId] = useState(existing?.housingTypeId ?? '');
+  const [status, setStatus] = useState<'VACANT' | 'OCCUPIED' | 'UNDER_MAINTENANCE'>(existing?.status ?? 'VACANT');
   const [nameError, setNameError] = useState('');
   const [typeError, setTypeError] = useState('');
 
@@ -65,32 +69,44 @@ export function HousingUnitDialog({
     if (!valid) return;
 
     startTransition(async () => {
-      const result = await createHousingUnitAction({ name: name.trim(), housingTypeId, status });
+      const result =
+        mode === 'create'
+          ? await createHousingUnitAction({ name: name.trim(), housingTypeId, status })
+          : await updateHousingUnitAction(existing!.id, { name: name.trim(), housingTypeId, status });
+
       if (result.success) {
-        toast.success('Housing unit created successfully');
+        toast.success(
+          mode === 'create'
+            ? 'Housing unit created successfully'
+            : 'Housing unit updated successfully'
+        );
         setName('');
         setHousingTypeId('');
         setStatus('VACANT');
         onOpenChange(false);
-        onSuccess?.();
+        onSuccess?.(result.data!);
       } else {
-        toast.error(result.error ?? 'Failed to create unit');
+        toast.error(result.error ?? `Failed to ${mode} unit`);
       }
     });
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/10">
               <Building2 className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <DialogTitle>Create Housing Unit</DialogTitle>
+              <DialogTitle>
+                {mode === 'create' ? 'Create Housing Unit' : 'Edit Housing Unit'}
+              </DialogTitle>
               <DialogDescription>
-                Add a new physical unit to the housing inventory.
+                {mode === 'create'
+                  ? 'Add a new physical unit to the housing inventory.'
+                  : `Editing: ${existing?.name}`}
               </DialogDescription>
             </div>
           </div>
@@ -114,12 +130,12 @@ export function HousingUnitDialog({
           <div className="space-y-1.5">
             <Label htmlFor="hu-type">Housing Type *</Label>
             <Select value={housingTypeId} onValueChange={(v) => v != null && setHousingTypeId(v)}>
-              <SelectTrigger id="hu-type" className={typeError ? 'border-destructive' : ''}>
+              <SelectTrigger id="hu-type" className={`w-full ${typeError ? 'border-destructive' : ''}`}>
                 <SelectValue placeholder="Select a housing type…" />
               </SelectTrigger>
               <SelectContent>
                 {housingTypes
-                  .filter((ht) => ht.isActive)
+                  .filter((ht) => ht.isActive || ht.id === existing?.housingTypeId)
                   .map((ht) => (
                     <SelectItem key={ht.id} value={ht.id}>
                       {ht.name}
@@ -169,11 +185,12 @@ export function HousingUnitDialog({
           <div className="space-y-1.5">
             <Label htmlFor="hu-status">Initial Status</Label>
             <Select value={status} onValueChange={(v) => v != null && setStatus(v as typeof status)}>
-              <SelectTrigger id="hu-status">
+              <SelectTrigger id="hu-status" className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="VACANT">Vacant</SelectItem>
+                <SelectItem value="OCCUPIED">Occupied</SelectItem>
                 <SelectItem value="UNDER_MAINTENANCE">Under Maintenance</SelectItem>
               </SelectContent>
             </Select>
@@ -184,7 +201,9 @@ export function HousingUnitDialog({
               Cancel
             </DialogClose>
             <Button type="submit" disabled={isPending} className="min-w-[130px]">
-              {isPending ? 'Creating…' : 'Create Unit'}
+              {isPending
+                ? (mode === 'create' ? 'Creating…' : 'Saving…')
+                : (mode === 'create' ? 'Create Unit' : 'Save Changes')}
             </Button>
           </DialogFooter>
         </form>

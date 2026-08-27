@@ -135,7 +135,7 @@ function getNavItemsForRole(role: Role) {
   if (role === 'SUPER_ADMIN') {
     return [
       { href: '/dashboard', label: 'Dashboard', icon: Home },
-      { href: '/admin/applications', label: 'All Applications', icon: FileText },
+      { href: '/management/applications', label: 'All Applications', icon: FileText },
       { href: '/admin/inventory', label: 'Housing Inventory', icon: Building },
       { href: '/management/exit', label: 'Exit Pipeline', icon: DoorOpen },
       { href: '/admin/audit', label: 'Audit Logs', icon: Activity },
@@ -146,9 +146,9 @@ function getNavItemsForRole(role: Role) {
   if (role === 'HOUSING_SECRETARY') {
     return [
       { href: '/dashboard', label: 'Dashboard', icon: Home },
-      { href: '/admin/applications', label: 'Applications', icon: FileText },
       { href: '/management/applications', label: 'Review Queue', icon: CheckSquare },
       { href: '/management/exit', label: 'Exit Pipeline', icon: DoorOpen },
+      { href: '/admin/inventory', label: 'Housing Inventory', icon: Building },
     ];
   }
 
@@ -172,14 +172,13 @@ function getNavItemsForRole(role: Role) {
     return [
       { href: '/dashboard', label: 'Dashboard', icon: Home },
       { href: '/management/applications', label: 'Review Queue', icon: CheckSquare },
-      { href: '/admin/applications', label: 'All Applications', icon: FileText },
     ];
   }
 
   // Fallback
   return [
     { href: '/dashboard', label: 'Dashboard', icon: Home },
-    { href: '/admin/applications', label: 'All Applications', icon: FileText },
+    { href: '/management/applications', label: 'All Applications', icon: FileText },
     { href: '/admin/inventory', label: 'Housing Inventory', icon: Building },
   ];
 }

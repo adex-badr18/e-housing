@@ -8,6 +8,7 @@
 // =============================================================================
 
 import { useEffect, useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { respondToAllocationAction } from '@/app/actions/applications';
@@ -110,6 +111,7 @@ function FeatureChip({ icon: Icon, label, active }: { icon: React.ElementType; l
 // ---------------------------------------------------------------------------
 
 export function AllocationResponseCard({ allocation, unit, housingType }: Props) {
+  const router = useRouter();
   const countdown = useCountdown(allocation.expiresAt ?? '');
   const [isPending, startTransition] = useTransition();
   const [responded, setResponded] = useState<'ACCEPTED' | 'REJECTED' | null>(null);
@@ -129,8 +131,8 @@ export function AllocationResponseCard({ allocation, unit, housingType }: Props)
         } else {
           toast.info('Allocation offer declined. The unit will be released back to inventory.', { duration: 4000 });
         }
-        // Reload after short delay
-        setTimeout(() => window.location.reload(), 2500);
+        // Refresh after short delay so the response card is visible briefly
+        setTimeout(() => router.refresh(), 1000);
       } else {
         toast.error(res.error ?? 'Failed to respond to allocation');
       }

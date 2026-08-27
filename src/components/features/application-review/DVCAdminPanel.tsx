@@ -8,6 +8,7 @@
 // =============================================================================
 
 import { useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -69,6 +70,7 @@ export function DVCAdminPanel({
   applicantProfile,
   reviewerNames,
 }: DVCAdminPanelProps) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<FormValues>({
@@ -97,7 +99,7 @@ export function DVCAdminPanel({
             ? '🎉 Application approved! Allocation can now be created.'
             : 'Application has been rejected.'
         );
-        window.location.reload();
+        router.refresh();
       } else {
         toast.error(res.error ?? 'Failed to submit decision');
       }
@@ -183,7 +185,7 @@ export function DVCAdminPanel({
                   <span className="text-xs text-muted-foreground">·</span>
                   <span className="text-xs text-muted-foreground">{format(new Date(review.reviewedAt), 'dd MMM yyyy')}</span>
                 </div>
-                <p className="text-xs text-foreground/70 mt-1 italic">"{review.comments}"</p>
+                <p className="text-xs text-foreground/70 mt-1 italic">&quot;{review.comments}&quot;</p>
               </div>
             </div>
           ))}
@@ -196,7 +198,7 @@ export function DVCAdminPanel({
           <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
             <User className="h-3.5 w-3.5" /> Applicant Notes
           </h3>
-          <p className="text-sm text-foreground/80 italic">"{application.additionalNotes}"</p>
+          <p className="text-sm text-foreground/80 italic">&quot;{application.additionalNotes}&quot;</p>
         </div>
       )}
 

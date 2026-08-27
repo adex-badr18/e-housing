@@ -8,6 +8,7 @@
 // =============================================================================
 
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -127,6 +128,7 @@ export function HousingSecretaryPanel({
   applicantUser,
   applicantProfile,
 }: HousingSecretaryPanelProps) {
+  const router = useRouter();
   const [checks, setChecks]       = useState<Record<string, boolean>>({});
   const [autoScoring, startAutoScore] = useTransition();
   const [scoringDetails, setScoringDetails] = useState<ScoringBreakdown | null>(null);
@@ -199,8 +201,7 @@ export function HousingSecretaryPanel({
             ? 'Application scored and forwarded to Estate Officer'
             : 'Application rejected'
         );
-        // Reload to reflect new state
-        window.location.reload();
+        router.refresh();
       } else {
         toast.error(res.error ?? 'Failed to submit review');
       }

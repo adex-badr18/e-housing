@@ -9,6 +9,7 @@
 // =============================================================================
 
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
@@ -69,6 +70,7 @@ interface ExitNoticeFormProps {
 // ---------------------------------------------------------------------------
 
 export function ExitNoticeForm({ currentUnit }: ExitNoticeFormProps) {
+  const router = useRouter();
   const [acks, setAcks] = useState<Record<string, boolean>>({});
   const [isPending, startTransition] = useTransition();
 
@@ -95,7 +97,7 @@ export function ExitNoticeForm({ currentUnit }: ExitNoticeFormProps) {
       const res = await submitExitNoticeAction(values);
       if (res.success) {
         toast.success('Exit notice submitted. Your clearance pipeline has been initiated.');
-        window.location.reload();
+        router.refresh();
       } else {
         toast.error(res.error ?? 'Failed to submit exit notice');
       }

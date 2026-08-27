@@ -56,7 +56,7 @@ interface OccupantFormProps {
   bqId: string;
   existing?: BQOccupant | null;
   onClose: () => void;
-  onSaved: () => void;
+  onSaved: (occupant: BQOccupant) => void;
 }
 
 function OccupantForm({ bqId, existing, onClose, onSaved }: OccupantFormProps) {
@@ -87,7 +87,14 @@ function OccupantForm({ bqId, existing, onClose, onSaved }: OccupantFormProps) {
         });
         if (res.success) {
           toast.success('Sub-occupant details updated successfully.');
-          onSaved();
+          const updatedOccupant: BQOccupant = {
+            ...existing,
+            fullName: values.fullName,
+            phoneNumber: values.phoneNumber,
+            email: values.email || undefined,
+            relationship: values.relationship,
+          };
+          onSaved(updatedOccupant);
         } else {
           toast.error(res.error ?? 'Failed to update occupant');
         }
@@ -95,7 +102,8 @@ function OccupantForm({ bqId, existing, onClose, onSaved }: OccupantFormProps) {
         const res = await addBQOccupantAction(values);
         if (res.success) {
           toast.success('Sub-occupant added to BQ successfully.');
-          onSaved();
+          const newOccupant = res.data as BQOccupant;
+          onSaved(newOccupant);
         } else {
           toast.error(res.error ?? 'Failed to add occupant');
         }
@@ -304,9 +312,10 @@ function RemoveDialog({ occupant, onConfirm, onCancel, isPending }: RemoveDialog
 interface BQCardProps {
   bq: BQWithOccupant;
   index: number;
+  onBQUpdated: (patch: Partial<BQWithOccupant> & { id: string }) => void;
 }
 
-function BQCard({ bq, index }: BQCardProps) {
+function BQCard({ bq, index, onBQUpdated }: BQCardProps) {
   const [mode, setMode] = useState<'view' | 'add' | 'edit' | 'remove'>('view');
   const [removePending, startRemove] = useTransition();
 
@@ -319,7 +328,7 @@ function BQCard({ bq, index }: BQCardProps) {
       if (res.success) {
         toast.success(`${bq.occupant!.fullName} removed from ${bq.label}.`);
         setMode('view');
-        window.location.reload();
+        onBQUpdated({ id: bq.id, occupant: null, status: 'VACANT' });
       } else {
         toast.error(res.error ?? 'Failed to remove sub-occupant');
       }
@@ -423,7 +432,10 @@ function BQCard({ bq, index }: BQCardProps) {
                 bqId={bq.id}
                 existing={bq.occupant}
                 onClose={() => setMode('view')}
-                onSaved={() => { setMode('view'); window.location.reload(); }}
+                onSaved={(occupant) => {
+                  setMode('view');
+                  onBQUpdated({ id: bq.id, occupant, status: 'OCCUPIED' });
+                }}
               />
             )}
 
@@ -469,7 +481,10 @@ function BQCard({ bq, index }: BQCardProps) {
               <OccupantForm
                 bqId={bq.id}
                 onClose={() => setMode('view')}
-                onSaved={() => { setMode('view'); window.location.reload(); }}
+                onSaved={(occupant) => {
+                  setMode('view');
+                  onBQUpdated({ id: bq.id, occupant, status: 'OCCUPIED' });
+                }}
               />
             )}
           </>
@@ -483,9 +498,18 @@ function BQCard({ bq, index }: BQCardProps) {
 // Main Portal Component
 // ---------------------------------------------------------------------------
 
-export function BQPortal({ bqs, maxBQs }: Props) {
+export function BQPortal({ bqs: initialBqs, maxBQs }: Props) {
+  const [bqs, setBqs] = useState<BQWithOccupant[]>(initialBqs);
   const occupiedCount = bqs.filter(b => b.status === 'OCCUPIED').length;
   const vacantCount = bqs.filter(b => b.status === 'VACANT').length;
+
+  function handleBQUpdated(patch: Partial<BQWithOccupant> & { id: string }) {
+    setBqs(prev =>
+      prev.map(b =>
+        b.id === patch.id ? { ...b, ...patch } : b
+      )
+    );
+  }
 
   if (bqs.length === 0) {
     return (
@@ -534,7 +558,7 @@ export function BQPortal({ bqs, maxBQs }: Props) {
       {/* BQ cards grid */}
       <div className="grid gap-5 md:grid-cols-2">
         {bqs.map((bq, i) => (
-          <BQCard key={bq.id} bq={bq} index={i} />
+          <BQCard key={bq.id} bq={bq} index={i} onBQUpdated={handleBQUpdated} />
         ))}
       </div>
     </div>

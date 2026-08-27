@@ -253,8 +253,8 @@ export async function reviewApplicationAction(data: unknown) {
       },
     });
 
-    revalidatePath('/admin/applications');
-    revalidatePath(`/admin/applications/${parsed.data.applicationId}`);
+    revalidatePath('/management/applications');
+    revalidatePath(`/management/applications/${parsed.data.applicationId}`);
     return { success: true, data: { application, review } };
   } catch (err) {
     await writeAuditEntry({
@@ -297,7 +297,7 @@ export async function createAllocationAction(
       metadata: { userId, housingUnitId },
     });
     revalidatePath('/admin/allocations');
-    revalidatePath('/admin/applications');
+    revalidatePath('/management/applications');
     return { success: true, data: allocation };
   } catch (err) {
     return { success: false, error: err instanceof Error ? err.message : 'Failed to create allocation' };

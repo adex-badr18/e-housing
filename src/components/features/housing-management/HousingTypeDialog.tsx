@@ -35,7 +35,7 @@ interface HousingTypeDialogProps {
   onOpenChange: (open: boolean) => void;
   mode: 'create' | 'edit';
   existing?: HousingType;
-  onSuccess?: () => void;
+  onSuccess?: (record: HousingType) => void;
 }
 
 const defaults: HousingTypeFormValues = {
@@ -102,6 +102,7 @@ export function HousingTypeDialog({
 
   const hasBQ = watch('hasBQ');
   const category = watch('category');
+  const buildingType = watch('buildingType');
 
   const onSubmit = (data: HousingTypeFormValues) => {
     startTransition(async () => {
@@ -117,7 +118,7 @@ export function HousingTypeDialog({
             : 'Housing type updated successfully'
         );
         onOpenChange(false);
-        onSuccess?.();
+        onSuccess?.(result.data!);
       } else {
         toast.error(result.error ?? 'An error occurred');
       }
@@ -126,7 +127,7 @@ export function HousingTypeDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/10">
@@ -172,7 +173,7 @@ export function HousingTypeDialog({
                     value={category}
                     onValueChange={(v) => v != null && setValue('category', v as 'SENIOR' | 'JUNIOR')}
                   >
-                    <SelectTrigger id="ht-category" className={errors.category ? 'border-destructive' : ''}>
+                    <SelectTrigger id="ht-category" className={`w-full ${errors.category ? 'border-destructive' : ''}`}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -195,10 +196,10 @@ export function HousingTypeDialog({
                 <div className="space-y-1.5">
                   <Label htmlFor="ht-building">Building Type *</Label>
                   <Select
-                    defaultValue={existing?.buildingType ?? 'BUNGALOW'}
+                    value={buildingType}
                     onValueChange={(v) => v != null && setValue('buildingType', v as 'BUNGALOW' | 'STOREY')}
                   >
-                    <SelectTrigger id="ht-building">
+                    <SelectTrigger id="ht-building" className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

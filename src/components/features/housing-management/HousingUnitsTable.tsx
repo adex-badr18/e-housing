@@ -31,7 +31,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { UnitStatusBadge, CategoryBadge } from '@/components/shared/StatusBadge';
 import { HousingUnitDialog } from './HousingUnitDialog';
-import { updateHousingUnitStatusAction } from '@/app/actions/housing';
+import { updateHousingUnitStatusAction, deleteHousingUnitAction } from '@/app/actions/housing';
 import type { HousingUnit, HousingType, UnitStatus } from '@/lib/mock-api/db';
 import {
   Plus,
@@ -41,6 +41,8 @@ import {
   ArrowDown,
   Building2,
   RefreshCw,
+  Pencil,
+  Trash2,
 } from 'lucide-react';
 
 type SortField = 'name' | 'status' | 'type';
@@ -49,7 +51,7 @@ type SortDir = 'asc' | 'desc';
 interface HousingUnitsTableProps {
   initialUnits: HousingUnit[];
   housingTypes: HousingType[];
-  onDataChange?: () => void;
+  onDataChange?: (record?: HousingUnit) => void;
 }
 
 function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
@@ -81,6 +83,10 @@ export function HousingUnitsTable({
   const [statusEditTarget, setStatusEditTarget] = useState<HousingUnit | null>(null);
   const [newStatus, setNewStatus] = useState<UnitStatus>('VACANT');
   const [isPendingStatus, startStatusTransition] = useTransition();
+
+  const [editTarget, setEditTarget] = useState<HousingUnit | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<HousingUnit | null>(null);
+  const [isPendingDelete, startDeleteTransition] = useTransition();
 
   const typeMap = useMemo(
     () => new Map(housingTypes.map((ht) => [ht.id, ht])),
@@ -140,6 +146,21 @@ export function HousingUnitsTable({
         onDataChange?.();
       } else {
         toast.error(result.error ?? 'Failed to update status');
+      }
+    });
+  };
+
+  const handleDelete = () => {
+    if (!deleteTarget) return;
+    startDeleteTransition(async () => {
+      const result = await deleteHousingUnitAction(deleteTarget.id);
+      if (result.success) {
+        toast.success(`Unit "${deleteTarget.name}" deleted successfully`);
+        setUnits((prev) => prev.filter((u) => u.id !== deleteTarget.id));
+        setDeleteTarget(null);
+        onDataChange?.();
+      } else {
+        toast.error(result.error ?? 'Failed to delete unit');
       }
     });
   };
@@ -288,16 +309,36 @@ export function HousingUnitsTable({
                       <UnitStatusBadge status={unit.status} />
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        id={`hu-status-${unit.id}`}
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openStatusEdit(unit)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity gap-1.5 h-8 text-xs hover:bg-primary/10 hover:text-primary"
-                      >
-                        <RefreshCw className="h-3 w-3" />
-                        Change Status
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          id={`hu-status-${unit.id}`}
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openStatusEdit(unit)}
+                          className="gap-1.5 h-8 text-xs hover:bg-primary/10 hover:text-primary"
+                        >
+                          <RefreshCw className="h-3 w-3" />
+                          Status
+                        </Button>
+                        <Button
+                          id={`hu-edit-${unit.id}`}
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setEditTarget(unit)}
+                          className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          id={`hu-delete-${unit.id}`}
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeleteTarget(unit)}
+                          className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
@@ -309,11 +350,59 @@ export function HousingUnitsTable({
 
       {/* Create Unit Dialog */}
       <HousingUnitDialog
+        key={createOpen ? 'create-open' : 'create-closed'}
         open={createOpen}
         onOpenChange={setCreateOpen}
         housingTypes={housingTypes}
-        onSuccess={() => onDataChange?.()}
+        mode="create"
+        onSuccess={(newUnit) => {
+          setUnits((prev) => [...prev, newUnit]);
+          setCreateOpen(false);
+          onDataChange?.(newUnit);
+        }}
       />
+
+      {/* Edit Unit Dialog */}
+      <HousingUnitDialog
+        key={editTarget ? `edit-${editTarget.id}` : 'edit-none'}
+        open={!!editTarget}
+        onOpenChange={(o) => !o && setEditTarget(null)}
+        housingTypes={housingTypes}
+        mode="edit"
+        existing={editTarget ?? undefined}
+        onSuccess={(updated) => {
+          setUnits((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+          setEditTarget(null);
+          onDataChange?.(updated);
+        }}
+      />
+
+      {/* Delete Confirm Dialog */}
+      <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-destructive">Delete Housing Unit</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to permanently delete{' '}
+              <span className="font-semibold text-foreground">&quot;{deleteTarget?.name}&quot;</span>?
+              This action cannot be undone. Occupied units cannot be deleted.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 mt-4">
+            <DialogClose render={<Button variant="outline" disabled={isPendingDelete} />}>
+              Cancel
+            </DialogClose>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isPendingDelete}
+              className="min-w-[100px]"
+            >
+              {isPendingDelete ? 'Deleting…' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Status Update Dialog */}
       <Dialog open={!!statusEditTarget} onOpenChange={(o) => !o && setStatusEditTarget(null)}>

@@ -165,6 +165,31 @@ export async function updateHousingUnitStatus(
   return mockDB.housingUnits[idx];
 }
 
+export async function updateHousingUnit(
+  id: string,
+  data: Partial<Omit<HousingUnit, 'id' | 'createdAt'>>
+): Promise<HousingUnit> {
+  await delay(400);
+  const idx = mockDB.housingUnits.findIndex(u => u.id === id);
+  if (idx === -1) throw new Error(`HousingUnit ${id} not found`);
+  mockDB.housingUnits[idx] = {
+    ...mockDB.housingUnits[idx],
+    ...data,
+    updatedAt: new Date().toISOString(),
+  };
+  return mockDB.housingUnits[idx];
+}
+
+export async function deleteHousingUnit(id: string): Promise<void> {
+  await delay(300);
+  const hasOccupant = mockDB.housingUnits.some(u => u.id === id && u.currentOccupantId != null);
+  if (hasOccupant) {
+    throw new Error('Cannot delete a housing unit that is currently occupied');
+  }
+  mockDB.bqs = mockDB.bqs.filter(b => b.housingUnitId !== id);
+  mockDB.housingUnits = mockDB.housingUnits.filter(u => u.id !== id);
+}
+
 // ---------------------------------------------------------------------------
 // BQ OCCUPANTS — managed directly by the main occupant, not request-based
 // ---------------------------------------------------------------------------

@@ -5,6 +5,7 @@
 // =============================================================================
 
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -123,6 +124,7 @@ function MetricRow({
 // ---------------------------------------------------------------------------
 
 export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOfficerPanelProps) {
+  const router = useRouter();
   const [ratings, setRatings] = useState<Record<string, InspectionRating>>(
     () => Object.fromEntries(INSPECTION_METRICS.map(m => [m.id, null]))
   );
@@ -163,7 +165,7 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
             ? 'Physical inspection complete — forwarded to DVC Admin'
             : 'Application rejected at Estate Office stage'
         );
-        window.location.reload();
+        router.refresh();
       } else {
         toast.error(res.error ?? 'Failed to submit review');
       }

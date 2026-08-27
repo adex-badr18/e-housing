@@ -13,6 +13,8 @@ import {
   deleteHousingType,
   createHousingUnit,
   updateHousingUnitStatus,
+  updateHousingUnit,
+  deleteHousingUnit,
   addBQOccupant,
   updateBQOccupant,
   removeBQOccupant,
@@ -186,6 +188,61 @@ export async function updateHousingUnitStatusAction(id: string, status: UnitStat
     return { success: true, data: updated };
   } catch (err) {
     return { success: false, error: err instanceof Error ? err.message : 'Failed to update unit status' };
+  }
+}
+
+export async function updateHousingUnitAction(id: string, data: unknown) {
+  const session = await auth();
+  if (!session?.user) return { success: false, error: 'Unauthorized' };
+  if (!HOUSING_MANAGEMENT_ROLES.includes(session.user.role as typeof HOUSING_MANAGEMENT_ROLES[number])) {
+    return { success: false, error: 'Access denied: insufficient permissions' };
+  }
+
+  const parsed = housingUnitSchema.partial().safeParse(data);
+  if (!parsed.success) {
+    return { success: false, error: 'Validation failed', details: parsed.error.format() };
+  }
+
+  try {
+    const updated = await updateHousingUnit(id, parsed.data);
+    await writeAuditEntry({
+      actorId: session.user.id,
+      action: 'HOUSING_UNIT_UPDATED',
+      entityType: 'HousingUnit',
+      entityId: id,
+      status: 'SUCCESS',
+      metadata: { changes: Object.keys(parsed.data) },
+    });
+    revalidatePath('/admin/housing-units');
+    revalidatePath('/housing-units');
+    return { success: true, data: updated };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Failed to update housing unit' };
+  }
+}
+
+export async function deleteHousingUnitAction(id: string) {
+  const session = await auth();
+  if (!session?.user) return { success: false, error: 'Unauthorized' };
+  if (session.user.role !== 'SUPER_ADMIN') {
+    return { success: false, error: 'Only Super Admin can delete housing units' };
+  }
+
+  try {
+    await deleteHousingUnit(id);
+    await writeAuditEntry({
+      actorId: session.user.id,
+      action: 'HOUSING_UNIT_DELETED',
+      entityType: 'HousingUnit',
+      entityId: id,
+      status: 'SUCCESS',
+      metadata: null,
+    });
+    revalidatePath('/admin/housing-units');
+    revalidatePath('/housing-units');
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Failed to delete housing unit' };
   }
 }
 

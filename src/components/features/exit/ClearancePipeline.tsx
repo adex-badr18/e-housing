@@ -8,6 +8,7 @@
 // =============================================================================
 
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import {
@@ -334,9 +335,10 @@ interface ClearancePipelineProps {
 }
 
 export function ClearancePipeline({ notice, currentUserRole, users }: ClearancePipelineProps) {
+  const router = useRouter();
 
   function handleComplete() {
-    window.location.reload();
+    router.refresh();
   }
 
   const isHousingUnlocked = true;

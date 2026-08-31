@@ -26,7 +26,7 @@ export type CurrentHousingStatus = 'HAS_ALLOCATION' | 'NO_ALLOCATION';
 export type Gender = 'MALE' | 'FEMALE';
 export type MaritalStatus = 'SINGLE' | 'MARRIED' | 'DIVORCED' | 'WIDOWED';
 export type OccupancyStatus = 'ACTIVE' | 'EXITED';
-export type ApplicationStatus = 'PENDING' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED';
+export type ApplicationStatus = 'PENDING' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'QUEUED';
 export type ApplicationStage = 'HOUSING' | 'ESTATE' | 'DVC' | 'COMPLETED';
 export type ReviewDecision = 'APPROVED' | 'REJECTED' | 'FORWARDED';
 export type AllocationStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED';
@@ -196,6 +196,12 @@ export interface HousingApplication {
   /** Populated by Housing Secretary at Stage 1 */
   pointsBreakdown?: PointsBreakdown | null;
   additionalNotes?: string;
+  /**
+   * Pre-selected by Estate Officer during Stage 2 review.
+   * Stored here so the DVC Admin can see the proposed unit.
+   * The formal Allocation record is created only after DVC approval.
+   */
+  allocatedUnitId?: string | null;
   submittedAt: string;
   updatedAt?: string;
 }
@@ -1328,6 +1334,14 @@ export class MockDB {
   getActiveApplicationForUser(userId: string): HousingApplication | undefined {
     return this.housingApplications.find(
       a => a.userId === userId && a.status !== 'APPROVED' && a.status !== 'REJECTED'
+    );
+  }
+
+  /** All vacant housing units — optionally filtered to a set of housingTypeIds */
+  getVacantUnits(housingTypeIds?: string[]): HousingUnit[] {
+    return this.housingUnits.filter(
+      u => u.status === 'VACANT' &&
+        (housingTypeIds == null || housingTypeIds.length === 0 || housingTypeIds.includes(u.housingTypeId))
     );
   }
 

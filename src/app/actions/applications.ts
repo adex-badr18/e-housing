@@ -15,11 +15,14 @@ import {
   getApplicationsForUser,
   getApplicationDetail,
   getApplicationWithProfile,
+  getVacantUnitsForApplication,
+  requeueApplication,
 } from '@/lib/mock-api/endpoints/applications';
 import {
   applicationSubmitSchema,
   applicationReviewSchema,
   allocationResponseSchema,
+  requeueApplicationSchema,
 } from '@/lib/validations/housing';
 import { writeAuditEntry } from '@/lib/mock-api/endpoints/audit';
 import type { PointsBreakdown } from '@/lib/mock-api/db';
@@ -238,6 +241,7 @@ export async function reviewApplicationAction(data: unknown) {
       comments: parsed.data.comments,
       score: parsed.data.score ?? null,
       pointsBreakdown,
+      allocatedUnitId: parsed.data.allocatedUnitId ?? null,
     });
 
     await writeAuditEntry({
@@ -250,6 +254,7 @@ export async function reviewApplicationAction(data: unknown) {
         stage: parsed.data.stage,
         decision: parsed.data.decision,
         reviewId: review.id,
+        allocatedUnitId: parsed.data.allocatedUnitId ?? null,
       },
     });
 
@@ -266,6 +271,62 @@ export async function reviewApplicationAction(data: unknown) {
       metadata: { error: String(err) },
     });
     return { success: false, error: err instanceof Error ? err.message : 'Failed to submit review' };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Estate Officer: Fetch vacant housing units for an application
+// ---------------------------------------------------------------------------
+
+export async function getVacantUnitsForApplicationAction(applicationId: string) {
+  const session = await auth();
+  if (!session?.user) return { success: false as const, error: 'Unauthorized' };
+  if (session.user.role !== 'ESTATE_OFFICER' && session.user.role !== 'SUPER_ADMIN') {
+    return { success: false as const, error: 'Only Estate Officer can fetch vacant units' };
+  }
+
+  try {
+    const units = await getVacantUnitsForApplication(applicationId);
+    return { success: true as const, data: units };
+  } catch (err) {
+    return { success: false as const, error: err instanceof Error ? err.message : 'Failed to fetch vacant units' };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Estate Officer: Re-activate a queued application with a selected unit
+// ---------------------------------------------------------------------------
+
+export async function requeueApplicationAction(data: unknown) {
+  const session = await auth();
+  if (!session?.user) return { success: false, error: 'Unauthorized' };
+  if (session.user.role !== 'ESTATE_OFFICER' && session.user.role !== 'SUPER_ADMIN') {
+    return { success: false, error: 'Only Estate Officer can re-activate queued applications' };
+  }
+
+  const parsed = requeueApplicationSchema.safeParse(data);
+  if (!parsed.success) {
+    return { success: false, error: 'Validation failed', details: parsed.error.format() };
+  }
+
+  try {
+    const application = await requeueApplication(
+      parsed.data.applicationId,
+      parsed.data.allocatedUnitId
+    );
+    await writeAuditEntry({
+      actorId: session.user.id,
+      action: 'APPLICATION_REQUEUED',
+      entityType: 'HousingApplication',
+      entityId: parsed.data.applicationId,
+      status: 'SUCCESS',
+      metadata: { allocatedUnitId: parsed.data.allocatedUnitId },
+    });
+    revalidatePath('/management/applications');
+    revalidatePath(`/management/applications/${parsed.data.applicationId}`);
+    return { success: true, data: application };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Failed to re-activate application' };
   }
 }
 

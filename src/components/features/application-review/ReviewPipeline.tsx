@@ -18,7 +18,7 @@ import { CompletedStageCard } from './CompletedStageCard';
 import { HousingSecretaryPanel } from './HousingSecretaryPanel';
 import { EstateOfficerPanel }    from './EstateOfficerPanel';
 import { DVCAdminPanel }         from './DVCAdminPanel';
-import { Lock, Eye } from 'lucide-react';
+import { Lock, Eye, Clock } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -88,16 +88,21 @@ export function ReviewPipeline({
   const isRejected  = status === 'REJECTED';
   const isApproved  = status === 'APPROVED';
   const isCompleted = isTerminal(currentStage);
+  const isQueued    = status === 'QUEUED';
 
   // SUPER_ADMIN: read-only view of everything
   const isSuperAdmin = sessionRole === 'SUPER_ADMIN';
 
   // Is it this role's turn?
-  const isMyTurn = !isSuperAdmin && expectedStage === currentStage && !isRejected && !isApproved;
+  // Estate Officer also gets a turn when the application is QUEUED (for re-activation)
+  const isMyTurn = !isSuperAdmin && (
+    (expectedStage === currentStage && !isRejected && !isApproved && !isQueued) ||
+    (isQueued && sessionRole === 'ESTATE_OFFICER')
+  );
   // Role has already acted (completed stage)
-  const hasActed = expectedStage != null && isStageCompleted(expectedStage, currentStage);
+  const hasActed = expectedStage != null && isStageCompleted(expectedStage, currentStage) && !isQueued;
   // Role is waiting (stage not yet reached)
-  const isWaiting = !isSuperAdmin && expectedStage != null && !isMyTurn && !hasActed && !isRejected;
+  const isWaiting = !isSuperAdmin && expectedStage != null && !isMyTurn && !hasActed && !isRejected && !isQueued;
 
   return (
     <div className="space-y-8">
@@ -125,6 +130,20 @@ export function ReviewPipeline({
           <div>
             <p className="font-semibold text-sm">Application Approved</p>
             <p className="text-xs mt-0.5">DVC Admin has granted final approval. A housing unit allocation can now be assigned.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Queued banner — visible to all roles */}
+      {isQueued && !isMyTurn && (
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800">
+          <Clock className="h-5 w-5 shrink-0" />
+          <div>
+            <p className="font-semibold text-sm">Application Queued</p>
+            <p className="text-xs mt-0.5">
+              The Estate Officer placed this application in a waiting queue — no suitable unit was
+              available at review time. It will be re-activated when a vacancy arises.
+            </p>
           </div>
         </div>
       )}
@@ -170,10 +189,11 @@ export function ReviewPipeline({
       {/* Active review panel — only shown when it's this role's turn */}
       {isMyTurn && (
         <div className="rounded-2xl border-2 border-primary/20 bg-card shadow-md overflow-hidden">
-          <div className="px-5 py-3.5 bg-primary text-primary-foreground flex items-center gap-2">
+          <div className={`px-5 py-3.5 flex items-center gap-2 ${isQueued ? 'bg-amber-500' : 'bg-primary'} text-white`}>
             <span className="text-sm font-semibold">
               {currentStage === 'HOUSING' && '📋 Stage 1 — Verification & Scoring'}
-              {currentStage === 'ESTATE'  && '🏗️ Stage 2 — Physical Inspection'}
+              {currentStage === 'ESTATE'  && !isQueued && '🏗️ Stage 2 — Physical Inspection & Unit Allocation'}
+              {isQueued                   && '⏳ Stage 2 — Re-activate from Queue'}
               {currentStage === 'DVC'     && '👑 Stage 3 — Final Decision'}
             </span>
           </div>
@@ -185,7 +205,7 @@ export function ReviewPipeline({
                 applicantProfile={applicantProfile}
               />
             )}
-            {currentStage === 'ESTATE' && (
+            {(currentStage === 'ESTATE' || isQueued) && sessionRole === 'ESTATE_OFFICER' && (
               <EstateOfficerPanel
                 application={application}
                 pointsBreakdown={application.pointsBreakdown ?? null}

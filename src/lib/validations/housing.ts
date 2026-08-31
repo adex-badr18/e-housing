@@ -27,9 +27,9 @@ export const buildingTypeSchema = z.enum(['BUNGALOW', 'STOREY']);
 export const unitStatusSchema = z.enum(['VACANT', 'OCCUPIED', 'UNDER_MAINTENANCE']);
 export const bqStatusSchema = z.enum(['VACANT', 'OCCUPIED']);
 export const inspectionStatusSchema = z.enum(['PENDING', 'PASSED', 'FAILED']);
-export const applicationStatusSchema = z.enum(['PENDING', 'UNDER_REVIEW', 'APPROVED', 'REJECTED']);
+export const applicationStatusSchema = z.enum(['PENDING', 'UNDER_REVIEW', 'APPROVED', 'REJECTED', 'QUEUED']);
 export const applicationStageSchema = z.enum(['HOUSING', 'ESTATE', 'DVC', 'COMPLETED']);
-export const reviewDecisionSchema = z.enum(['APPROVED', 'REJECTED', 'FORWARDED']);
+export const reviewDecisionSchema = z.enum(['APPROVED', 'REJECTED', 'FORWARDED', 'QUEUED']);
 export const allocationStatusSchema = z.enum(['PENDING', 'ACCEPTED', 'REJECTED', 'EXPIRED']);
 export const exitReasonSchema = z.enum([
   'RETIREMENT',
@@ -194,6 +194,8 @@ export const applicationReviewSchema = z
     seniorityBonus: z.coerce.number().int().min(0).optional(),
     dependentsBonus: z.coerce.number().int().min(0).optional(),
     maritalStatusBonus: z.coerce.number().int().min(0).optional(),
+    // Pre-selected unit by Estate Officer (Stage 2 forward)
+    allocatedUnitId: z.string().optional().nullable(),
   })
   .superRefine((data, ctx) => {
     if (data.stage === 'HOUSING' && data.decision === 'FORWARDED' && (data.score == null)) {
@@ -210,9 +212,27 @@ export const applicationReviewSchema = z
         path: ['decision'],
       });
     }
+    if (data.stage === 'ESTATE' && data.decision === 'FORWARDED' && !data.allocatedUnitId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Please select a housing unit before forwarding to DVC Admin',
+        path: ['allocatedUnitId'],
+      });
+    }
   });
 
 export type ApplicationReviewValues = z.infer<typeof applicationReviewSchema>;
+
+// ---------------------------------------------------------------------------
+// 5b. Re-queue Application — Estate Officer activates a queued application
+// ---------------------------------------------------------------------------
+
+export const requeueApplicationSchema = z.object({
+  applicationId: z.string().min(1, 'Application ID is required'),
+  allocatedUnitId: z.string().min(1, 'Please select a housing unit to re-activate the application'),
+});
+
+export type RequeueApplicationValues = z.infer<typeof requeueApplicationSchema>;
 
 // ---------------------------------------------------------------------------
 // 6. Exit Notice — staff submission

@@ -69,6 +69,10 @@ const appStatusConfig: Record<ApplicationStatus, { label: string; className: str
     label: 'Rejected',
     className: 'bg-red-100 text-red-800 border-red-200',
   },
+  QUEUED: {
+    label: 'Queued',
+    className: 'bg-orange-100 text-orange-800 border-orange-200',
+  },
 };
 
 export function AppStatusBadge({ status }: { status: ApplicationStatus }) {

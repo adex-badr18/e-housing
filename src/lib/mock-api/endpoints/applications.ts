@@ -17,6 +17,9 @@ import {
   Role,
   ApplicationStage,
   ReviewDecision,
+  HousingUnit,
+  HousingType,
+  HousingCategory,
 } from '../db';
 
 const delay = (ms = 400) => new Promise(r => setTimeout(r, ms));
@@ -36,7 +39,7 @@ export async function getAllApplications(): Promise<HousingApplication[]> {
 /**
  * Role-filtered application list.
  * - HOUSING_SECRETARY: sees PENDING (awaiting Stage 1)
- * - ESTATE_OFFICER: sees applications at ESTATE stage
+ * - ESTATE_OFFICER: sees applications at ESTATE stage + QUEUED applications
  * - DVC_ADMIN: sees applications at DVC stage
  */
 export async function getApplicationsForRole(role: Role): Promise<HousingApplication[]> {
@@ -45,7 +48,10 @@ export async function getApplicationsForRole(role: Role): Promise<HousingApplica
     case 'HOUSING_SECRETARY':
       return mockDB.housingApplications.filter(a => a.currentStage === 'HOUSING');
     case 'ESTATE_OFFICER':
-      return mockDB.housingApplications.filter(a => a.currentStage === 'ESTATE');
+      // Estate Officer sees both active ESTATE-stage apps AND queued apps
+      return mockDB.housingApplications.filter(
+        a => a.currentStage === 'ESTATE' || a.status === 'QUEUED'
+      );
     case 'DVC_ADMIN':
       return mockDB.housingApplications.filter(a => a.currentStage === 'DVC');
     case 'SUPER_ADMIN':
@@ -161,27 +167,40 @@ export async function submitApplication(
  * Applies a review to an application and advances it through the workflow.
  * Enforces sequential stage rules from the PRD:
  *   HOUSING → ESTATE → DVC → COMPLETED
+ *
+ * Estate Officer extensions:
+ *   - FORWARDED: may include an `allocatedUnitId` (pre-selected unit)
+ *   - QUEUED: application is held at ESTATE stage awaiting a vacant unit
  */
 export async function reviewApplication(params: {
   applicationId: string;
   reviewerId: string;
   reviewerRole: Role;
   stage: Exclude<ApplicationStage, 'COMPLETED'>;
-  decision: ReviewDecision;
+  decision: ReviewDecision | 'QUEUED';
   comments: string;
   score?: number | null;
   pointsBreakdown?: PointsBreakdown | null;
+  allocatedUnitId?: string | null;
 }): Promise<{ application: HousingApplication; review: ApplicationReview }> {
   await delay(700);
 
   const application = mockDB.findApplicationById(params.applicationId);
   if (!application) throw new Error('Application not found');
 
-  // ---- Stage gate: ensure the application is at the expected stage ----
-  if (application.currentStage !== params.stage) {
-    throw new Error(
-      `Application is at stage "${application.currentStage}", not "${params.stage}". Reviews must be sequential.`
-    );
+  // ---- For QUEUED re-activation: allow ESTATE_OFFICER to act when status is QUEUED ----
+  if (params.decision !== 'QUEUED' && application.status === 'QUEUED') {
+    // Re-activating a queued application — allowed at ESTATE stage only
+    if (params.stage !== 'ESTATE' || params.reviewerRole !== 'ESTATE_OFFICER') {
+      throw new Error('Only the Estate Officer can re-activate a queued application');
+    }
+  } else if (application.status !== 'QUEUED') {
+    // Normal stage gate: ensure the application is at the expected stage
+    if (application.currentStage !== params.stage) {
+      throw new Error(
+        `Application is at stage "${application.currentStage}", not "${params.stage}". Reviews must be sequential.`
+      );
+    }
   }
 
   // ---- Role gate ----
@@ -199,6 +218,19 @@ export async function reviewApplication(params: {
     throw new Error('DVC Admin must make a final APPROVED or REJECTED decision');
   }
 
+  // ---- Estate Officer: FORWARDED requires a unit selection ----
+  if (params.stage === 'ESTATE' && params.decision === 'FORWARDED' && !params.allocatedUnitId) {
+    throw new Error('Please select a housing unit before forwarding to DVC Admin');
+  }
+
+  // ---- Validate the pre-selected unit is still vacant ----
+  if (params.allocatedUnitId) {
+    const unit = mockDB.findUnitById(params.allocatedUnitId);
+    if (!unit || unit.status !== 'VACANT') {
+      throw new Error('The selected housing unit is no longer available. Please choose another.');
+    }
+  }
+
   // ---- Record the review ----
   const now = new Date().toISOString();
   const review: ApplicationReview = {
@@ -208,7 +240,7 @@ export async function reviewApplication(params: {
     reviewerRole: params.reviewerRole,
     stage: params.stage,
     score: params.score ?? null,
-    decision: params.decision,
+    decision: params.decision === 'QUEUED' ? 'FORWARDED' : params.decision, // store as FORWARDED internally
     comments: params.comments,
     reviewedAt: now,
   };
@@ -224,6 +256,15 @@ export async function reviewApplication(params: {
       currentStage: params.stage,
       updatedAt: now,
     };
+  } else if (params.decision === 'QUEUED') {
+    // Hold application at ESTATE stage with QUEUED status
+    mockDB.housingApplications[appIdx] = {
+      ...application,
+      status: 'QUEUED',
+      currentStage: 'ESTATE',
+      allocatedUnitId: null, // Clear any prior selection
+      updatedAt: now,
+    };
   } else if (params.decision === 'FORWARDED') {
     const nextStageMap: Partial<Record<ApplicationStage, ApplicationStage>> = {
       HOUSING: 'ESTATE',
@@ -235,6 +276,7 @@ export async function reviewApplication(params: {
       status: 'UNDER_REVIEW',
       currentStage: nextStage,
       pointsBreakdown: params.pointsBreakdown ?? application.pointsBreakdown,
+      allocatedUnitId: params.allocatedUnitId ?? application.allocatedUnitId,
       updatedAt: now,
     };
   } else if (params.decision === 'APPROVED' && params.stage === 'DVC') {
@@ -364,4 +406,100 @@ export async function respondToAllocation(
   }
 
   return mockDB.allocations[idx];
+}
+
+// ---------------------------------------------------------------------------
+// Estate Officer: Fetch all vacant units (with housing type info)
+// ---------------------------------------------------------------------------
+
+function getStaffCategory(salaryGradeLevel: string): HousingCategory {
+  if (salaryGradeLevel.toUpperCase().includes('CONUASS')) return 'SENIOR';
+  const match = salaryGradeLevel.match(/\d+/);
+  if (match) {
+    return parseInt(match[0], 10) >= 6 ? 'SENIOR' : 'JUNIOR';
+  }
+  return 'SENIOR'; // Fallback
+}
+
+export async function getVacantUnitsForApplication(
+  applicationId: string
+): Promise<{ 
+  unit: HousingUnit; 
+  housingType: HousingType | null;
+  isEligible: boolean;
+  matchesPreference: boolean;
+  matchesCategory: boolean;
+}[]> {
+  await delay(300);
+
+  const application = mockDB.findApplicationById(applicationId);
+  if (!application) throw new Error('Application not found');
+
+  const profile = mockDB.staffProfiles.find(p => p.userId === application.userId);
+  const staffCategory = profile ? getStaffCategory(profile.salaryGradeLevel) : 'SENIOR';
+
+  // Return ALL vacant units explicitly
+  const allVacant = mockDB.housingUnits.filter(u => u.status === 'VACANT');
+
+  return allVacant.map(unit => {
+    const housingType = mockDB.housingTypes.find(ht => ht.id === unit.housingTypeId) ?? null;
+    const matchesPreference = application.preferredHousingTypeIds.includes(unit.housingTypeId);
+    const matchesCategory = housingType?.category === staffCategory;
+    const isEligible = matchesPreference && matchesCategory;
+
+    return {
+      unit: { ...unit },
+      housingType,
+      isEligible,
+      matchesPreference,
+      matchesCategory
+    };
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Estate Officer: Re-activate a queued application
+// ---------------------------------------------------------------------------
+
+export async function requeueApplication(
+  applicationId: string,
+  allocatedUnitId: string
+): Promise<HousingApplication> {
+  await delay(500);
+
+  const application = mockDB.findApplicationById(applicationId);
+  if (!application) throw new Error('Application not found');
+  if (application.status !== 'QUEUED') {
+    throw new Error('Only QUEUED applications can be re-activated');
+  }
+
+  const unit = mockDB.findUnitById(allocatedUnitId);
+  if (!unit || unit.status !== 'VACANT') {
+    throw new Error('The selected housing unit is not available');
+  }
+
+  const now = new Date().toISOString();
+  const appIdx = mockDB.housingApplications.findIndex(a => a.id === applicationId);
+  mockDB.housingApplications[appIdx] = {
+    ...application,
+    status: 'UNDER_REVIEW',
+    currentStage: 'DVC',
+    allocatedUnitId,
+    updatedAt: now,
+  };
+
+  // Record this as an ESTATE review (re-activation)
+  mockDB.applicationReviews.push({
+    id: mockDB.generateId('rev'),
+    applicationId,
+    reviewerId: 'system',
+    reviewerRole: 'ESTATE_OFFICER',
+    stage: 'ESTATE',
+    score: null,
+    decision: 'FORWARDED',
+    comments: `Re-activated from queue. Unit ${unit.name} selected and forwarded to DVC Admin.`,
+    reviewedAt: now,
+  });
+
+  return { ...mockDB.housingApplications[appIdx] };
 }

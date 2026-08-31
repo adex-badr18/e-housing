@@ -13,11 +13,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { Crown, CheckCircle2, XCircle, Loader2, Award, ClipboardList, User } from 'lucide-react';
+import { Crown, CheckCircle2, XCircle, Loader2, Award, ClipboardList, User, Home, Building2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { reviewApplicationAction } from '@/app/actions/applications';
 import type { HousingApplication, ApplicationReview, PointsBreakdown, User as UserType, StaffProfile } from '@/lib/mock-api/db';
+import { mockDB } from '@/lib/mock-api/db';
 
 // ---------------------------------------------------------------------------
 // Validation
@@ -166,6 +167,56 @@ export function DVCAdminPanel({
           </div>
         </div>
       )}
+
+      {/* Pre-allocated Unit (Estate Officer’s selection) */}
+      {(() => {
+        const unit        = application.allocatedUnitId ? mockDB.findUnitById(application.allocatedUnitId) : null;
+        const housingType = unit ? mockDB.housingTypes.find(ht => ht.id === unit.housingTypeId) : null;
+        if (!unit) return null;
+        return (
+          <div className="rounded-xl border-2 border-emerald-300 bg-emerald-50 p-5 space-y-2">
+            <h3 className="text-sm font-semibold flex items-center gap-2 text-emerald-800">
+              <Home className="h-4 w-4" />
+              Proposed Housing Unit (Estate Officer Selection)
+            </h3>
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-emerald-100 border border-emerald-200">
+                <Building2 className="h-6 w-6 text-emerald-700" />
+              </div>
+              <div className="flex-1">
+                <p className="font-bold text-foreground text-base">{unit.name}</p>
+                <p className="text-sm text-muted-foreground">{housingType?.name ?? 'Unknown Type'}</p>
+                {housingType && (
+                  <div className="flex flex-wrap gap-2 mt-1.5">
+                    <span className="text-[10px] font-medium text-emerald-700 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full">
+                      {housingType.numberOfBedrooms} bed · {housingType.numberOfBathrooms} bath
+                    </span>
+                    <span className="text-[10px] font-medium text-emerald-700 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full capitalize">
+                      {housingType.buildingType.toLowerCase()}
+                    </span>
+                    <span className="text-[10px] font-medium text-emerald-700 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full capitalize">
+                      {housingType.category.toLowerCase()} staff
+                    </span>
+                    {housingType.hasBQ && (
+                      <span className="text-[10px] font-medium text-emerald-700 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full">
+                        Has BQ
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+              <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-bold px-3 py-1.5 rounded-full bg-emerald-500 text-white">
+                VACANT
+              </span>
+            </div>
+            <p className="text-xs text-emerald-700 mt-1">
+              This unit was pre-selected by the Estate Officer during Stage 2 inspection.
+              Approving this application will trigger a formal allocation offer to the applicant.
+            </p>
+          </div>
+        );
+      })()}
+
 
       {/* Review history */}
       <div className="rounded-xl border bg-card p-5 space-y-3">

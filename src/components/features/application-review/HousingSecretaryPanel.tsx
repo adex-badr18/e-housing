@@ -59,7 +59,6 @@ interface CheckItem {
 
 const VERIFICATION_CHECKS: CheckItem[] = [
   { id: 'staff-id',      label: 'Staff ID verified',              description: 'Confirm applicant appears in the staff registry' },
-  { id: 'no-alloc',      label: 'No active allocation',           description: 'Staff does not currently hold an active housing unit' },
   { id: 'profile-compl', label: 'Profile complete',               description: 'All mandatory profile fields are filled in correctly' },
   { id: 'eligibility',   label: 'Eligibility criteria met',       description: 'Rank and grade level qualify for requested housing category' },
   { id: 'no-duplicate',  label: 'No duplicate application',       description: 'Only one active application is permitted at a time' },

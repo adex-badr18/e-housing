@@ -44,7 +44,8 @@ export const incidentStatusSchema = z.enum(['OPEN', 'IN_PROGRESS', 'RESOLVED']);
 // 1. Housing Type — create / edit
 // ---------------------------------------------------------------------------
 
-export const housingTypeSchema = z.object({
+// Base object without refinements — safe to call .partial() on (e.g. in update actions).
+export const housingTypeBaseSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters'),
   category: housingCategorySchema,
   buildingType: buildingTypeSchema,
@@ -62,7 +63,10 @@ export const housingTypeSchema = z.object({
     .min(1, 'Allocation points must be at least 1'),
   annualRent: z.coerce.number().min(0, 'Annual rent cannot be negative'),
   isActive: z.boolean(),
-}).superRefine((data, ctx) => {
+});
+
+// Full schema with cross-field refinements — used for create validation.
+export const housingTypeSchema = housingTypeBaseSchema.superRefine((data, ctx) => {
   if (data.hasBQ && data.numberOfBQ < 1) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,

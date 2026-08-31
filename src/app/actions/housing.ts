@@ -22,6 +22,7 @@ import {
 } from '@/lib/mock-api/endpoints/housing';
 import {
   housingTypeSchema,
+  housingTypeBaseSchema,
   housingUnitSchema,
   bqOccupantSchema,
 } from '@/lib/validations/housing';
@@ -84,7 +85,7 @@ export async function updateHousingTypeAction(id: string, data: unknown) {
     return { success: false, error: 'Access denied: insufficient permissions' };
   }
 
-  const parsed = housingTypeSchema.partial().safeParse(data);
+  const parsed = housingTypeBaseSchema.partial().safeParse(data);
   if (!parsed.success) {
     return { success: false, error: 'Validation failed', details: parsed.error.format() };
   }

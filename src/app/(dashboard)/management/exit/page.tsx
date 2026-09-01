@@ -6,8 +6,9 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import {
   ClipboardCheck, Home, Zap, Building2, ChevronRight,
-  Clock, CheckCircle2, XCircle, Shield,
+  Clock, CheckCircle2, XCircle, Shield, History
 } from 'lucide-react';
+import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { ExitNotice } from '@/lib/mock-api/db';
 
@@ -77,14 +78,20 @@ export default async function ExitPipelinePage() {
   return (
     <div className="flex flex-col gap-8">
       {/* Page header */}
-      <div className="flex items-start gap-4">
-        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-          <ClipboardCheck className="h-6 w-6 text-primary" />
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <ClipboardCheck className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-oau-navy">Exit Clearance Pipeline</h1>
+            <p className="text-sm text-muted-foreground mt-1">{roleLabel}</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-oau-navy">Exit Clearance Pipeline</h1>
-          <p className="text-sm text-muted-foreground mt-1">{roleLabel}</p>
-        </div>
+        <Link href="/management/exit/history" className={buttonVariants({ variant: 'outline', size: 'sm', className: 'gap-2 rounded-xl text-muted-foreground' })}>
+          <History className="h-4 w-4" />
+          View Full History
+        </Link>
       </div>
 
       {/* Stats row */}

@@ -123,7 +123,7 @@ function getNavItemsForRole(role: Role) {
   if (role === 'STAFF') {
     return [
       { href: '/staff', label: 'Dashboard', icon: Home },
-      { href: '/staff/applications', label: 'Apply for Housing', icon: FileText },
+      { href: '/staff/applications', label: 'My Applications', icon: FileText },
       { href: '/staff/housing', label: 'Housing Offer', icon: KeyRound },
       { href: '/staff/tenancy', label: 'Tenancy Agreement', icon: Scroll },
       { href: '/staff/bq', label: 'BQ Management', icon: Building },

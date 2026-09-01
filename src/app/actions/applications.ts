@@ -17,12 +17,20 @@ import {
   getApplicationWithProfile,
   getVacantUnitsForApplication,
   requeueApplication,
+  submitQuitRequest,
+  reviewQuitRequest,
+  adminTerminateApplication,
+  getQuitRequests,
+  getAllApplications,
 } from '@/lib/mock-api/endpoints/applications';
 import {
   applicationSubmitSchema,
   applicationReviewSchema,
   allocationResponseSchema,
   requeueApplicationSchema,
+  submitQuitRequestSchema,
+  reviewQuitRequestSchema,
+  adminTerminateSchema,
 } from '@/lib/validations/housing';
 import { writeAuditEntry } from '@/lib/mock-api/endpoints/audit';
 import type { PointsBreakdown } from '@/lib/mock-api/db';
@@ -52,11 +60,11 @@ export async function autoScoreApplicationAction(
 
     const { applicantProfile } = detail;
     const result = calculateScore({
-      rank:               applicantProfile.rank,
-      salaryGradeLevel:   applicantProfile.salaryGradeLevel,
-      employmentDate:     applicantProfile.employmentDate,
+      rank: applicantProfile.rank,
+      salaryGradeLevel: applicantProfile.salaryGradeLevel,
+      employmentDate: applicantProfile.employmentDate,
       numberOfDependents: applicantProfile.numberOfDependents,
-      maritalStatus:      applicantProfile.maritalStatus,
+      maritalStatus: applicantProfile.maritalStatus,
     });
 
     return { success: true, data: result };
@@ -217,18 +225,18 @@ export async function reviewApplicationAction(data: unknown) {
   // Build points breakdown if Housing Secretary is scoring
   const pointsBreakdown: PointsBreakdown | null =
     parsed.data.stage === 'HOUSING' &&
-    parsed.data.baseTypePoints != null
+      parsed.data.baseTypePoints != null
       ? {
-          baseTypePoints: parsed.data.baseTypePoints ?? 0,
-          seniorityBonus: parsed.data.seniorityBonus ?? 0,
-          dependentsBonus: parsed.data.dependentsBonus ?? 0,
-          maritalStatusBonus: parsed.data.maritalStatusBonus ?? 0,
-          totalPoints:
-            (parsed.data.baseTypePoints ?? 0) +
-            (parsed.data.seniorityBonus ?? 0) +
-            (parsed.data.dependentsBonus ?? 0) +
-            (parsed.data.maritalStatusBonus ?? 0),
-        }
+        baseTypePoints: parsed.data.baseTypePoints ?? 0,
+        seniorityBonus: parsed.data.seniorityBonus ?? 0,
+        dependentsBonus: parsed.data.dependentsBonus ?? 0,
+        maritalStatusBonus: parsed.data.maritalStatusBonus ?? 0,
+        totalPoints:
+          (parsed.data.baseTypePoints ?? 0) +
+          (parsed.data.seniorityBonus ?? 0) +
+          (parsed.data.dependentsBonus ?? 0) +
+          (parsed.data.maritalStatusBonus ?? 0),
+      }
       : null;
 
   try {
@@ -402,3 +410,178 @@ export async function respondToAllocationAction(data: unknown) {
     return { success: false, error: err instanceof Error ? err.message : 'Failed to respond to allocation' };
   }
 }
+
+// ---------------------------------------------------------------------------
+// Quit Requests & Terminations
+// ---------------------------------------------------------------------------
+
+export async function submitQuitRequestAction(data: unknown) {
+  const session = await auth();
+  if (!session?.user) return { success: false, error: 'Unauthorized' };
+  if (session.user.role !== 'STAFF') {
+    return { success: false, error: 'Only staff can submit quit requests' };
+  }
+
+  const parsed = submitQuitRequestSchema.safeParse(data);
+  if (!parsed.success) {
+    return { success: false, error: 'Validation failed', details: parsed.error.format() };
+  }
+
+  try {
+    const request = await submitQuitRequest({
+      userId: session.user.id,
+      entityType: parsed.data.entityType,
+      entityId: parsed.data.entityId,
+      reason: parsed.data.reason,
+    });
+
+    await writeAuditEntry({
+      actorId: session.user.id,
+      action: 'QUIT_REQUEST_SUBMITTED',
+      entityType: parsed.data.entityType,
+      entityId: parsed.data.entityId,
+      status: 'SUCCESS',
+      metadata: { reason: parsed.data.reason, quitRequestId: request.id },
+    });
+
+    if (parsed.data.entityType === 'HousingApplication') {
+      revalidatePath('/staff/applications');
+    } else {
+      revalidatePath('/staff/exit');
+    }
+    revalidatePath('/staff');
+
+    return { success: true, data: request };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Failed to submit quit request' };
+  }
+}
+
+export async function reviewQuitRequestAction(data: unknown) {
+  const session = await auth();
+  if (!session?.user) return { success: false, error: 'Unauthorized' };
+  if (session.user.role !== 'HOUSING_SECRETARY' && session.user.role !== 'SUPER_ADMIN') {
+    return { success: false, error: 'Only Housing Secretary can review quit requests' };
+  }
+
+  const parsed = reviewQuitRequestSchema.safeParse(data);
+  if (!parsed.success) {
+    return { success: false, error: 'Validation failed', details: parsed.error.format() };
+  }
+
+  try {
+    const request = await reviewQuitRequest({
+      quitRequestId: parsed.data.quitRequestId,
+      reviewerId: session.user.id,
+      decision: parsed.data.decision,
+      reviewNotes: parsed.data.reviewNotes,
+    });
+
+    await writeAuditEntry({
+      actorId: session.user.id,
+      action: 'QUIT_REQUEST_REVIEWED',
+      entityType: request.entityType,
+      entityId: request.entityId,
+      status: 'SUCCESS',
+      metadata: { decision: parsed.data.decision, quitRequestId: request.id },
+    });
+
+    revalidatePath('/management/applications');
+    if (request.entityType === 'HousingApplication') {
+      revalidatePath(`/management/applications/${request.entityId}`);
+    }
+    return { success: true, data: request };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Failed to review quit request' };
+  }
+}
+
+export async function adminTerminateApplicationAction(data: unknown) {
+  const session = await auth();
+  if (!session?.user) return { success: false, error: 'Unauthorized' };
+
+  const adminRoles = ['HOUSING_SECRETARY', 'ESTATE_OFFICER', 'DVC_ADMIN', 'SUPER_ADMIN'] as const;
+  if (!adminRoles.includes(session.user.role as typeof adminRoles[number])) {
+    return { success: false, error: 'Only management roles can terminate applications' };
+  }
+
+  const parsed = adminTerminateSchema.safeParse(data);
+  if (!parsed.success) {
+    return { success: false, error: 'Validation failed', details: parsed.error.format() };
+  }
+
+  if (parsed.data.entityType !== 'HousingApplication') {
+    return { success: false, error: 'Invalid entity type for this action' };
+  }
+
+  try {
+    const application = await adminTerminateApplication({
+      applicationId: parsed.data.entityId,
+      adminId: session.user.id,
+      reason: parsed.data.reason,
+    });
+
+    await writeAuditEntry({
+      actorId: session.user.id,
+      action: 'APPLICATION_TERMINATED',
+      entityType: 'HousingApplication',
+      entityId: parsed.data.entityId,
+      status: 'SUCCESS',
+      metadata: { reason: parsed.data.reason },
+    });
+
+    revalidatePath('/management/applications');
+    revalidatePath(`/management/applications/${parsed.data.entityId}`);
+    return { success: true, data: application };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Failed to terminate application' };
+  }
+}
+
+export async function getQuitRequestsAction() {
+  const session = await auth();
+  if (!session?.user) return { success: false, error: 'Unauthorized' };
+
+  if (session.user.role !== 'HOUSING_SECRETARY' && session.user.role !== 'SUPER_ADMIN') {
+    return { success: false, error: 'Only Housing Secretary can view quit requests' };
+  }
+
+  try {
+    const requests = await getQuitRequests();
+    return { success: true, data: requests };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Failed to fetch quit requests' };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// History Queries
+// ---------------------------------------------------------------------------
+
+export async function getAllApplicationsAction() {
+  const session = await auth();
+  if (!session?.user) return { success: false as const, error: 'Unauthorized' };
+  const adminRoles = ['SUPER_ADMIN', 'HOUSING_SECRETARY', 'ESTATE_OFFICER', 'DVC_ADMIN'] as const;
+  if (!adminRoles.includes(session.user.role as typeof adminRoles[number])) {
+    return { success: false as const, error: 'Access denied' };
+  }
+  try {
+    const apps = await getAllApplications();
+    return { success: true as const, data: apps };
+  } catch (err) {
+    return { success: false as const, error: err instanceof Error ? err.message : 'Failed to fetch applications' };
+  }
+}
+
+export async function getApplicationsForUserAction() {
+  const session = await auth();
+  if (!session?.user) return { success: false as const, error: 'Unauthorized' };
+  if (session.user.role !== 'STAFF') return { success: false as const, error: 'Only staff can view their own applications' };
+  try {
+    const apps = await getApplicationsForUser(session.user.id);
+    return { success: true as const, data: apps };
+  } catch (err) {
+    return { success: false as const, error: err instanceof Error ? err.message : 'Failed to fetch applications' };
+  }
+}
+

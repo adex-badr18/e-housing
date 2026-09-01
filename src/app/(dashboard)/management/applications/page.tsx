@@ -1,14 +1,16 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { getApplicationsForRoleAction } from '@/app/actions/applications';
+import { getApplicationsForRoleAction, getQuitRequestsAction } from '@/app/actions/applications';
 import { AppStatusBadge } from '@/components/shared/StatusBadge';
 import { format } from 'date-fns';
 import {
   ClipboardList, ChevronRight, Inbox, ArrowRight,
-  ClipboardCheck, Building2, Crown,
+  ClipboardCheck, Building2, Crown, History,
 } from 'lucide-react';
+import { buttonVariants } from '@/components/ui/button';
 import type { ApplicationStage, Role } from '@/lib/mock-api/db';
+import { QuitRequestsPanel } from '@/components/features/application-review/QuitRequestsPanel';
 
 // ---------------------------------------------------------------------------
 // Metadata
@@ -89,6 +91,14 @@ export default async function ManagementApplicationsPage() {
   const apps: import('@/lib/mock-api/db').HousingApplication[] =
     result.success && result.data ? result.data : [];
 
+  let quitRequests: import('@/lib/mock-api/db').QuitRequest[] = [];
+  if (session.user.role === 'HOUSING_SECRETARY' || session.user.role === 'SUPER_ADMIN') {
+    const qResult = await getQuitRequestsAction();
+    if (qResult.success && qResult.data) {
+      quitRequests = qResult.data;
+    }
+  }
+
   const heading = ROLE_HEADINGS[session.user.role] ?? {
     title:    'Applications',
     subtitle: 'Review housing applications.',
@@ -97,14 +107,20 @@ export default async function ManagementApplicationsPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-oau-navy">{heading.title}</h1>
           <p className="text-muted-foreground mt-1 text-sm">{heading.subtitle}</p>
         </div>
-        <div className="flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-xl text-sm font-semibold">
-          <ClipboardList className="h-4 w-4" />
-          {apps.length} application{apps.length !== 1 ? 's' : ''}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-xl text-sm font-semibold">
+            <ClipboardList className="h-4 w-4" />
+            {apps.length} application{apps.length !== 1 ? 's' : ''}
+          </div>
+          <Link href="/management/applications/history" className={buttonVariants({ variant: 'outline', className: 'gap-2 rounded-xl text-muted-foreground' })}>
+            <History className="h-4 w-4" />
+            View Full History
+          </Link>
         </div>
       </div>
 
@@ -118,6 +134,13 @@ export default async function ManagementApplicationsPage() {
               Applications will appear here once they reach your review stage.
             </p>
           </div>
+        </div>
+      )}
+
+      {/* Quit requests panel */}
+      {quitRequests.length > 0 && (
+        <div className="mb-8">
+          <QuitRequestsPanel requests={quitRequests} />
         </div>
       )}
 

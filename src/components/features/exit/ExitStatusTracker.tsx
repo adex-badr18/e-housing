@@ -10,9 +10,10 @@
 import { cn } from '@/lib/utils';
 import {
   Home, Zap, Building2, CheckCircle2, XCircle, Clock,
-  Shield, Calendar, User,
+  Shield, Calendar, User, AlertTriangle, FileX2,
 } from 'lucide-react';
 import type { ExitNotice } from '@/lib/mock-api/db';
+import { QuitRequestButton } from './../application-review/QuitRequestButton';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -176,9 +177,10 @@ function StageCard({
 
 interface ExitStatusTrackerProps {
   notice: ExitNotice;
+  hasPendingQuitRequest?: boolean;
 }
 
-export function ExitStatusTracker({ notice }: ExitStatusTrackerProps) {
+export function ExitStatusTracker({ notice, hasPendingQuitRequest }: ExitStatusTrackerProps) {
   const stages: StageConfig[] = [
     {
       key: 'housing',
@@ -274,11 +276,37 @@ export function ExitStatusTracker({ notice }: ExitStatusTrackerProps) {
         </div>
         <div className="rounded-lg border bg-card p-3">
           <p className="text-xs text-muted-foreground">Status</p>
-          <p className={cn('font-semibold mt-0.5', notice.isCleared ? 'text-emerald-600' : 'text-amber-600')}>
-            {notice.isCleared ? 'Cleared' : 'In Progress'}
+          <p className={cn('font-semibold mt-0.5', notice.isCleared ? 'text-emerald-600' : notice.isWithdrawn ? 'text-slate-600' : 'text-amber-600')}>
+            {notice.isCleared ? 'Cleared' : notice.isWithdrawn ? 'Withdrawn' : 'In Progress'}
           </p>
         </div>
       </div>
+
+      {/* Withdrawal / Termination status */}
+      {notice.isWithdrawn && (
+        <div className="rounded-xl border border-slate-300 bg-slate-100 p-5 flex items-start gap-4">
+          <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
+            <FileX2 className="h-6 w-6 text-slate-600" />
+          </div>
+          <div>
+            <h3 className="font-bold text-slate-800">Notice Withdrawn / Terminated</h3>
+            <p className="text-sm text-slate-700 mt-1">
+              This exit notice is no longer active. It was either withdrawn by you or administratively terminated.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Action buttons */}
+      {!notice.isCleared && !notice.isWithdrawn && (
+        <div className="flex justify-end">
+          <QuitRequestButton 
+            entityId={notice.id} 
+            entityType="ExitNotice" 
+            hasPendingRequest={hasPendingQuitRequest} 
+          />
+        </div>
+      )}
 
       {/* Pipeline stages */}
       <div>

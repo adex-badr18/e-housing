@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import {
   DoorOpen, Loader2, AlertTriangle, CheckCircle2,
-  Info, FileText, MapPin, UserX, Briefcase, HelpCircle,
+  Info, FileText, MapPin, UserX, Briefcase, HelpCircle, ArrowRightLeft,
 } from 'lucide-react';
 import { exitNoticeSubmitSchema, type ExitNoticeSubmitValues } from '@/lib/validations/housing';
 import { submitExitNoticeAction } from '@/app/actions/exit';
@@ -52,6 +52,7 @@ const ACKNOWLEDGEMENTS = [
 const EXIT_REASONS = [
   { value: 'RETIREMENT', label: 'Retirement', icon: Briefcase, description: 'Statutory or voluntary retirement from the university' },
   { value: 'RELOCATION', label: 'Relocation', icon: MapPin, description: 'Moving to a personal or other official residence' },
+  { value: 'TRANSFER', label: 'Campus / Job Transfer', icon: ArrowRightLeft, description: 'Transferring to another campus, department, or station' },
   { value: 'RESIGNATION', label: 'Resignation', icon: UserX, description: 'Voluntary resignation from employment' },
   { value: 'DEATH', label: 'Death of Occupant', icon: AlertTriangle, description: 'Exit on behalf of a deceased staff member' },
   { value: 'OTHER', label: 'Other Reason', icon: HelpCircle, description: 'Please specify in the field below' },

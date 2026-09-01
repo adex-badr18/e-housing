@@ -42,6 +42,7 @@ export default async function ExitNoticeDetailPage({ params }: Props) {
     RETIREMENT: 'Retirement',
     RESIGNATION: 'Resignation',
     RELOCATION: 'Relocation',
+    TRANSFER: 'Transfer',
     DEATH: 'Death of Occupant',
     OTHER: 'Other',
   };

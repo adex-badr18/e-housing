@@ -27,7 +27,7 @@ export const buildingTypeSchema = z.enum(['BUNGALOW', 'STOREY']);
 export const unitStatusSchema = z.enum(['VACANT', 'OCCUPIED', 'UNDER_MAINTENANCE']);
 export const bqStatusSchema = z.enum(['VACANT', 'OCCUPIED']);
 export const inspectionStatusSchema = z.enum(['PENDING', 'PASSED', 'FAILED']);
-export const applicationStatusSchema = z.enum(['PENDING', 'UNDER_REVIEW', 'APPROVED', 'REJECTED', 'QUEUED']);
+export const applicationStatusSchema = z.enum(['PENDING', 'UNDER_REVIEW', 'APPROVED', 'REJECTED', 'QUEUED', 'QUIT_REQUESTED', 'WITHDRAWN', 'TERMINATED']);
 export const applicationStageSchema = z.enum(['HOUSING', 'ESTATE', 'DVC', 'COMPLETED']);
 export const reviewDecisionSchema = z.enum(['APPROVED', 'REJECTED', 'FORWARDED', 'QUEUED']);
 export const allocationStatusSchema = z.enum(['PENDING', 'ACCEPTED', 'REJECTED', 'EXPIRED']);
@@ -36,6 +36,7 @@ export const exitReasonSchema = z.enum([
   'DEATH',
   'RESIGNATION',
   'RELOCATION',
+  'TRANSFER',
   'OTHER',
 ]);
 export const incidentStatusSchema = z.enum(['OPEN', 'IN_PROGRESS', 'RESOLVED']);
@@ -233,6 +234,34 @@ export const requeueApplicationSchema = z.object({
 });
 
 export type RequeueApplicationValues = z.infer<typeof requeueApplicationSchema>;
+
+// ---------------------------------------------------------------------------
+// 5c. Quit Requests & Administrative Termination
+// ---------------------------------------------------------------------------
+
+export const submitQuitRequestSchema = z.object({
+  entityId: z.string().min(1),
+  entityType: z.enum(['HousingApplication', 'ExitNotice']),
+  reason: z.string().min(10, 'Please provide a detailed reason (min 10 characters)').max(500),
+});
+
+export type SubmitQuitRequestValues = z.infer<typeof submitQuitRequestSchema>;
+
+export const reviewQuitRequestSchema = z.object({
+  quitRequestId: z.string().min(1),
+  decision: z.enum(['APPROVED', 'REJECTED']),
+  reviewNotes: z.string().max(500).optional(),
+});
+
+export type ReviewQuitRequestValues = z.infer<typeof reviewQuitRequestSchema>;
+
+export const adminTerminateSchema = z.object({
+  entityId: z.string().min(1),
+  entityType: z.enum(['HousingApplication', 'ExitNotice']),
+  reason: z.string().min(10, 'Please provide a reason for administrative termination (min 10 characters)').max(500),
+});
+
+export type AdminTerminateValues = z.infer<typeof adminTerminateSchema>;
 
 // ---------------------------------------------------------------------------
 // 6. Exit Notice — staff submission

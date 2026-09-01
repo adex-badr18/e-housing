@@ -73,6 +73,18 @@ const appStatusConfig: Record<ApplicationStatus, { label: string; className: str
     label: 'Queued',
     className: 'bg-orange-100 text-orange-800 border-orange-200',
   },
+  QUIT_REQUESTED: {
+    label: 'Quit Requested',
+    className: 'bg-orange-100 text-orange-800 border-orange-200',
+  },
+  WITHDRAWN: {
+    label: 'Withdrawn',
+    className: 'bg-slate-200 text-slate-800 border-slate-300',
+  },
+  TERMINATED: {
+    label: 'Terminated',
+    className: 'bg-red-200 text-red-900 border-red-300',
+  },
 };
 
 export function AppStatusBadge({ status }: { status: ApplicationStatus }) {

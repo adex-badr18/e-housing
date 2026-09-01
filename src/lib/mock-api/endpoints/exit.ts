@@ -84,6 +84,30 @@ export async function getActiveExitNoticeForUser(userId: string): Promise<ExitNo
   return mockDB.findActiveExitNoticeByUserId(userId) ?? null;
 }
 
+export async function getExitNoticesForUser(userId: string): Promise<ExitNotice[]> {
+  await delay(300);
+  return [...mockDB.exitNotices]
+    .filter(e => e.userId === userId)
+    .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
+}
+
+export async function getExitNoticeWithProfile(id: string): Promise<{
+  notice: ExitNotice;
+  applicantUser: import('../db').User | null;
+  applicantProfile: import('../db').StaffProfile | null;
+  unit: import('../db').HousingUnit | null;
+} | null> {
+  await delay(300);
+  const notice = mockDB.exitNotices.find(e => e.id === id);
+  if (!notice) return null;
+  const applicantUser = mockDB.findUserById(notice.userId) ?? null;
+  const applicantProfile = applicantUser
+    ? (mockDB.staffProfiles.find(p => p.userId === applicantUser.id) ?? null)
+    : null;
+  const unit = mockDB.findUnitById(notice.housingUnitId) ?? null;
+  return { notice: { ...notice }, applicantUser, applicantProfile, unit };
+}
+
 // ---------------------------------------------------------------------------
 // Staff: Submit Exit Notice
 // ---------------------------------------------------------------------------
@@ -308,4 +332,45 @@ async function finalizeExitClearance(exitNoticeId: string, clearedByActorId: str
       clearanceCertificateUrl: certUrl,
     },
   });
+}
+
+// ---------------------------------------------------------------------------
+// Administrative Termination
+// ---------------------------------------------------------------------------
+
+export async function adminTerminateExitNotice(params: {
+  exitNoticeId: string;
+  adminId: string;
+  reason: string;
+}): Promise<ExitNotice> {
+  await delay(500);
+
+  const noticeIdx = mockDB.exitNotices.findIndex(e => e.id === params.exitNoticeId);
+  if (noticeIdx === -1) throw new Error('Exit notice not found');
+  
+  const notice = mockDB.exitNotices[noticeIdx];
+  if (notice.isCleared || notice.isWithdrawn) {
+    throw new Error('Cannot terminate a cleared or already withdrawn exit notice');
+  }
+
+  const now = new Date().toISOString();
+  mockDB.exitNotices[noticeIdx] = {
+    ...notice,
+    isWithdrawn: true,
+    withdrawnAt: now,
+    updatedAt: now,
+  };
+
+  mockDB.writeAuditLog({
+    actorId: params.adminId,
+    action: 'EXIT_NOTICE_TERMINATED',
+    entityType: 'ExitNotice',
+    entityId: params.exitNoticeId,
+    status: 'SUCCESS',
+    metadata: {
+      reason: params.reason,
+    },
+  });
+
+  return mockDB.exitNotices[noticeIdx];
 }

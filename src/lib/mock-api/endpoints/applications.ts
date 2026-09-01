@@ -20,6 +20,7 @@ import {
   HousingUnit,
   HousingType,
   HousingCategory,
+  QuitRequest,
 } from '../db';
 
 const delay = (ms = 400) => new Promise(r => setTimeout(r, ms));
@@ -502,4 +503,190 @@ export async function requeueApplication(
   });
 
   return { ...mockDB.housingApplications[appIdx] };
+}
+
+// ---------------------------------------------------------------------------
+// Quit Requests & Termination
+// ---------------------------------------------------------------------------
+
+export async function submitQuitRequest(params: {
+  userId: string;
+  entityType: 'HousingApplication' | 'ExitNotice';
+  entityId: string;
+  reason: string;
+}): Promise<QuitRequest> {
+  await delay(500);
+
+  // Check if a pending request already exists
+  const existing = mockDB.quitRequests.find(
+    q => q.entityId === params.entityId && q.entityType === params.entityType && q.status === 'PENDING'
+  );
+  if (existing) {
+    throw new Error('A quit request is already pending for this application.');
+  }
+
+  let application: HousingApplication | undefined;
+  let exitNotice: any | undefined; // using any here to avoid importing ExitNotice for now if it's not available, actually we can import it or just find it. We'll find it dynamically.
+  
+  if (params.entityType === 'HousingApplication') {
+    application = mockDB.findApplicationById(params.entityId);
+    if (!application) throw new Error('Application not found');
+    if (application.userId !== params.userId) throw new Error('Not authorized to withdraw this application');
+    if (['APPROVED', 'REJECTED', 'WITHDRAWN', 'TERMINATED'].includes(application.status)) {
+      throw new Error(`Cannot withdraw an application in ${application.status} state`);
+    }
+  } else {
+    exitNotice = mockDB.findExitNoticeById(params.entityId);
+    if (!exitNotice) throw new Error('Exit notice not found');
+    if (exitNotice.userId !== params.userId) throw new Error('Not authorized to withdraw this exit notice');
+    if (exitNotice.isCleared || exitNotice.isWithdrawn) {
+      throw new Error('Cannot withdraw a cleared or already withdrawn exit notice');
+    }
+  }
+
+  const now = new Date().toISOString();
+  const request: QuitRequest = {
+    id: mockDB.generateId('quit'),
+    entityType: params.entityType,
+    entityId: params.entityId,
+    requestedById: params.userId,
+    reason: params.reason,
+    status: 'PENDING',
+    createdAt: now,
+  };
+  
+  mockDB.quitRequests.push(request);
+
+  if (params.entityType === 'HousingApplication' && application) {
+    const appIdx = mockDB.housingApplications.findIndex(a => a.id === application.id);
+    mockDB.housingApplications[appIdx] = {
+      ...application,
+      status: 'QUIT_REQUESTED',
+      updatedAt: now,
+    };
+  }
+
+  return request;
+}
+
+export async function reviewQuitRequest(params: {
+  quitRequestId: string;
+  reviewerId: string;
+  decision: 'APPROVED' | 'REJECTED';
+  reviewNotes?: string;
+}): Promise<QuitRequest> {
+  await delay(500);
+
+  const reqIdx = mockDB.quitRequests.findIndex(q => q.id === params.quitRequestId);
+  if (reqIdx === -1) throw new Error('Quit request not found');
+  
+  const request = mockDB.quitRequests[reqIdx];
+  if (request.status !== 'PENDING') throw new Error('Request already processed');
+
+  const now = new Date().toISOString();
+  
+  mockDB.quitRequests[reqIdx] = {
+    ...request,
+    status: params.decision,
+    reviewedById: params.reviewerId,
+    reviewedAt: now,
+    reviewNotes: params.reviewNotes,
+    updatedAt: now,
+  };
+
+  if (request.entityType === 'HousingApplication') {
+    const appIdx = mockDB.housingApplications.findIndex(a => a.id === request.entityId);
+    if (appIdx !== -1) {
+      if (params.decision === 'APPROVED') {
+        // Clear allocated unit and expire any pending allocation
+        const pendingAllocIdx = mockDB.allocations.findIndex(
+          a => a.applicationId === request.entityId && a.status === 'PENDING'
+        );
+        if (pendingAllocIdx !== -1) {
+          mockDB.allocations[pendingAllocIdx] = { ...mockDB.allocations[pendingAllocIdx], status: 'REJECTED', respondedAt: now };
+        }
+        mockDB.housingApplications[appIdx] = {
+          ...mockDB.housingApplications[appIdx],
+          status: 'WITHDRAWN',
+          allocatedUnitId: null,
+          updatedAt: now,
+        };
+      } else {
+        // Rejected quit request — revert to active status based on stage
+        const prevStatus = mockDB.housingApplications[appIdx].currentStage === 'HOUSING' ? 'PENDING' : 'UNDER_REVIEW';
+        mockDB.housingApplications[appIdx] = {
+          ...mockDB.housingApplications[appIdx],
+          status: prevStatus,
+          updatedAt: now,
+        };
+      }
+    }
+  } else if (request.entityType === 'ExitNotice') {
+    const exitIdx = mockDB.exitNotices.findIndex(e => e.id === request.entityId);
+    if (exitIdx !== -1 && params.decision === 'APPROVED') {
+      mockDB.exitNotices[exitIdx] = {
+        ...mockDB.exitNotices[exitIdx],
+        isWithdrawn: true,
+        withdrawnAt: now,
+        updatedAt: now,
+      };
+    }
+  }
+
+  return mockDB.quitRequests[reqIdx];
+}
+
+export async function adminTerminateApplication(params: {
+  applicationId: string;
+  adminId: string;
+  reason: string;
+}): Promise<HousingApplication> {
+  await delay(500);
+
+  const appIdx = mockDB.housingApplications.findIndex(a => a.id === params.applicationId);
+  if (appIdx === -1) throw new Error('Application not found');
+  
+  const application = mockDB.housingApplications[appIdx];
+  if (['APPROVED', 'REJECTED', 'WITHDRAWN', 'TERMINATED'].includes(application.status)) {
+    throw new Error(`Cannot terminate an application in ${application.status} state`);
+  }
+
+  const now = new Date().toISOString();
+
+  // Clear allocated unit and expire any pending allocation
+  const pendingAllocIdx = mockDB.allocations.findIndex(
+    a => a.applicationId === params.applicationId && a.status === 'PENDING'
+  );
+  if (pendingAllocIdx !== -1) {
+    mockDB.allocations[pendingAllocIdx] = { ...mockDB.allocations[pendingAllocIdx], status: 'REJECTED', respondedAt: now };
+  }
+
+  mockDB.housingApplications[appIdx] = {
+    ...application,
+    status: 'TERMINATED',
+    allocatedUnitId: null,
+    updatedAt: now,
+  };
+
+  // Add a review entry to explain the termination
+  mockDB.applicationReviews.push({
+    id: mockDB.generateId('rev'),
+    applicationId: params.applicationId,
+    reviewerId: params.adminId,
+    reviewerRole: 'SUPER_ADMIN',
+    stage: application.currentStage !== 'COMPLETED' ? application.currentStage : 'HOUSING',
+    score: null,
+    decision: 'REJECTED',
+    comments: `Administratively terminated: ${params.reason}`,
+    reviewedAt: now,
+  });
+
+  return mockDB.housingApplications[appIdx];
+}
+
+export async function getQuitRequests(): Promise<QuitRequest[]> {
+  await delay(300);
+  return [...mockDB.quitRequests].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 }

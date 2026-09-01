@@ -5,7 +5,7 @@ import { mockDB } from '@/lib/mock-api/db';
 import { ExitNoticeForm } from '@/components/features/exit/ExitNoticeForm';
 import { ExitStatusTracker } from '@/components/features/exit/ExitStatusTracker';
 import {
-  DoorOpen, Home, AlertCircle,
+  DoorOpen, Home, AlertCircle, History,
 } from 'lucide-react';
 import Link from 'next/link';
 import { buttonVariants } from '@/components/ui/button';
@@ -21,20 +21,31 @@ export default async function StaffExitPage() {
   const occupancy = mockDB.findActiveOccupancyByUserId(session.user.id);
   const currentUnit = occupancy ? mockDB.findUnitById(occupancy.housingUnitId) : null;
   const activeExitNotice = await getActiveExitNoticeForUser(session.user.id);
+  
+  const hasPendingQuitRequest = activeExitNotice 
+    ? mockDB.quitRequests.some(q => q.entityId === activeExitNotice.id && q.entityType === 'ExitNotice' && q.status === 'PENDING')
+    : false;
 
   return (
     <div className="flex flex-col gap-8 w-full">
       {/* Page header */}
-      <div className="flex items-start gap-4">
-        <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
-          <DoorOpen className="h-6 w-6 text-red-600" />
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
+            <DoorOpen className="h-6 w-6 text-red-600" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-oau-navy">Housing Exit</h1>
+            <p className="text-muted-foreground text-sm mt-1">
+              Initiate your departure from university housing and track your clearance progress.
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-oau-navy">Housing Exit</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            Initiate your departure from university housing and track your clearance progress.
-          </p>
-        </div>
+        
+        <Link href="/staff/exit/history" className={buttonVariants({ variant: 'outline', size: 'sm', className: 'gap-2 rounded-xl text-muted-foreground' })}>
+          <History className="h-4 w-4" />
+          View Exit History
+        </Link>
       </div>
 
       {/* No occupancy guard */}
@@ -62,7 +73,7 @@ export default async function StaffExitPage() {
               </p>
             </div>
           </div>
-          <ExitStatusTracker notice={activeExitNotice} />
+          <ExitStatusTracker notice={activeExitNotice} hasPendingQuitRequest={hasPendingQuitRequest} />
         </div>
       ) : (
         /* No notice yet — show the submission form */

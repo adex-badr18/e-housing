@@ -18,7 +18,9 @@ import { CompletedStageCard } from './CompletedStageCard';
 import { HousingSecretaryPanel } from './HousingSecretaryPanel';
 import { EstateOfficerPanel }    from './EstateOfficerPanel';
 import { DVCAdminPanel }         from './DVCAdminPanel';
-import { Lock, Eye, Clock } from 'lucide-react';
+import { AdminTerminateButton }  from './AdminTerminateButton';
+import { QuitRequestButton }     from './QuitRequestButton';
+import { Lock, Eye, Clock, AlertTriangle, XCircle, FileX2 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -89,6 +91,10 @@ export function ReviewPipeline({
   const isApproved  = status === 'APPROVED';
   const isCompleted = isTerminal(currentStage);
   const isQueued    = status === 'QUEUED';
+  const isQuitRequested = status === 'QUIT_REQUESTED';
+  const isWithdrawn = status === 'WITHDRAWN';
+  const isTerminated = status === 'TERMINATED';
+  const isTerminalStatus = isRejected || isApproved || isWithdrawn || isTerminated;
 
   // SUPER_ADMIN: read-only view of everything
   const isSuperAdmin = sessionRole === 'SUPER_ADMIN';
@@ -96,13 +102,15 @@ export function ReviewPipeline({
   // Is it this role's turn?
   // Estate Officer also gets a turn when the application is QUEUED (for re-activation)
   const isMyTurn = !isSuperAdmin && (
-    (expectedStage === currentStage && !isRejected && !isApproved && !isQueued) ||
+    (expectedStage === currentStage && !isTerminalStatus && !isQueued && !isQuitRequested) ||
     (isQueued && sessionRole === 'ESTATE_OFFICER')
   );
   // Role has already acted (completed stage)
   const hasActed = expectedStage != null && isStageCompleted(expectedStage, currentStage) && !isQueued;
   // Role is waiting (stage not yet reached)
-  const isWaiting = !isSuperAdmin && expectedStage != null && !isMyTurn && !hasActed && !isRejected && !isQueued;
+  const isWaiting = !isSuperAdmin && expectedStage != null && !isMyTurn && !hasActed && !isTerminalStatus && !isQueued && !isQuitRequested;
+
+  const canAdminTerminate = !isTerminalStatus && ['HOUSING_SECRETARY', 'ESTATE_OFFICER', 'DVC_ADMIN', 'SUPER_ADMIN'].includes(sessionRole);
 
   return (
     <div className="space-y-8">
@@ -130,6 +138,38 @@ export function ReviewPipeline({
           <div>
             <p className="font-semibold text-sm">Application Approved</p>
             <p className="text-xs mt-0.5">DVC Admin has granted final approval. A housing unit allocation can now be assigned.</p>
+          </div>
+        </div>
+      )}
+
+      {isWithdrawn && (
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-slate-100 border border-slate-300 text-slate-800">
+          <FileX2 className="h-5 w-5 shrink-0" />
+          <div>
+            <p className="font-semibold text-sm">Application Withdrawn</p>
+            <p className="text-xs mt-0.5">The applicant withdrew this application. It is no longer active.</p>
+          </div>
+        </div>
+      )}
+
+      {isTerminated && (
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-red-100 border border-red-300 text-red-900">
+          <XCircle className="h-5 w-5 shrink-0" />
+          <div>
+            <p className="font-semibold text-sm">Application Terminated</p>
+            <p className="text-xs mt-0.5">This application was administratively terminated and is no longer active.</p>
+          </div>
+        </div>
+      )}
+
+      {isQuitRequested && (
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-orange-50 border border-orange-200 text-orange-800">
+          <AlertTriangle className="h-5 w-5 shrink-0" />
+          <div>
+            <p className="font-semibold text-sm">Withdrawal Requested</p>
+            <p className="text-xs mt-0.5">
+              The applicant has requested to withdraw this application. Pending Housing Secretary review.
+            </p>
           </div>
         </div>
       )}
@@ -225,10 +265,36 @@ export function ReviewPipeline({
       )}
 
       {/* Already reviewed by this role */}
-      {hasActed && !isRejected && !isApproved && (
+      {hasActed && !isTerminalStatus && (
         <div className="flex items-center gap-3 p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 text-sm">
           <span>✓</span>
           <p>You have already completed your review for this application. It has moved to the next stage.</p>
+        </div>
+      )}
+
+      {/* Staff withdrawal action panel */}
+      {sessionRole === 'STAFF' && !isTerminalStatus && (
+        <div className="pt-6 border-t flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h4 className="font-semibold text-sm">Withdraw Application</h4>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {isQuitRequested
+                ? 'Your withdrawal request is pending review by the Housing Secretary.'
+                : 'You may request to withdraw this housing application at any time prior to approval.'}
+            </p>
+          </div>
+          <QuitRequestButton
+            entityId={application.id}
+            entityType="HousingApplication"
+            hasPendingRequest={isQuitRequested}
+          />
+        </div>
+      )}
+      
+      {/* Admin termination controls */}
+      {canAdminTerminate && (
+        <div className="pt-6 border-t flex justify-end">
+          <AdminTerminateButton entityId={application.id} entityType="HousingApplication" />
         </div>
       )}
     </div>

@@ -26,7 +26,7 @@ export type CurrentHousingStatus = 'HAS_ALLOCATION' | 'NO_ALLOCATION';
 export type Gender = 'MALE' | 'FEMALE';
 export type MaritalStatus = 'SINGLE' | 'MARRIED' | 'DIVORCED' | 'WIDOWED';
 export type OccupancyStatus = 'ACTIVE' | 'EXITED';
-export type ApplicationStatus = 'PENDING' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'QUEUED';
+export type ApplicationStatus = 'PENDING' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'QUEUED' | 'QUIT_REQUESTED' | 'WITHDRAWN' | 'TERMINATED';
 export type ApplicationStage = 'HOUSING' | 'ESTATE' | 'DVC' | 'COMPLETED';
 export type ReviewDecision = 'APPROVED' | 'REJECTED' | 'FORWARDED';
 export type AllocationStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED';
@@ -36,6 +36,7 @@ export type ExitReason =
   | 'DEATH'
   | 'RESIGNATION'
   | 'RELOCATION'
+  | 'TRANSFER'
   | 'OTHER';
 export type AuditStatus = 'SUCCESS' | 'FAILURE';
 export type IncidentStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED';
@@ -296,6 +297,10 @@ export interface ExitNotice {
   clearedAt?: string | null;
   clearanceCertificateUrl?: string | null;
 
+  // ---- Withdrawal / Termination ----
+  isWithdrawn?: boolean;
+  withdrawnAt?: string | null;
+
   submittedAt: string;
   updatedAt?: string;
 }
@@ -317,7 +322,32 @@ export interface AuditLog {
 }
 
 // ---------------------------------------------------------------------------
-// 14. INCIDENT TICKET (Complaints)
+// 14. QUIT REQUEST (Staff withdrawal request)
+// ---------------------------------------------------------------------------
+
+export type QuitRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export interface QuitRequest {
+  id: string;
+  entityType: 'HousingApplication' | 'ExitNotice';
+  /** ID of the HousingApplication or ExitNotice */
+  entityId: string;
+  /** FK -> User (the applicant) */
+  requestedById: string;
+  reason: string;
+  status: QuitRequestStatus;
+  
+  /** FK -> User (Housing Secretary who reviewed it) */
+  reviewedById?: string | null;
+  reviewedAt?: string | null;
+  reviewNotes?: string | null;
+  
+  createdAt: string;
+  updatedAt?: string;
+}
+
+// ---------------------------------------------------------------------------
+// 15. INCIDENT TICKET (Complaints)
 // ---------------------------------------------------------------------------
 
 export interface IncidentTicket {
@@ -888,6 +918,68 @@ const initialHousingApplications: HousingApplication[] = [
     submittedAt: '2026-06-28T09:15:00.000Z',
     updatedAt: '2026-06-28T09:15:00.000Z',
   },
+  {
+    // Queued application (Approved by DVC, waiting for vacant unit)
+    id: 'app-7',
+    userId: 'u-7',
+    preferredHousingTypeIds: ['ht-1'],
+    status: 'QUEUED',
+    currentStage: 'COMPLETED',
+    pointsBreakdown: {
+      baseTypePoints: 50,
+      seniorityBonus: 10,
+      dependentsBonus: 0,
+      maritalStatusBonus: 0,
+      totalPoints: 60,
+    },
+    additionalNotes: 'Approved by DVC, placed on queue for senior bungalow.',
+    submittedAt: '2026-05-01T10:00:00.000Z',
+    updatedAt: '2026-06-25T16:00:00.000Z',
+  },
+  {
+    // Quit Requested application
+    id: 'app-8',
+    userId: 'u-9',
+    preferredHousingTypeIds: ['ht-2'],
+    status: 'QUIT_REQUESTED',
+    currentStage: 'HOUSING',
+    pointsBreakdown: null,
+    additionalNotes: 'Requested withdrawal after job transfer.',
+    submittedAt: '2026-06-22T14:30:00.000Z',
+    updatedAt: '2026-06-26T09:00:00.000Z',
+  },
+  {
+    // Withdrawn application
+    id: 'app-9',
+    userId: 'u-11',
+    preferredHousingTypeIds: ['ht-1'],
+    status: 'WITHDRAWN',
+    currentStage: 'HOUSING',
+    allocatedUnitId: null,
+    pointsBreakdown: null,
+    additionalNotes: 'Application voluntarily withdrawn.',
+    submittedAt: '2026-04-10T11:00:00.000Z',
+    updatedAt: '2026-04-15T15:00:00.000Z',
+  },
+  {
+    // Terminated application
+    id: 'app-10',
+    userId: 'u-8',
+    preferredHousingTypeIds: ['ht-2', 'ht-3'],
+    status: 'TERMINATED',
+    currentStage: 'ESTATE',
+    allocatedUnitId: null,
+    pointsBreakdown: {
+      baseTypePoints: 20,
+      seniorityBonus: 15,
+      dependentsBonus: 5,
+      maritalStatusBonus: 10,
+      totalPoints: 50,
+    },
+    additionalNotes: 'Administratively terminated.',
+    submittedAt: '2026-03-12T09:00:00.000Z',
+    updatedAt: '2026-03-20T12:00:00.000Z',
+  },
 ];
 
 const initialApplicationReviews: ApplicationReview[] = [
@@ -962,6 +1054,30 @@ const initialApplicationReviews: ApplicationReview[] = [
     decision: 'FORWARDED',
     comments: 'Estate conditions verified. Blk A1 or B1 suitable. Forwarding to DVC.',
     reviewedAt: '2026-06-18T09:00:00.000Z',
+  },
+  {
+    // DVC approved app-7 into QUEUED state
+    id: 'rev-7',
+    applicationId: 'app-7',
+    reviewerId: 'u-4',
+    reviewerRole: 'DVC_ADMIN',
+    stage: 'DVC',
+    score: null,
+    decision: 'APPROVED',
+    comments: 'Approved for allocation when senior bungalow becomes vacant.',
+    reviewedAt: '2026-06-25T16:00:00.000Z',
+  },
+  {
+    // Super Admin terminated app-10
+    id: 'rev-8',
+    applicationId: 'app-10',
+    reviewerId: 'u-1',
+    reviewerRole: 'SUPER_ADMIN',
+    stage: 'ESTATE',
+    score: null,
+    decision: 'REJECTED',
+    comments: 'Administratively terminated: Non-compliance with university quarters regulations.',
+    reviewedAt: '2026-03-20T12:00:00.000Z',
   },
 ];
 
@@ -1082,6 +1198,52 @@ const initialExitNotices: ExitNotice[] = [
 
     submittedAt: '2026-05-15T09:00:00.000Z',
     updatedAt: '2026-05-25T11:30:00.000Z',
+  },
+  {
+    // Stage 3 Exit Notice: Housing PASSED, Electrical PASSED, Estate PENDING
+    id: 'exit-4',
+    userId: 'u-10',
+    housingUnitId: 'hu-7',
+    reason: 'TRANSFER',
+    additionalNotes: 'Transferring to Lagos campus.',
+    housingInspectionStatus: 'PASSED',
+    housingInspectedById: 'u-2',
+    housingInspectionDate: '2026-06-12T09:00:00.000Z',
+    electricalInspectionStatus: 'PASSED',
+    electricalInspectedById: 'u-5',
+    electricalInspectionDate: '2026-06-14T11:30:00.000Z',
+    estateInspectionStatus: 'PENDING',
+    estateInspectedById: null,
+    estateInspectionDate: null,
+    isCleared: false,
+    clearedAt: null,
+    clearanceCertificateUrl: null,
+    submittedAt: '2026-06-10T10:00:00.000Z',
+    updatedAt: '2026-06-14T11:30:00.000Z',
+  },
+  {
+    // Withdrawn Exit Notice
+    id: 'exit-5',
+    userId: 'u-7',
+    housingUnitId: 'hu-3',
+    reason: 'OTHER',
+    customReason: 'Personal Reasons',
+    additionalNotes: 'Decided to extend stay.',
+    housingInspectionStatus: 'PENDING',
+    housingInspectedById: null,
+    housingInspectionDate: null,
+    electricalInspectionStatus: 'PENDING',
+    electricalInspectedById: null,
+    electricalInspectionDate: null,
+    estateInspectionStatus: 'PENDING',
+    estateInspectedById: null,
+    estateInspectionDate: null,
+    isCleared: false,
+    isWithdrawn: true,
+    withdrawnAt: '2026-06-20T14:00:00.000Z',
+    clearanceCertificateUrl: null,
+    submittedAt: '2026-06-18T08:00:00.000Z',
+    updatedAt: '2026-06-20T14:00:00.000Z',
   },
 ];
 
@@ -1248,7 +1410,30 @@ const initialIncidentTickets: IncidentTicket[] = [
 
 // =============================================================================
 // MockDB CLASS
-// =============================================================================
+const initialQuitRequests: QuitRequest[] = [
+  {
+    id: 'quit-1',
+    entityType: 'HousingApplication',
+    entityId: 'app-8',
+    requestedById: 'u-9',
+    reason: 'Inter-university transfer, no longer require housing.',
+    status: 'PENDING',
+    createdAt: '2026-06-26T09:00:00.000Z',
+  },
+  {
+    id: 'quit-2',
+    entityType: 'HousingApplication',
+    entityId: 'app-9',
+    requestedById: 'u-11',
+    reason: 'Secured off-campus private accommodation.',
+    status: 'APPROVED',
+    reviewedById: 'u-2',
+    reviewedAt: '2026-04-15T15:00:00.000Z',
+    reviewNotes: 'Approved withdrawal request.',
+    createdAt: '2026-04-12T10:00:00.000Z',
+    updatedAt: '2026-04-15T15:00:00.000Z',
+  },
+];
 
 export class MockDB {
   public users: User[];
@@ -1265,6 +1450,7 @@ export class MockDB {
   public exitNotices: ExitNotice[];
   public auditLogs: AuditLog[];
   public incidentTickets: IncidentTicket[];
+  public quitRequests: QuitRequest[];
 
   constructor() {
     this.users = [...initialUsers];
@@ -1281,6 +1467,7 @@ export class MockDB {
     this.exitNotices = [...initialExitNotices];
     this.auditLogs = [...initialAuditLogs];
     this.incidentTickets = [...initialIncidentTickets];
+    this.quitRequests = [...initialQuitRequests];
   }
 
   // -------------------------------------------------------------------------
@@ -1333,7 +1520,11 @@ export class MockDB {
 
   getActiveApplicationForUser(userId: string): HousingApplication | undefined {
     return this.housingApplications.find(
-      a => a.userId === userId && a.status !== 'APPROVED' && a.status !== 'REJECTED'
+      a => a.userId === userId && 
+      a.status !== 'APPROVED' && 
+      a.status !== 'REJECTED' &&
+      a.status !== 'WITHDRAWN' &&
+      a.status !== 'TERMINATED'
     );
   }
 
@@ -1398,6 +1589,34 @@ export class MockDB {
 
 const globalForDb = globalThis as unknown as { mockDB: MockDB | undefined };
 export const mockDB = globalForDb.mockDB ?? new MockDB();
+
+// Patch for HMR to ensure new arrays and seed data exist on older instances
+if (!mockDB.quitRequests) {
+  mockDB.quitRequests = [...initialQuitRequests];
+} else if (mockDB.quitRequests.length === 0) {
+  mockDB.quitRequests = [...initialQuitRequests];
+}
+
+// Sync missing applications into hot-reloaded singleton
+for (const app of initialHousingApplications) {
+  if (!mockDB.housingApplications.some(a => a.id === app.id)) {
+    mockDB.housingApplications.push(app);
+  }
+}
+
+// Sync missing reviews into hot-reloaded singleton
+for (const rev of initialApplicationReviews) {
+  if (!mockDB.applicationReviews.some(r => r.id === rev.id)) {
+    mockDB.applicationReviews.push(rev);
+  }
+}
+
+// Sync missing exit notices into hot-reloaded singleton
+for (const exit of initialExitNotices) {
+  if (!mockDB.exitNotices.some(e => e.id === exit.id)) {
+    mockDB.exitNotices.push(exit);
+  }
+}
 
 if (process.env.NODE_ENV !== 'production') {
   globalForDb.mockDB = mockDB;

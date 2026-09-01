@@ -17,6 +17,8 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight, Send, Home } from 'lucide-react';
 import Link from 'next/link';
+import type { HousingApplication } from '@/lib/mock-api/db';
+import { QuitRequestButton } from '@/components/features/application-review/QuitRequestButton';
 
 // Grade level → housing category eligibility
 function getEligibleCategory(gradeLevel: string): 'SENIOR' | 'JUNIOR' | 'ALL' {
@@ -57,13 +59,13 @@ const STEPS = [
 interface ApplicationWizardProps {
   housingTypes: HousingType[];
   profile: StaffProfile | null;
-  hasExistingApplication: boolean;
+  activeApplication: HousingApplication | null;
 }
 
 export function ApplicationWizard({
   housingTypes,
   profile,
-  hasExistingApplication,
+  activeApplication,
 }: ApplicationWizardProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -157,21 +159,34 @@ export function ApplicationWizard({
   }
 
   // Existing application guard
-  if (hasExistingApplication) {
+  if (activeApplication) {
+    const isQuitRequested = activeApplication.status === 'QUIT_REQUESTED';
     return (
-      <div className="max-w-lg mx-auto py-12 text-center space-y-4">
+      <div className="max-w-lg mx-auto py-12 text-center space-y-5">
         <div className="w-16 h-16 rounded-full bg-amber-100 border-2 border-amber-200 flex items-center justify-center mx-auto">
           <Home className="h-8 w-8 text-amber-600" />
         </div>
-        <h2 className="text-xl font-bold">Application Already Submitted</h2>
-        <p className="text-muted-foreground">
-          You already have an active housing application under review. You cannot submit a new application
-          while one is being processed.
-        </p>
-        <Link href="/staff" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors">
-          <Home className="h-4 w-4" />
-          Back to Dashboard
-        </Link>
+        <div>
+          <h2 className="text-xl font-bold">Application Already Submitted</h2>
+          <p className="text-muted-foreground mt-2">
+            You already have an active housing application. You cannot submit a new application
+            while one is being processed.
+          </p>
+        </div>
+        
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-4 border-t border-border/50">
+          <Link href={`/staff/applications/${activeApplication.id}`} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors">
+            View Application Details
+          </Link>
+          <Link href="/staff/applications" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border bg-background text-sm font-medium hover:bg-muted transition-colors">
+            Back to Applications
+          </Link>
+          <QuitRequestButton 
+            entityId={activeApplication.id} 
+            entityType="HousingApplication" 
+            hasPendingRequest={isQuitRequested}
+          />
+        </div>
       </div>
     );
   }

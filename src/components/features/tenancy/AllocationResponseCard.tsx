@@ -206,13 +206,8 @@ export function AllocationResponseCard({ allocation, unit, housingType }: Props)
                 {housingType.name}
               </p>
             </div>
-            <div className={cn(
-              'px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide border',
-              housingType.category === 'SENIOR'
-                ? 'bg-accent text-accent-foreground border-accent/20'
-                : 'bg-white/20 text-white border-white/30'
-            )}>
-              {housingType.category} Category
+            <div className="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide border bg-white/20 text-white border-white/30">
+              {housingType.buildingType}
             </div>
           </div>
         </div>
@@ -252,7 +247,7 @@ export function AllocationResponseCard({ allocation, unit, housingType }: Props)
             </p>
             <div className="flex flex-wrap gap-2">
               <FeatureChip icon={BookOpen} label="Study Room" active={housingType.hasStudyRoom} />
-              <FeatureChip icon={Car} label="Parking" active={housingType.hasParking} />
+              <FeatureChip icon={Car} label={housingType.parkingSpace} active={housingType.parkingSpace !== 'Nil'} />
               <FeatureChip icon={TreePine} label="Courtyard" active={housingType.hasCourtyard} />
               <FeatureChip icon={Home} label="Boys Quarters" active={housingType.hasBQ} />
             </div>

@@ -20,12 +20,6 @@ import Link from 'next/link';
 import type { HousingApplication } from '@/lib/mock-api/db';
 import { QuitRequestButton } from '@/components/features/application-review/QuitRequestButton';
 
-// Grade level → housing category eligibility
-function getEligibleCategory(gradeLevel: string): 'SENIOR' | 'JUNIOR' | 'ALL' {
-  if (/CONUASS [4-7]$/.test(gradeLevel) || /CONTISS 1[3-5]$/.test(gradeLevel)) return 'SENIOR';
-  if (/CONUASS [1-3]$/.test(gradeLevel) || /CONTISS \d{1,2}$/.test(gradeLevel)) return 'JUNIOR';
-  return 'ALL';
-}
 
 const STEPS = [
   {
@@ -92,12 +86,8 @@ export function ApplicationWizard({
 
   const { trigger, getValues } = form;
 
-  // Compute eligible housing types based on current grade level selection
-  const gradeLevel = form.watch('salaryGradeLevel');
-  const eligibleCategory = getEligibleCategory(gradeLevel);
-  const eligibleTypes = housingTypes.filter(
-    (ht) => ht.isActive && (eligibleCategory === 'ALL' || ht.category === eligibleCategory)
-  );
+  // All active housing types are available regardless of grade level
+  const eligibleTypes = housingTypes.filter((ht) => ht.isActive);
 
   const goNext = async () => {
     const step = STEPS[currentStep];

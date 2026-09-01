@@ -180,15 +180,7 @@ export async function EstateOfficerDashboard() {
               header: 'Housing Type',
               render: r => <span className="text-xs text-muted-foreground">{r.housingType?.name ?? '—'}</span>,
             },
-            {
-              key: 'category',
-              header: 'Category',
-              render: r => (
-                <Badge variant="outline" className="text-xs">
-                  {r.housingType?.category ?? '—'}
-                </Badge>
-              ),
-            },
+
             {
               key: 'status',
               header: 'Status',

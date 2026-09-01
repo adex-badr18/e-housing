@@ -72,7 +72,6 @@ export type VacantUnitData = {
   housingType: HousingType | null;
   isEligible: boolean;
   matchesPreference: boolean;
-  matchesCategory: boolean;
 };
 
 // ---------------------------------------------------------------------------
@@ -176,7 +175,7 @@ function UnitCard({
   isSelected: boolean;
   onSelect: () => void;
 }) {
-  const { unit, housingType, isEligible, matchesPreference, matchesCategory } = data;
+  const { unit, housingType, isEligible, matchesPreference } = data;
 
   return (
     <button
@@ -224,10 +223,8 @@ function UnitCard({
             <span className="text-[10px] text-muted-foreground px-2 py-0.5 rounded bg-muted capitalize">
               {housingType.buildingType.toLowerCase()}
             </span>
-            <span className={cn("text-[10px] px-2 py-0.5 rounded capitalize font-medium",
-              matchesCategory ? "text-muted-foreground bg-muted" : "text-amber-800 bg-amber-100 border border-amber-200"
-            )}>
-              {housingType.category.toLowerCase()} staff
+            <span className="text-[10px] text-muted-foreground px-2 py-0.5 rounded bg-muted">
+              {housingType.parkingSpace}
             </span>
             {housingType.hasBQ && (
               <span className="text-[10px] text-muted-foreground px-2 py-0.5 rounded bg-muted">

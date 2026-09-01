@@ -19,7 +19,6 @@ import {
   ReviewDecision,
   HousingUnit,
   HousingType,
-  HousingCategory,
   QuitRequest,
 } from '../db';
 
@@ -413,14 +412,6 @@ export async function respondToAllocation(
 // Estate Officer: Fetch all vacant units (with housing type info)
 // ---------------------------------------------------------------------------
 
-function getStaffCategory(salaryGradeLevel: string): HousingCategory {
-  if (salaryGradeLevel.toUpperCase().includes('CONUASS')) return 'SENIOR';
-  const match = salaryGradeLevel.match(/\d+/);
-  if (match) {
-    return parseInt(match[0], 10) >= 6 ? 'SENIOR' : 'JUNIOR';
-  }
-  return 'SENIOR'; // Fallback
-}
 
 export async function getVacantUnitsForApplication(
   applicationId: string
@@ -429,31 +420,25 @@ export async function getVacantUnitsForApplication(
   housingType: HousingType | null;
   isEligible: boolean;
   matchesPreference: boolean;
-  matchesCategory: boolean;
 }[]> {
   await delay(300);
 
   const application = mockDB.findApplicationById(applicationId);
   if (!application) throw new Error('Application not found');
 
-  const profile = mockDB.staffProfiles.find(p => p.userId === application.userId);
-  const staffCategory = profile ? getStaffCategory(profile.salaryGradeLevel) : 'SENIOR';
-
-  // Return ALL vacant units explicitly
+  // Return ALL vacant units
   const allVacant = mockDB.housingUnits.filter(u => u.status === 'VACANT');
 
   return allVacant.map(unit => {
     const housingType = mockDB.housingTypes.find(ht => ht.id === unit.housingTypeId) ?? null;
     const matchesPreference = application.preferredHousingTypeIds.includes(unit.housingTypeId);
-    const matchesCategory = housingType?.category === staffCategory;
-    const isEligible = matchesPreference && matchesCategory;
+    const isEligible = matchesPreference;
 
     return {
       unit: { ...unit },
       housingType,
       isEligible,
       matchesPreference,
-      matchesCategory
     };
   });
 }

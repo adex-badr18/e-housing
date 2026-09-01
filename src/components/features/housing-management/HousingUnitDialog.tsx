@@ -158,8 +158,8 @@ export function HousingUnitDialog({
                   <BedDouble className="h-3.5 w-3.5" />
                   {selectedType.numberOfBedrooms} Bedroom{selectedType.numberOfBedrooms !== 1 ? 's' : ''}
                 </div>
-                <div className="text-muted-foreground">
-                  {selectedType.category === 'SENIOR' ? '🏛️ Senior' : '🏠 Junior'} Staff
+                <div className="text-muted-foreground capitalize">
+                  {selectedType.buildingType.charAt(0) + selectedType.buildingType.slice(1).toLowerCase()} · {selectedType.parkingSpace}
                 </div>
                 <div className="text-muted-foreground">
                   Points: <span className="font-medium text-foreground">{selectedType.allocationPoints}</span>

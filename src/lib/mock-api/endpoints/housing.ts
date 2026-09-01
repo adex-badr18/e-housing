@@ -77,6 +77,55 @@ export async function deleteHousingType(id: string): Promise<void> {
   mockDB.housingTypes = mockDB.housingTypes.filter(ht => ht.id !== id);
 }
 
+export async function bulkCreateHousingTypes(
+  rows: Omit<HousingType, 'id' | 'createdAt' | 'updatedAt'>[]
+): Promise<{
+  created: HousingType[];
+  duplicatesUpdated: HousingType[];
+  errors: { row: number; message: string }[];
+}> {
+  await delay(400);
+  const created: HousingType[] = [];
+  const duplicatesUpdated: HousingType[] = [];
+  const errors: { row: number; message: string }[] = [];
+  const now = new Date().toISOString();
+
+  rows.forEach((row, index) => {
+    try {
+      const existingIdx = mockDB.housingTypes.findIndex(
+        ht => ht.name.toLowerCase() === row.name.toLowerCase()
+      );
+      if (existingIdx !== -1) {
+        // Update existing record
+        mockDB.housingTypes[existingIdx] = {
+          ...mockDB.housingTypes[existingIdx],
+          ...row,
+          updatedAt: now,
+        };
+        duplicatesUpdated.push(mockDB.housingTypes[existingIdx]);
+      } else {
+        // Create new record
+        const newType: HousingType = {
+          id: mockDB.generateId('ht'),
+          ...row,
+          createdAt: now,
+          updatedAt: now,
+        };
+        mockDB.housingTypes.push(newType);
+        created.push(newType);
+      }
+    } catch (err) {
+      errors.push({
+        row: index + 1,
+        message: err instanceof Error ? err.message : 'Unknown error',
+      });
+    }
+  });
+
+  return { created, duplicatesUpdated, errors };
+}
+
+
 // ---------------------------------------------------------------------------
 // HOUSING UNITS
 // ---------------------------------------------------------------------------

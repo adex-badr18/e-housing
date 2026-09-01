@@ -195,7 +195,7 @@ export function DVCAdminPanel({
                       {housingType.buildingType.toLowerCase()}
                     </span>
                     <span className="text-[10px] font-medium text-emerald-700 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full capitalize">
-                      {housingType.category.toLowerCase()} staff
+                      {housingType.parkingSpace}
                     </span>
                     {housingType.hasBQ && (
                       <span className="text-[10px] font-medium text-emerald-700 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full">

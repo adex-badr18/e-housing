@@ -29,7 +29,7 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { UnitStatusBadge, CategoryBadge } from '@/components/shared/StatusBadge';
+import { UnitStatusBadge } from '@/components/shared/StatusBadge';
 import { HousingUnitDialog } from './HousingUnitDialog';
 import { updateHousingUnitStatusAction, deleteHousingUnitAction } from '@/app/actions/housing';
 import type { HousingUnit, HousingType, UnitStatus } from '@/lib/mock-api/db';
@@ -293,8 +293,8 @@ export function HousingUnitsTable({
                     <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
                       {ht?.name ?? '—'}
                     </TableCell>
-                    <TableCell>
-                      {ht ? <CategoryBadge category={ht.category} /> : '—'}
+                    <TableCell className="text-sm text-muted-foreground capitalize">
+                      {ht ? ht.buildingType.charAt(0) + ht.buildingType.slice(1).toLowerCase() : '—'}
                     </TableCell>
                     <TableCell>
                       {ht?.hasBQ ? (

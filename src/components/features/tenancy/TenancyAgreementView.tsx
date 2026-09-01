@@ -197,10 +197,7 @@ export function TenancyAgreementView({ occupancy, agreement, unit, housingType, 
                 <p className="text-xs text-muted-foreground print:text-black/60 font-semibold uppercase tracking-wider mb-1">Housing Type</p>
                 <p className="font-semibold">{housingType.name}</p>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground print:text-black/60 font-semibold uppercase tracking-wider mb-1">Category</p>
-                <p className="font-semibold">{housingType.category} Staff</p>
-              </div>
+
               <div>
                 <p className="text-xs text-muted-foreground print:text-black/60 font-semibold uppercase tracking-wider mb-1">Bedrooms</p>
                 <p className="font-semibold">{housingType.numberOfBedrooms}</p>
@@ -224,8 +221,7 @@ export function TenancyAgreementView({ occupancy, agreement, unit, housingType, 
             Obafemi Awolowo University and compliance with all terms herein.
           </Clause>
           <Clause number="3.2">
-            The annual rent is <strong>₦{housingType.annualRent.toLocaleString()}</strong> (
-            {housingType.category === 'SENIOR' ? 'Senior Staff Rate' : 'Junior Staff Rate'}), 
+            The annual rent is <strong>₦{housingType.annualRent.toLocaleString()}</strong> (Standard Rate), 
             payable in advance by salary deduction or direct payment to the University Bursary not 
             later than the 1st day of each occupancy year.
           </Clause>

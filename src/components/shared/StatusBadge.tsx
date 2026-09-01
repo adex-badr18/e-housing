@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import type { UnitStatus, HousingCategory, ApplicationStatus, BQStatus } from '@/lib/mock-api/db';
+import type { UnitStatus, ApplicationStatus, BQStatus } from '@/lib/mock-api/db';
 
 // ─── Unit Status ───────────────────────────────────────────────────────────────
 
@@ -28,27 +28,6 @@ export function UnitStatusBadge({ status }: { status: UnitStatus }) {
   );
 }
 
-// ─── Housing Category ──────────────────────────────────────────────────────────
-
-const categoryConfig: Record<HousingCategory, { label: string; className: string }> = {
-  SENIOR: {
-    label: 'Senior',
-    className: 'bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-900/30 dark:text-violet-400',
-  },
-  JUNIOR: {
-    label: 'Junior',
-    className: 'bg-sky-100 text-sky-800 border-sky-200 dark:bg-sky-900/30 dark:text-sky-400',
-  },
-};
-
-export function CategoryBadge({ category }: { category: HousingCategory }) {
-  const config = categoryConfig[category];
-  return (
-    <Badge className={cn('border font-medium text-xs px-2 py-0.5', config.className)}>
-      {config.label}
-    </Badge>
-  );
-}
 
 // ─── Application Status ────────────────────────────────────────────────────────
 

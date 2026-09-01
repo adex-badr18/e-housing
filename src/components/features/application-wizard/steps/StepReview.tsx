@@ -90,14 +90,8 @@ export function StepReview({ form, housingTypes }: StepReviewProps) {
                     {type!.numberOfBedrooms} bed · {type!.allocationPoints} pts · ₦{type!.annualRent.toLocaleString()}/yr
                   </p>
                 </div>
-                <Badge
-                  className={
-                    type!.category === 'SENIOR'
-                      ? 'bg-violet-100 text-violet-800 border-violet-200 text-xs'
-                      : 'bg-sky-100 text-sky-800 border-sky-200 text-xs'
-                  }
-                >
-                  {type!.category}
+                <Badge variant="outline" className="capitalize text-xs">
+                  {type!.buildingType.charAt(0) + type!.buildingType.slice(1).toLowerCase()}
                 </Badge>
               </div>
             ))

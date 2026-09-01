@@ -29,8 +29,10 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { CategoryBadge, ActiveBadge } from '@/components/shared/StatusBadge';
+import { ActiveBadge } from '@/components/shared/StatusBadge';
 import { HousingTypeDialog } from './HousingTypeDialog';
+import { HousingTypeDetailDialog } from './HousingTypeDetailDialog';
+import { HousingTypeBulkUploadDialog } from './HousingTypeBulkUploadDialog';
 import { deleteHousingTypeAction } from '@/app/actions/housing';
 import type { HousingType } from '@/lib/mock-api/db';
 import {
@@ -41,11 +43,11 @@ import {
   ArrowDown,
   Pencil,
   Trash2,
-  ChevronDown,
   Home,
+  Upload,
 } from 'lucide-react';
 
-type SortField = 'name' | 'category' | 'allocationPoints' | 'annualRent';
+type SortField = 'name' | 'allocationPoints' | 'annualRent';
 type SortDir = 'asc' | 'desc';
 
 interface HousingTypesTableProps {
@@ -63,14 +65,15 @@ function SortIcon({ field, active, dir }: { field: string; active: boolean; dir:
 export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTableProps) {
   const [data, setData] = useState<HousingType[]>(initialData);
   const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<'ALL' | 'SENIOR' | 'JUNIOR'>('ALL');
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<HousingType | null>(null);
+  const [detailTarget, setDetailTarget] = useState<HousingType | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<HousingType | null>(null);
+  const [bulkOpen, setBulkOpen] = useState(false);
   const [isPendingDelete, startDeleteTransition] = useTransition();
 
   // Propagate mutation upstream if needed
@@ -91,24 +94,21 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
     return data
       .filter((ht) => {
         const q = searchQuery.toLowerCase();
-        const matchSearch =
-          !q || ht.name.toLowerCase().includes(q) || ht.category.toLowerCase().includes(q);
-        const matchCategory = categoryFilter === 'ALL' || ht.category === categoryFilter;
+        const matchSearch = !q || ht.name.toLowerCase().includes(q) || ht.parkingSpace.toLowerCase().includes(q);
         const matchActive =
           activeFilter === 'ALL' ||
           (activeFilter === 'ACTIVE' && ht.isActive) ||
           (activeFilter === 'INACTIVE' && !ht.isActive);
-        return matchSearch && matchCategory && matchActive;
+        return matchSearch && matchActive;
       })
       .sort((a, b) => {
         let cmp = 0;
         if (sortField === 'name') cmp = a.name.localeCompare(b.name);
-        else if (sortField === 'category') cmp = a.category.localeCompare(b.category);
         else if (sortField === 'allocationPoints') cmp = a.allocationPoints - b.allocationPoints;
         else if (sortField === 'annualRent') cmp = a.annualRent - b.annualRent;
         return sortDir === 'asc' ? cmp : -cmp;
       });
-  }, [data, searchQuery, categoryFilter, activeFilter, sortField, sortDir]);
+  }, [data, searchQuery, activeFilter, sortField, sortDir]);
 
   const handleDelete = () => {
     if (!deleteTarget) return;
@@ -152,20 +152,6 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
         </div>
 
         <Select
-          value={categoryFilter}
-          onValueChange={(v) => v != null && setCategoryFilter(v as typeof categoryFilter)}
-        >
-          <SelectTrigger id="ht-cat-filter" className="w-36">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">All Categories</SelectItem>
-            <SelectItem value="SENIOR">Senior</SelectItem>
-            <SelectItem value="JUNIOR">Junior</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select
           value={activeFilter}
           onValueChange={(v) => v != null && setActiveFilter(v as typeof activeFilter)}
         >
@@ -180,9 +166,19 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
         </Select>
 
         <Button
+          id="ht-bulk-upload-btn"
+          variant="outline"
+          onClick={() => setBulkOpen(true)}
+          className="gap-2"
+        >
+          <Upload className="h-4 w-4" />
+          Upload Bulk
+        </Button>
+
+        <Button
           id="ht-create-btn"
           onClick={() => setCreateOpen(true)}
-          className="ml-auto gap-2"
+          className="gap-2"
         >
           <Plus className="h-4 w-4" />
           New Type
@@ -200,9 +196,9 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50 hover:bg-muted/50">
-              <TableHead className="w-[30%]">{colHeader('name', 'Name')}</TableHead>
-              <TableHead>{colHeader('category', 'Category')}</TableHead>
+              <TableHead className="w-[28%]">{colHeader('name', 'Name')}</TableHead>
               <TableHead>Building</TableHead>
+              <TableHead>Parking</TableHead>
               <TableHead>Rooms</TableHead>
               <TableHead>{colHeader('allocationPoints', 'Points')}</TableHead>
               <TableHead>{colHeader('annualRent', 'Annual Rent')}</TableHead>
@@ -228,14 +224,17 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
               filtered.map((ht) => (
                 <TableRow
                   key={ht.id}
-                  className="hover:bg-muted/20 transition-colors group"
+                  className="hover:bg-muted/20 transition-colors group cursor-pointer"
+                  onClick={() => setDetailTarget(ht)}
                 >
                   <TableCell className="font-medium">{ht.name}</TableCell>
-                  <TableCell>
-                    <CategoryBadge category={ht.category} />
-                  </TableCell>
                   <TableCell className="capitalize text-sm text-muted-foreground">
                     {ht.buildingType.charAt(0) + ht.buildingType.slice(1).toLowerCase()}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="text-xs font-medium">
+                      {ht.parkingSpace}
+                    </Badge>
                   </TableCell>
                   <TableCell className="text-sm">
                     <span className="font-medium">{ht.numberOfBedrooms}</span>
@@ -264,7 +263,7 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
                     <ActiveBadge isActive={ht.isActive} />
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1">
+                    <div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
                       <Button
                         id={`ht-edit-${ht.id}`}
                         variant="ghost"
@@ -292,6 +291,17 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
         </Table>
       </div>
 
+      {/* Detail Dialog — row click */}
+      <HousingTypeDetailDialog
+        open={!!detailTarget}
+        onOpenChange={(o) => !o && setDetailTarget(null)}
+        housingType={detailTarget}
+        onEdit={(ht) => {
+          setDetailTarget(null);
+          setEditTarget(ht);
+        }}
+      />
+
       {/* Create Dialog */}
       <HousingTypeDialog
         open={createOpen}
@@ -314,6 +324,16 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
           setData((prev) => prev.map((ht) => (ht.id === updated.id ? updated : ht)));
           setEditTarget(null);
           refresh(updated);
+        }}
+      />
+
+      {/* Bulk Upload Dialog */}
+      <HousingTypeBulkUploadDialog
+        open={bulkOpen}
+        onOpenChange={setBulkOpen}
+        onSuccess={() => {
+          // Trigger a page-level data refresh if onDataChange provided
+          refresh();
         }}
       />
 

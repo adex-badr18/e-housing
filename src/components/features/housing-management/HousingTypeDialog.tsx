@@ -28,7 +28,7 @@ import {
 import { housingTypeSchema, type HousingTypeFormValues } from '@/lib/validations/housing';
 import { createHousingTypeAction, updateHousingTypeAction } from '@/app/actions/housing';
 import type { HousingType } from '@/lib/mock-api/db';
-import { Info, Home } from 'lucide-react';
+import { Home } from 'lucide-react';
 
 interface HousingTypeDialogProps {
   open: boolean;
@@ -40,13 +40,12 @@ interface HousingTypeDialogProps {
 
 const defaults: HousingTypeFormValues = {
   name: '',
-  category: 'JUNIOR',
   buildingType: 'BUNGALOW',
   numberOfBedrooms: 2,
   numberOfBathrooms: 1,
   numberOfToilets: 1,
   hasStudyRoom: false,
-  hasParking: false,
+  parkingSpace: 'Nil',
   hasBQ: false,
   numberOfBQ: 0,
   hasCourtyard: false,
@@ -81,13 +80,12 @@ export function HousingTypeDialog({
     if (mode === 'edit' && existing) {
       reset({
         name: existing.name,
-        category: existing.category,
         buildingType: existing.buildingType,
         numberOfBedrooms: existing.numberOfBedrooms,
         numberOfBathrooms: existing.numberOfBathrooms,
         numberOfToilets: existing.numberOfToilets,
         hasStudyRoom: existing.hasStudyRoom,
-        hasParking: existing.hasParking,
+        parkingSpace: existing.parkingSpace,
         hasBQ: existing.hasBQ,
         numberOfBQ: existing.numberOfBQ,
         hasCourtyard: existing.hasCourtyard,
@@ -101,8 +99,8 @@ export function HousingTypeDialog({
   }, [mode, existing, reset, open]);
 
   const hasBQ = watch('hasBQ');
-  const category = watch('category');
   const buildingType = watch('buildingType');
+  const parkingSpace = watch('parkingSpace');
 
   const onSubmit = (data: HousingTypeFormValues) => {
     startTransition(async () => {
@@ -154,10 +152,10 @@ export function HousingTypeDialog({
             </h3>
             <div className="grid grid-cols-1 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="ht-name">Type Name *</Label>
+                <Label htmlFor="ht-name">House Type Name *</Label>
                 <Input
                   id="ht-name"
-                  placeholder="e.g. 3-Bedroom Senior Bungalow (Type A)"
+                  placeholder="e.g. A1, B1/2, LG House"
                   {...register('name')}
                   className={errors.name ? 'border-destructive' : ''}
                 />
@@ -166,62 +164,34 @@ export function HousingTypeDialog({
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="ht-category">Category *</Label>
-                  <Select
-                    value={category}
-                    onValueChange={(v) => v != null && setValue('category', v as 'SENIOR' | 'JUNIOR')}
-                  >
-                    <SelectTrigger id="ht-category" className={`w-full ${errors.category ? 'border-destructive' : ''}`}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="SENIOR">Senior Staff</SelectItem>
-                      <SelectItem value="JUNIOR">Junior Staff</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {category === 'SENIOR' && (
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Info className="h-3 w-3" /> CONUASS 4+ / CONTISS 13+ eligible
-                    </p>
-                  )}
-                  {category === 'JUNIOR' && (
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Info className="h-3 w-3" /> CONUASS 1–3 / CONTISS 1–12 eligible
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="ht-building">Building Type *</Label>
-                  <Select
-                    value={buildingType}
-                    onValueChange={(v) => v != null && setValue('buildingType', v as 'BUNGALOW' | 'STOREY')}
-                  >
-                    <SelectTrigger id="ht-building" className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="BUNGALOW">Bungalow</SelectItem>
-                      <SelectItem value="STOREY">Storey Building</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="ht-building">Building Type *</Label>
+                <Select
+                  value={buildingType}
+                  onValueChange={(v) => v != null && setValue('buildingType', v as 'BUNGALOW' | 'STOREY')}
+                >
+                  <SelectTrigger id="ht-building" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="BUNGALOW">Bungalow</SelectItem>
+                    <SelectItem value="STOREY">Storey Building</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
 
           <Separator />
 
-          {/* Room Details */}
+          {/* Room Configuration */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
               Room Configuration
             </h3>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="ht-bedrooms">Bedrooms *</Label>
+                <Label htmlFor="ht-bedrooms">No. of Bedrooms *</Label>
                 <Input
                   id="ht-bedrooms"
                   type="number"
@@ -234,13 +204,23 @@ export function HousingTypeDialog({
                 )}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="ht-bathrooms">Bathrooms</Label>
+                <Label htmlFor="ht-bathrooms">No. of Bath</Label>
                 <Input id="ht-bathrooms" type="number" min={0} {...register('numberOfBathrooms')} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="ht-toilets">Toilets</Label>
+                <Label htmlFor="ht-toilets">No. of Toilets</Label>
                 <Input id="ht-toilets" type="number" min={0} {...register('numberOfToilets')} />
               </div>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border">
+              <Label htmlFor="ht-hasStudyRoom" className="cursor-pointer">
+                Study Room
+              </Label>
+              <Switch
+                id="ht-hasStudyRoom"
+                checked={watch('hasStudyRoom')}
+                onCheckedChange={(v) => setValue('hasStudyRoom', v)}
+              />
             </div>
           </div>
 
@@ -251,29 +231,40 @@ export function HousingTypeDialog({
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
               Amenities
             </h3>
-            <div className="grid grid-cols-2 gap-y-4 gap-x-8">
-              {(
-                [
-                  { id: 'hasStudyRoom', label: 'Study Room' },
-                  { id: 'hasParking', label: 'Parking Space' },
-                  { id: 'hasCourtyard', label: 'Courtyard' },
-                ] as const
-              ).map(({ id, label }) => (
-                <div key={id} className="flex items-center justify-between">
-                  <Label htmlFor={`ht-${id}`} className="cursor-pointer">
-                    {label}
-                  </Label>
-                  <Switch
-                    id={`ht-${id}`}
-                    checked={watch(id)}
-                    onCheckedChange={(v) => setValue(id, v)}
-                  />
-                </div>
-              ))}
+            <div className="space-y-4">
+              {/* Parking Space */}
+              <div className="space-y-1.5">
+                <Label htmlFor="ht-parking">Parking Space *</Label>
+                <Select
+                  value={parkingSpace}
+                  onValueChange={(v) => v != null && setValue('parkingSpace', v as 'Garage' | 'Car Park' | 'Nil')}
+                >
+                  <SelectTrigger id="ht-parking" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Garage">Garage</SelectItem>
+                    <SelectItem value="Car Park">Car Park</SelectItem>
+                    <SelectItem value="Nil">Nil</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-              {/* BQ Toggle — auto-shows numberOfBQ spinner */}
-              <div className="col-span-2 space-y-3">
-                <div className="flex items-center justify-between">
+              {/* Courtyard */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border">
+                <Label htmlFor="ht-hasCourtyard" className="cursor-pointer">
+                  Courtyard
+                </Label>
+                <Switch
+                  id="ht-hasCourtyard"
+                  checked={watch('hasCourtyard')}
+                  onCheckedChange={(v) => setValue('hasCourtyard', v)}
+                />
+              </div>
+
+              {/* BQ Toggle */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border">
                   <div>
                     <Label htmlFor="ht-hasBQ" className="cursor-pointer">
                       Boys Quarters (BQ)
@@ -294,7 +285,7 @@ export function HousingTypeDialog({
                 </div>
                 {hasBQ && (
                   <div className="ml-1 pl-4 border-l-2 border-primary/20 space-y-1.5 animate-in slide-in-from-top-2 duration-200">
-                    <Label htmlFor="ht-numBQ">Number of BQ Units *</Label>
+                    <Label htmlFor="ht-numBQ">No. of BQ Units *</Label>
                     <Input
                       id="ht-numBQ"
                       type="number"
@@ -321,9 +312,7 @@ export function HousingTypeDialog({
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="ht-points">
-                  Allocation Points *
-                </Label>
+                <Label htmlFor="ht-points">Points *</Label>
                 <Input
                   id="ht-points"
                   type="number"
@@ -385,115 +374,3 @@ export function HousingTypeDialog({
     </Dialog>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

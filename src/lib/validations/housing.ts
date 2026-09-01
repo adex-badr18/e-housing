@@ -22,8 +22,8 @@ export const roleSchema = z.enum([
 
 export const genderSchema = z.enum(['MALE', 'FEMALE']);
 export const maritalStatusSchema = z.enum(['SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED']);
-export const housingCategorySchema = z.enum(['SENIOR', 'JUNIOR']);
 export const buildingTypeSchema = z.enum(['BUNGALOW', 'STOREY']);
+export const parkingSpaceSchema = z.enum(['Garage', 'Car Park', 'Nil']);
 export const unitStatusSchema = z.enum(['VACANT', 'OCCUPIED', 'UNDER_MAINTENANCE']);
 export const bqStatusSchema = z.enum(['VACANT', 'OCCUPIED']);
 export const inspectionStatusSchema = z.enum(['PENDING', 'PASSED', 'FAILED']);
@@ -47,14 +47,13 @@ export const incidentStatusSchema = z.enum(['OPEN', 'IN_PROGRESS', 'RESOLVED']);
 
 // Base object without refinements — safe to call .partial() on (e.g. in update actions).
 export const housingTypeBaseSchema = z.object({
-  name: z.string().min(3, 'Name must be at least 3 characters'),
-  category: housingCategorySchema,
+  name: z.string().min(1, 'Name must be at least 1 character'),
   buildingType: buildingTypeSchema,
   numberOfBedrooms: z.coerce.number().int().min(1, 'At least 1 bedroom required'),
   numberOfBathrooms: z.coerce.number().int().min(0),
   numberOfToilets: z.coerce.number().int().min(0),
   hasStudyRoom: z.boolean(),
-  hasParking: z.boolean(),
+  parkingSpace: parkingSpaceSchema,
   hasBQ: z.boolean(),
   numberOfBQ: z.coerce.number().int().min(0),
   hasCourtyard: z.boolean(),

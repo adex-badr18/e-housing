@@ -18,7 +18,7 @@ export type Role =
   | 'ELECTRICAL_OFFICER'
   | 'STAFF';
 
-export type HousingCategory = 'SENIOR' | 'JUNIOR';
+export type ParkingSpace = 'Garage' | 'Car Park' | 'Nil';
 export type BuildingType = 'BUNGALOW' | 'STOREY';
 export type UnitStatus = 'VACANT' | 'OCCUPIED' | 'UNDER_MAINTENANCE';
 export type BQStatus = 'VACANT' | 'OCCUPIED';
@@ -89,13 +89,12 @@ export interface StaffProfile {
 export interface HousingType {
   id: string;
   name: string;
-  category: HousingCategory;
   buildingType: BuildingType;
   numberOfBedrooms: number;
   numberOfBathrooms: number;
   numberOfToilets: number;
   hasStudyRoom: boolean;
-  hasParking: boolean;
+  parkingSpace: ParkingSpace;
   hasBQ: boolean;
   numberOfBQ: number;
   hasCourtyard: boolean;
@@ -605,56 +604,104 @@ const initialStaffProfiles: StaffProfile[] = [
 const initialHousingTypes: HousingType[] = [
   {
     id: 'ht-1',
-    name: '3-Bedroom Senior Bungalow (Type A)',
-    category: 'SENIOR',
+    name: 'A1',
     buildingType: 'BUNGALOW',
+    numberOfBedrooms: 4,
+    numberOfBathrooms: 3,
+    numberOfToilets: 4,
+    hasStudyRoom: true,
+    parkingSpace: 'Garage',
+    hasBQ: true,
+    numberOfBQ: 2,
+    hasCourtyard: true,
+    allocationPoints: 70,
+    annualRent: 220000,
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'ht-2',
+    name: 'B1/2',
+    buildingType: 'STOREY',
     numberOfBedrooms: 3,
     numberOfBathrooms: 2,
     numberOfToilets: 3,
     hasStudyRoom: true,
-    hasParking: true,
-    hasBQ: true,
-    numberOfBQ: 2,
-    hasCourtyard: true,
+    parkingSpace: 'Car Park',
+    hasBQ: false,
+    numberOfBQ: 0,
+    hasCourtyard: false,
     allocationPoints: 50,
     annualRent: 150000,
     isActive: true,
     createdAt: '2024-01-01T00:00:00.000Z',
   },
   {
-    id: 'ht-2',
-    name: '2-Bedroom Junior Storey (Type B)',
-    category: 'JUNIOR',
-    buildingType: 'STOREY',
-    numberOfBedrooms: 2,
-    numberOfBathrooms: 1,
-    numberOfToilets: 1,
+    id: 'ht-3',
+    name: 'E1 Modified',
+    buildingType: 'BUNGALOW',
+    numberOfBedrooms: 3,
+    numberOfBathrooms: 2,
+    numberOfToilets: 3,
     hasStudyRoom: false,
-    hasParking: false,
-    hasBQ: false,
-    numberOfBQ: 0,
-    hasCourtyard: false,
-    allocationPoints: 20,
-    annualRent: 80000,
+    parkingSpace: 'Garage',
+    hasBQ: true,
+    numberOfBQ: 1,
+    hasCourtyard: true,
+    allocationPoints: 55,
+    annualRent: 160000,
     isActive: true,
     createdAt: '2024-01-01T00:00:00.000Z',
   },
   {
-    id: 'ht-3',
-    name: '4-Bedroom Senior Bungalow (Type S)',
-    category: 'SENIOR',
+    id: 'ht-4',
+    name: 'H',
+    buildingType: 'STOREY',
+    numberOfBedrooms: 2,
+    numberOfBathrooms: 1,
+    numberOfToilets: 2,
+    hasStudyRoom: false,
+    parkingSpace: 'Nil',
+    hasBQ: false,
+    numberOfBQ: 0,
+    hasCourtyard: false,
+    allocationPoints: 30,
+    annualRent: 90000,
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'ht-5',
+    name: 'LG House',
     buildingType: 'BUNGALOW',
-    numberOfBedrooms: 4,
-    numberOfBathrooms: 3,
-    numberOfToilets: 4,
-    hasStudyRoom: true,
-    hasParking: true,
+    numberOfBedrooms: 2,
+    numberOfBathrooms: 2,
+    numberOfToilets: 2,
+    hasStudyRoom: false,
+    parkingSpace: 'Car Park',
     hasBQ: true,
     numberOfBQ: 1,
-    hasCourtyard: true,
-    allocationPoints: 70,
-    annualRent: 220000,
+    hasCourtyard: false,
+    allocationPoints: 35,
+    annualRent: 100000,
     isActive: true,
+    createdAt: '2024-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'ht-6',
+    name: 'JSQ 1',
+    buildingType: 'STOREY',
+    numberOfBedrooms: 1,
+    numberOfBathrooms: 1,
+    numberOfToilets: 1,
+    hasStudyRoom: false,
+    parkingSpace: 'Nil',
+    hasBQ: false,
+    numberOfBQ: 0,
+    hasCourtyard: false,
+    allocationPoints: 20,
+    annualRent: 60000,
+    isActive: false,
     createdAt: '2024-01-01T00:00:00.000Z',
   },
 ];

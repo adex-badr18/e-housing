@@ -116,22 +116,15 @@ export function StepHousingPreferences({ form, eligibleTypes }: StepHousingPrefe
                   </div>
                 )}
 
-                {/* Type name & category */}
+                {/* Type name & building type */}
                 <div className="pr-14">
                   <p className="font-semibold text-sm leading-tight">{ht.name}</p>
                   <div className="flex items-center gap-2 mt-1.5">
-                    <Badge
-                      className={cn(
-                        'text-xs border',
-                        ht.category === 'SENIOR'
-                          ? 'bg-violet-100 text-violet-800 border-violet-200'
-                          : 'bg-sky-100 text-sky-800 border-sky-200'
-                      )}
-                    >
-                      {ht.category === 'SENIOR' ? '🏛️ Senior' : '🏠 Junior'}
-                    </Badge>
                     <Badge className="bg-muted text-muted-foreground border-border text-xs">
                       {ht.buildingType.charAt(0) + ht.buildingType.slice(1).toLowerCase()}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      {ht.parkingSpace}
                     </Badge>
                   </div>
                 </div>
@@ -159,9 +152,9 @@ export function StepHousingPreferences({ form, eligibleTypes }: StepHousingPrefe
 
                 {/* Amenity chips */}
                 <div className="mt-3 flex flex-wrap gap-1.5">
-                  {ht.hasParking && (
+                  {ht.parkingSpace !== 'Nil' && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border">
-                      Parking
+                      {ht.parkingSpace}
                     </span>
                   )}
                   {ht.hasStudyRoom && (

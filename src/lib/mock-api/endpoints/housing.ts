@@ -237,6 +237,79 @@ export async function deleteHousingUnit(id: string): Promise<void> {
   mockDB.housingUnits = mockDB.housingUnits.filter(u => u.id !== id);
 }
 
+export async function bulkCreateHousingUnits(
+  items: Array<Omit<HousingUnit, 'id' | 'currentOccupantId' | 'createdAt' | 'updatedAt'>>
+): Promise<{
+  created: HousingUnit[];
+  duplicatesUpdated: HousingUnit[];
+  errors: Array<{ row: number; name: string; message: string }>;
+}> {
+  await delay(600);
+  const created: HousingUnit[] = [];
+  const duplicatesUpdated: HousingUnit[] = [];
+  const errors: Array<{ row: number; name: string; message: string }> = [];
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    try {
+      const ht = mockDB.housingTypes.find(h => h.id === item.housingTypeId);
+      if (!ht) {
+        errors.push({ row: i + 1, name: item.name, message: `Housing type "${item.housingTypeId}" not found` });
+        continue;
+      }
+
+      const existingIdx = mockDB.housingUnits.findIndex(
+        u => u.name.trim().toLowerCase() === item.name.trim().toLowerCase()
+      );
+
+      const now = new Date().toISOString();
+
+      if (existingIdx !== -1) {
+        // Update existing record
+        mockDB.housingUnits[existingIdx] = {
+          ...mockDB.housingUnits[existingIdx],
+          ...item,
+          updatedAt: now,
+        };
+        duplicatesUpdated.push(mockDB.housingUnits[existingIdx]);
+      } else {
+        // Create new record
+        const newUnit: HousingUnit = {
+          id: mockDB.generateId('hu'),
+          ...item,
+          currentOccupantId: null,
+          createdAt: now,
+          updatedAt: now,
+        };
+        mockDB.housingUnits.push(newUnit);
+
+        // Auto-create BQ sub-unit if housing type has BQ
+        if (ht.hasBQ) {
+          const bq: BQ = {
+            id: mockDB.generateId('bq'),
+            housingUnitId: newUnit.id,
+            label: 'BQ 1',
+            status: 'VACANT',
+            createdAt: now,
+            updatedAt: now,
+          };
+          mockDB.bqs.push(bq);
+        }
+
+        created.push(newUnit);
+      }
+    } catch (err) {
+      errors.push({
+        row: i + 1,
+        name: item.name,
+        message: err instanceof Error ? err.message : 'Unknown error',
+      });
+    }
+  }
+
+  return { created, duplicatesUpdated, errors };
+}
+
 // ---------------------------------------------------------------------------
 // BQ OCCUPANTS — managed directly by the main occupant, not request-based
 // ---------------------------------------------------------------------------

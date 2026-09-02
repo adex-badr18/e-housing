@@ -16,6 +16,7 @@ import {
   updateHousingUnitStatus,
   updateHousingUnit,
   deleteHousingUnit,
+  bulkCreateHousingUnits,
   addBQOccupant,
   updateBQOccupant,
   removeBQOccupant,
@@ -54,7 +55,10 @@ export async function createHousingTypeAction(data: unknown) {
   }
 
   try {
-    const newType = await createHousingType({ ...parsed.data });
+    const newType = await createHousingType({
+      ...parsed.data,
+      allocationPoints: parsed.data.allocationPoints ?? 0,
+    });
     await writeAuditEntry({
       actorId: session.user.id,
       action: 'HOUSING_TYPE_CREATED',
@@ -275,6 +279,33 @@ export async function deleteHousingUnitAction(id: string) {
     return { success: true };
   } catch (err) {
     return { success: false, error: err instanceof Error ? err.message : 'Failed to delete housing unit' };
+  }
+}
+
+export async function bulkCreateHousingUnitsAction(
+  rows: Omit<import('@/lib/mock-api/db').HousingUnit, 'id' | 'currentOccupantId' | 'createdAt' | 'updatedAt'>[]
+) {
+  const session = await auth();
+  if (!session?.user) return { success: false, error: 'Unauthorized' };
+  if (!HOUSING_MANAGEMENT_ROLES.includes(session.user.role as typeof HOUSING_MANAGEMENT_ROLES[number])) {
+    return { success: false, error: 'Access denied: insufficient permissions' };
+  }
+
+  try {
+    const result = await bulkCreateHousingUnits(rows);
+    await writeAuditEntry({
+      actorId: session.user.id,
+      action: 'HOUSING_UNITS_BULK_CREATED',
+      entityType: 'HousingUnit',
+      entityId: 'bulk',
+      status: 'SUCCESS',
+      metadata: { createdCount: result.created.length, updatedCount: result.duplicatesUpdated.length, errorCount: result.errors.length },
+    });
+    revalidatePath('/admin/housing-units');
+    revalidatePath('/housing-units');
+    return { success: true, data: result };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Bulk upload failed' };
   }
 }
 

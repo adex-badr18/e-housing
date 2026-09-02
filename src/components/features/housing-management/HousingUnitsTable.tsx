@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useMemo } from 'react';
+import { useState, useEffect, useTransition, useMemo } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,6 +31,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { UnitStatusBadge } from '@/components/shared/StatusBadge';
 import { HousingUnitDialog } from './HousingUnitDialog';
+import { HousingUnitDetailDialog } from './HousingUnitDetailDialog';
+import { HousingUnitBulkUploadDialog } from './HousingUnitBulkUploadDialog';
 import { updateHousingUnitStatusAction, deleteHousingUnitAction } from '@/app/actions/housing';
 import type { HousingUnit, HousingType, UnitStatus } from '@/lib/mock-api/db';
 import {
@@ -43,6 +45,9 @@ import {
   RefreshCw,
   Pencil,
   Trash2,
+  Upload,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 type SortField = 'name' | 'status' | 'type';
@@ -78,8 +83,17 @@ export function HousingUnitsTable({
   const [typeFilter, setTypeFilter] = useState<string>('ALL');
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 10;
+
+  // Sync if parent re-fetches (e.g., after server revalidation)
+  useEffect(() => {
+    setUnits(initialUnits);
+  }, [initialUnits]);
 
   const [createOpen, setCreateOpen] = useState(false);
+  const [detailTarget, setDetailTarget] = useState<HousingUnit | null>(null);
+  const [bulkOpen, setBulkOpen] = useState(false);
   const [statusEditTarget, setStatusEditTarget] = useState<HousingUnit | null>(null);
   const [newStatus, setNewStatus] = useState<UnitStatus>('VACANT');
   const [isPendingStatus, startStatusTransition] = useTransition();
@@ -110,6 +124,8 @@ export function HousingUnitsTable({
         const matchSearch =
           !q ||
           u.name.toLowerCase().includes(q) ||
+          (u.houseNumber && u.houseNumber.toLowerCase().includes(q)) ||
+          (u.roadNumber && u.roadNumber.toLowerCase().includes(q)) ||
           ht?.name.toLowerCase().includes(q);
         const matchStatus = statusFilter === 'ALL' || u.status === statusFilter;
         const matchType = typeFilter === 'ALL' || u.housingTypeId === typeFilter;
@@ -127,6 +143,14 @@ export function HousingUnitsTable({
         return sortDir === 'asc' ? cmp : -cmp;
       });
   }, [units, searchQuery, statusFilter, typeFilter, sortField, sortDir, typeMap]);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setPage(0);
+  }, [searchQuery, statusFilter, typeFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   const openStatusEdit = (unit: HousingUnit) => {
     setStatusEditTarget(unit);
@@ -247,9 +271,19 @@ export function HousingUnitsTable({
         </Select>
 
         <Button
+          id="hu-bulk-upload-btn"
+          variant="outline"
+          onClick={() => setBulkOpen(true)}
+          className="gap-2"
+        >
+          <Upload className="h-4 w-4" />
+          Upload Bulk
+        </Button>
+
+        <Button
           id="hu-create-btn"
           onClick={() => setCreateOpen(true)}
-          className="ml-auto gap-2"
+          className="gap-2"
         >
           <Plus className="h-4 w-4" />
           New Unit
@@ -267,17 +301,19 @@ export function HousingUnitsTable({
           <TableHeader>
             <TableRow className="bg-muted/50 hover:bg-muted/50">
               <TableHead>{colHeader('name', 'Unit Name')}</TableHead>
+              <TableHead>House No</TableHead>
+              <TableHead>Road No</TableHead>
               <TableHead>{colHeader('type', 'Housing Type')}</TableHead>
-              <TableHead>Category</TableHead>
+              <TableHead>Building</TableHead>
               <TableHead>BQ Units</TableHead>
               <TableHead>{colHeader('status', 'Status')}</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.length === 0 ? (
+            {paginated.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
                   <div className="flex flex-col items-center gap-2">
                     <Building2 className="h-8 w-8 opacity-20" />
                     No units match your filters.
@@ -285,12 +321,18 @@ export function HousingUnitsTable({
                 </TableCell>
               </TableRow>
             ) : (
-              filtered.map((unit) => {
+              paginated.map((unit) => {
                 const ht = typeMap.get(unit.housingTypeId);
                 return (
-                  <TableRow key={unit.id} className="hover:bg-muted/20 transition-colors group">
+                  <TableRow
+                    key={unit.id}
+                    className="hover:bg-muted/20 transition-colors group cursor-pointer"
+                    onClick={() => setDetailTarget(unit)}
+                  >
                     <TableCell className="font-semibold">{unit.name}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
+                    <TableCell className="text-sm font-medium">{unit.houseNumber ?? '—'}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{unit.roadNumber ?? '—'}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground max-w-[180px] truncate">
                       {ht?.name ?? '—'}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground capitalize">
@@ -298,7 +340,7 @@ export function HousingUnitsTable({
                     </TableCell>
                     <TableCell>
                       {ht?.hasBQ ? (
-                        <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-xs">
+                        <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-xs font-medium">
                           1 BQ
                         </Badge>
                       ) : (
@@ -309,7 +351,7 @@ export function HousingUnitsTable({
                       <UnitStatusBadge status={unit.status} />
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
+                      <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                         <Button
                           id={`hu-status-${unit.id}`}
                           variant="ghost"
@@ -347,6 +389,86 @@ export function HousingUnitsTable({
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between pt-1">
+          <p className="text-xs text-muted-foreground">
+            Page <span className="font-semibold text-foreground">{page + 1}</span> of{' '}
+            <span className="font-semibold text-foreground">{totalPages}</span>
+            {' '}·{' '}
+            <span className="font-semibold text-foreground">{filtered.length}</span> units total
+          </p>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="h-8 w-8 rounded-lg border flex items-center justify-center hover:bg-muted transition disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+              const pageNum = totalPages <= 7 ? i : Math.max(0, Math.min(page - 3, totalPages - 7)) + i;
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setPage(pageNum)}
+                  className={`h-8 w-8 rounded-lg border text-xs font-medium transition ${
+                    pageNum === page
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'hover:bg-muted'
+                  }`}
+                >
+                  {pageNum + 1}
+                </button>
+              );
+            })}
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={page === totalPages - 1}
+              className="h-8 w-8 rounded-lg border flex items-center justify-center hover:bg-muted transition disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+      {/* Detail Unit Dialog */}
+      <HousingUnitDetailDialog
+        open={!!detailTarget}
+        onOpenChange={(o) => !o && setDetailTarget(null)}
+        unit={detailTarget}
+        housingTypes={housingTypes}
+        onEdit={(unit) => {
+          setDetailTarget(null);
+          setEditTarget(unit);
+        }}
+      />
+
+      {/* Bulk Upload Dialog */}
+      <HousingUnitBulkUploadDialog
+        open={bulkOpen}
+        onOpenChange={setBulkOpen}
+        housingTypes={housingTypes}
+        onSuccess={({ created, duplicatesUpdated }) => {
+          setUnits((prev) => {
+            const updated = [...prev];
+            // Apply updates to existing records
+            for (const u of duplicatesUpdated) {
+              const idx = updated.findIndex((x) => x.id === u.id);
+              if (idx !== -1) updated[idx] = u;
+            }
+            // Append brand-new records
+            const existingIds = new Set(updated.map((x) => x.id));
+            for (const u of created) {
+              if (!existingIds.has(u.id)) updated.push(u);
+            }
+            return updated;
+          });
+          setBulkOpen(false);
+          onDataChange?.();
+        }}
+      />
 
       {/* Create Unit Dialog */}
       <HousingUnitDialog

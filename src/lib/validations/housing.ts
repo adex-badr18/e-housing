@@ -75,10 +75,12 @@ export type HousingTypeFormValues = z.infer<typeof housingTypeSchema>;
 export const housingUnitSchema = z.object({
   name: z
     .string()
-    .min(2, 'Unit name must be at least 2 characters')
+    .min(1, 'Unit name is required')
     .max(50, 'Unit name is too long'),
+  houseNumber: z.string().min(1, 'House number is required'),
+  roadNumber: z.string().min(1, 'Road number is required'),
   housingTypeId: z.string().min(1, 'Housing type is required'),
-  status: unitStatusSchema,
+  status: unitStatusSchema.default('VACANT'),
 });
 
 export type HousingUnitFormValues = z.infer<typeof housingUnitSchema>;

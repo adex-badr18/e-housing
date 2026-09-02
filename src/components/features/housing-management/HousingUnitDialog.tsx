@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -22,8 +22,9 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { createHousingUnitAction, updateHousingUnitAction } from '@/app/actions/housing';
+import { housingUnitSchema } from '@/lib/validations/housing';
 import { toast } from 'sonner';
-import type { HousingType, HousingUnit } from '@/lib/mock-api/db';
+import type { HousingType, HousingUnit, UnitStatus } from '@/lib/mock-api/db';
 import { Building2, Home, BedDouble } from 'lucide-react';
 
 interface HousingUnitDialogProps {
@@ -44,35 +45,64 @@ export function HousingUnitDialog({
   onSuccess,
 }: HousingUnitDialogProps) {
   const [isPending, startTransition] = useTransition();
-  const [name, setName] = useState(existing?.name ?? '');
-  const [housingTypeId, setHousingTypeId] = useState(existing?.housingTypeId ?? '');
-  const [status, setStatus] = useState<'VACANT' | 'OCCUPIED' | 'UNDER_MAINTENANCE'>(existing?.status ?? 'VACANT');
-  const [nameError, setNameError] = useState('');
-  const [typeError, setTypeError] = useState('');
+  const [name, setName] = useState('');
+  const [houseNumber, setHouseNumber] = useState('');
+  const [roadNumber, setRoadNumber] = useState('');
+  const [housingTypeId, setHousingTypeId] = useState('');
+  const [status, setStatus] = useState<UnitStatus>('VACANT');
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (open) {
+      if (mode === 'edit' && existing) {
+        setName(existing.name ?? '');
+        setHouseNumber(existing.houseNumber ?? '');
+        setRoadNumber(existing.roadNumber ?? '');
+        setHousingTypeId(existing.housingTypeId ?? '');
+        setStatus(existing.status ?? 'VACANT');
+      } else {
+        setName('');
+        setHouseNumber('');
+        setRoadNumber('');
+        setHousingTypeId('');
+        setStatus('VACANT');
+      }
+      setErrors({});
+    }
+  }, [open, mode, existing]);
 
   const selectedType = housingTypes.find((ht) => ht.id === housingTypeId);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setNameError('');
-    setTypeError('');
+    setErrors({});
 
-    let valid = true;
-    if (!name.trim() || name.trim().length < 2) {
-      setNameError('Unit name must be at least 2 characters');
-      valid = false;
+    const payload = {
+      name: name.trim(),
+      houseNumber: houseNumber.trim(),
+      roadNumber: roadNumber.trim(),
+      housingTypeId,
+      status,
+    };
+
+    const parsed = housingUnitSchema.safeParse(payload);
+    if (!parsed.success) {
+      const errMap: Record<string, string> = {};
+      const formatted = parsed.error.format();
+      if (formatted.name?._errors[0]) errMap.name = formatted.name._errors[0];
+      if (formatted.houseNumber?._errors[0]) errMap.houseNumber = formatted.houseNumber._errors[0];
+      if (formatted.roadNumber?._errors[0]) errMap.roadNumber = formatted.roadNumber._errors[0];
+      if (formatted.housingTypeId?._errors[0]) errMap.housingTypeId = formatted.housingTypeId._errors[0];
+      setErrors(errMap);
+      return;
     }
-    if (!housingTypeId) {
-      setTypeError('Please select a housing type');
-      valid = false;
-    }
-    if (!valid) return;
 
     startTransition(async () => {
       const result =
         mode === 'create'
-          ? await createHousingUnitAction({ name: name.trim(), housingTypeId, status })
-          : await updateHousingUnitAction(existing!.id, { name: name.trim(), housingTypeId, status });
+          ? await createHousingUnitAction(parsed.data)
+          : await updateHousingUnitAction(existing!.id, parsed.data);
 
       if (result.success) {
         toast.success(
@@ -80,9 +110,6 @@ export function HousingUnitDialog({
             ? 'Housing unit created successfully'
             : 'Housing unit updated successfully'
         );
-        setName('');
-        setHousingTypeId('');
-        setStatus('VACANT');
         onOpenChange(false);
         onSuccess?.(result.data!);
       } else {
@@ -93,7 +120,7 @@ export function HousingUnitDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl">
+      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/10">
@@ -115,23 +142,50 @@ export function HousingUnitDialog({
         <form onSubmit={handleSubmit} className="space-y-5 mt-2">
           {/* Unit Name */}
           <div className="space-y-1.5">
-            <Label htmlFor="hu-name">Unit Name / Code *</Label>
+            <Label htmlFor="hu-name">Unit Name *</Label>
             <Input
               id="hu-name"
               placeholder="e.g. Qtrs 20, Blk B3, Prof Qtrs 05"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className={nameError ? 'border-destructive' : ''}
+              className={errors.name ? 'border-destructive' : ''}
             />
-            {nameError && <p className="text-xs text-destructive">{nameError}</p>}
+            {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
+          </div>
+
+          {/* House Number & Road Number */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="hu-house-num">House Number *</Label>
+              <Input
+                id="hu-house-num"
+                placeholder="e.g. 14, 15B, 20D"
+                value={houseNumber}
+                onChange={(e) => setHouseNumber(e.target.value)}
+                className={errors.houseNumber ? 'border-destructive' : ''}
+              />
+              {errors.houseNumber && <p className="text-xs text-destructive">{errors.houseNumber}</p>}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="hu-road-num">Road Number *</Label>
+              <Input
+                id="hu-road-num"
+                placeholder="e.g. 1, 7A, 12B Circle, 14 Close"
+                value={roadNumber}
+                onChange={(e) => setRoadNumber(e.target.value)}
+                className={errors.roadNumber ? 'border-destructive' : ''}
+              />
+              {errors.roadNumber && <p className="text-xs text-destructive">{errors.roadNumber}</p>}
+            </div>
           </div>
 
           {/* Housing Type */}
           <div className="space-y-1.5">
             <Label htmlFor="hu-type">Housing Type *</Label>
             <Select value={housingTypeId} onValueChange={(v) => v != null && setHousingTypeId(v)}>
-              <SelectTrigger id="hu-type" className={`w-full ${typeError ? 'border-destructive' : ''}`}>
-                <SelectValue placeholder="Select a housing type…" />
+              <SelectTrigger id="hu-type" className={`w-full ${errors.housingTypeId ? 'border-destructive' : ''}`}>
+                <SelectValue placeholder="Select a housing type…">{selectedType?.name}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {housingTypes
@@ -143,10 +197,10 @@ export function HousingUnitDialog({
                   ))}
               </SelectContent>
             </Select>
-            {typeError && <p className="text-xs text-destructive">{typeError}</p>}
+            {errors.housingTypeId && <p className="text-xs text-destructive">{errors.housingTypeId}</p>}
           </div>
 
-          {/* BQ Preview — dynamic based on selected type */}
+          {/* Type Preview — dynamic based on selected type */}
           {selectedType && (
             <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
               <p className="text-sm font-medium flex items-center gap-2">

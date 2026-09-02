@@ -145,6 +145,8 @@ export interface HousingUnit {
   id: string;
   /** Human-readable name / code, e.g. "Qtrs 14" */
   name: string;
+  houseNumber?: string;
+  roadNumber?: string;
   housingTypeId: string;
   status: UnitStatus;
   /** Set when the unit is OCCUPIED — cleared on exit clearance */
@@ -703,6 +705,8 @@ const initialHousingUnits: HousingUnit[] = [
   {
     id: 'hu-1',
     name: 'Qtrs 14',
+    houseNumber: '14',
+    roadNumber: '1',
     housingTypeId: 'ht-1',
     status: 'OCCUPIED',
     currentOccupantId: 'u-6',
@@ -712,6 +716,8 @@ const initialHousingUnits: HousingUnit[] = [
   {
     id: 'hu-2',
     name: 'Qtrs 15',
+    houseNumber: '15',
+    roadNumber: '1',
     housingTypeId: 'ht-1',
     status: 'VACANT',
     currentOccupantId: null,
@@ -721,6 +727,8 @@ const initialHousingUnits: HousingUnit[] = [
   {
     id: 'hu-3',
     name: 'Blk A1',
+    houseNumber: '7A',
+    roadNumber: '7A',
     housingTypeId: 'ht-2',
     status: 'VACANT',
     currentOccupantId: null,
@@ -730,6 +738,8 @@ const initialHousingUnits: HousingUnit[] = [
   {
     id: 'hu-4',
     name: 'Blk A2',
+    houseNumber: '8A',
+    roadNumber: '8A',
     housingTypeId: 'ht-2',
     status: 'UNDER_MAINTENANCE',
     currentOccupantId: null,
@@ -739,6 +749,8 @@ const initialHousingUnits: HousingUnit[] = [
   {
     id: 'hu-5',
     name: 'Prof Qtrs 01',
+    houseNumber: '12B',
+    roadNumber: '12B Circle',
     housingTypeId: 'ht-3',
     status: 'VACANT',
     currentOccupantId: null,
@@ -748,6 +760,8 @@ const initialHousingUnits: HousingUnit[] = [
   {
     id: 'hu-6',
     name: 'Prof Qtrs 02',
+    houseNumber: '14',
+    roadNumber: '14 Close',
     housingTypeId: 'ht-3',
     status: 'OCCUPIED',
     currentOccupantId: 'u-8',
@@ -757,6 +771,8 @@ const initialHousingUnits: HousingUnit[] = [
   {
     id: 'hu-7',
     name: 'Qtrs 16',
+    houseNumber: '20D',
+    roadNumber: '20D',
     housingTypeId: 'ht-1',
     status: 'OCCUPIED',
     currentOccupantId: 'u-10',
@@ -766,6 +782,8 @@ const initialHousingUnits: HousingUnit[] = [
   {
     id: 'hu-8',
     name: 'Blk B1',
+    houseNumber: '24',
+    roadNumber: '24',
     housingTypeId: 'ht-2',
     status: 'VACANT',
     currentOccupantId: null,
@@ -775,6 +793,8 @@ const initialHousingUnits: HousingUnit[] = [
   {
     id: 'hu-9',
     name: 'Blk B2',
+    houseNumber: '25',
+    roadNumber: '24',
     housingTypeId: 'ht-2',
     status: 'UNDER_MAINTENANCE',
     currentOccupantId: null,
@@ -784,6 +804,8 @@ const initialHousingUnits: HousingUnit[] = [
   {
     id: 'hu-10',
     name: 'Qtrs 17',
+    houseNumber: '17',
+    roadNumber: '1',
     housingTypeId: 'ht-1',
     status: 'VACANT',
     currentOccupantId: null,

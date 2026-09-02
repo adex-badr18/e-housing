@@ -299,7 +299,7 @@ export function HousingUnitsTable({
                     <TableCell>
                       {ht?.hasBQ ? (
                         <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-xs">
-                          {ht.numberOfBQ} BQ{ht.numberOfBQ !== 1 ? 's' : ''}
+                          1 BQ
                         </Badge>
                       ) : (
                         <span className="text-muted-foreground text-xs">None</span>

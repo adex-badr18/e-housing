@@ -164,7 +164,7 @@ export function StepHousingPreferences({ form, eligibleTypes }: StepHousingPrefe
                   )}
                   {ht.hasBQ && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
-                      {ht.numberOfBQ} BQ{ht.numberOfBQ !== 1 ? 's' : ''}
+                      1 BQ
                     </span>
                   )}
                   {ht.hasCourtyard && (

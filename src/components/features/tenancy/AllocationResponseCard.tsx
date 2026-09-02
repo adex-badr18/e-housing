@@ -228,7 +228,7 @@ export function AllocationResponseCard({ allocation, unit, housingType }: Props)
             </div>
             <div className="flex flex-col items-center gap-1.5 rounded-xl bg-secondary/50 py-4 px-3">
               <Home className="h-5 w-5 text-primary/70" />
-              <span className="text-2xl font-extrabold">{housingType.numberOfBQ}</span>
+              <span className="text-2xl font-extrabold">{housingType.hasBQ ? 1 : 0}</span>
               <span className="text-xs text-muted-foreground font-medium">BQ Units</span>
             </div>
             <div className="flex flex-col items-center gap-1.5 rounded-xl bg-secondary/50 py-4 px-3">

@@ -154,15 +154,7 @@ export function HousingTypeDetailDialog({
             <DetailRow label="Courtyard" value={<BoolBadge value={housingType.hasCourtyard} />} icon={Trees} />
             <DetailRow
               label="Boys Quarters (BQ)"
-              value={
-                housingType.hasBQ ? (
-                  <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-xs font-medium">
-                    {housingType.numberOfBQ} BQ unit{housingType.numberOfBQ !== 1 ? 's' : ''}
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="text-muted-foreground text-xs">None</Badge>
-                )
-              }
+              value={<BoolBadge value={housingType.hasBQ} trueLabel="Available" falseLabel="None" />}
               icon={Users}
             />
           </div>

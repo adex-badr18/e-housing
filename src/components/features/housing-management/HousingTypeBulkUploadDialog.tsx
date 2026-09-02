@@ -52,7 +52,6 @@ interface PreviewRow {
   hasStudyRoom: boolean;
   parkingSpace: ParkingSpace;
   hasBQ: boolean;
-  numberOfBQ: number;
   hasCourtyard: boolean;
   allocationPoints: number;
   annualRent: number;
@@ -71,11 +70,11 @@ type ResultRow = {
 function downloadTemplate() {
   const headers = [
     'houseTypeName', 'numOfBedrooms', 'numOfBath', 'numOfToilets',
-    'studyRoom', 'parkingSpace', 'boyQuarters', 'numOfBQUnits',
+    'studyRoom', 'parkingSpace', 'boyQuarters',
     'courtyard', 'buildingType', 'points', 'annualRent', 'status',
   ];
   const example = [
-    'A1', 4, 3, 4, 'TRUE', 'Garage', 'TRUE', 2, 'TRUE', 'Bungalow', 70, 220000, 'Active',
+    'A1', 4, 3, 4, 'TRUE', 'Garage', 'TRUE', 'TRUE', 'Bungalow', 70, 220000, 'Active',
   ];
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.aoa_to_sheet([headers, example]);
@@ -99,10 +98,6 @@ function validateRow(row: PreviewRow): RowError[] {
     errs.push({ field: 'parkingSpace', message: 'Must be Garage, Car Park, or Nil' });
   if (!['BUNGALOW', 'STOREY'].includes(row.buildingType))
     errs.push({ field: 'buildingType', message: 'Must be BUNGALOW or STOREY' });
-  if (row.hasBQ && row.numberOfBQ < 1)
-    errs.push({ field: 'numberOfBQ', message: 'At least 1 BQ unit required when BQ is enabled' });
-  if (!row.hasBQ && row.numberOfBQ > 0)
-    errs.push({ field: 'numberOfBQ', message: 'Set to 0 when BQ is disabled' });
   if (row.allocationPoints < 1)
     errs.push({ field: 'allocationPoints', message: 'Points must be ≥ 1' });
   if (row.annualRent < 0)
@@ -150,7 +145,6 @@ function parseExcel(file: File): Promise<PreviewRow[]> {
             hasStudyRoom: parseBool(r.studyRoom ?? r.hasStudyRoom),
             parkingSpace: parseParkingSpace(r.parkingSpace),
             hasBQ: parseBool(r.boyQuarters ?? r.hasBQ),
-            numberOfBQ: Number(r.numOfBQUnits ?? r.numberOfBQ ?? 0),
             hasCourtyard: parseBool(r.courtyard ?? r.hasCourtyard),
             allocationPoints: Number(r.points ?? r.allocationPoints ?? 1),
             annualRent: Number(r.annualRent ?? 0),
@@ -384,7 +378,6 @@ export function HousingTypeBulkUploadDialog({
                       <th className="text-center px-3 py-2.5 font-semibold text-muted-foreground w-16 shrink-0">WC</th>
                       <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-28 shrink-0">Parking</th>
                       <th className="text-center px-3 py-2.5 font-semibold text-muted-foreground w-20 shrink-0">BQ</th>
-                      <th className="text-center px-3 py-2.5 font-semibold text-muted-foreground w-16 shrink-0">BQ#</th>
                       <th className="text-center px-3 py-2.5 font-semibold text-muted-foreground w-20 shrink-0">Points</th>
                       <th className="text-right px-3 py-2.5 font-semibold text-muted-foreground w-28 shrink-0">Rent (₦)</th>
                       <th className="w-10 px-2 py-2.5"></th>
@@ -462,11 +455,7 @@ export function HousingTypeBulkUploadDialog({
                             <td className="px-2 py-1.5 text-center w-20">
                               <Select
                                 value={row.hasBQ ? 'yes' : 'no'}
-                                onValueChange={v => {
-                                  const val = v === 'yes';
-                                  updateCell(row._id, 'hasBQ', val);
-                                  if (!val) updateCell(row._id, 'numberOfBQ', 0);
-                                }}
+                                onValueChange={v => updateCell(row._id, 'hasBQ', v === 'yes')}
                               >
                                 <SelectTrigger className="h-7 text-xs w-full"><SelectValue /></SelectTrigger>
                                 <SelectContent>
@@ -474,15 +463,6 @@ export function HousingTypeBulkUploadDialog({
                                   <SelectItem value="no">No</SelectItem>
                                 </SelectContent>
                               </Select>
-                            </td>
-                            {/* BQ# */}
-                            <td className="px-2 py-1.5 text-center w-16">
-                              <Input
-                                type="number" min={0} value={row.numberOfBQ}
-                                disabled={!row.hasBQ}
-                                onChange={e => updateCell(row._id, 'numberOfBQ', Number(e.target.value))}
-                                className={cn('h-7 text-xs w-full text-center', row.errors.find(e => e.field === 'numberOfBQ') ? 'border-destructive' : '', !row.hasBQ ? 'opacity-40' : '')}
-                              />
                             </td>
                             {/* Points */}
                             <td className="px-2 py-1.5 text-center w-20">
@@ -515,7 +495,7 @@ export function HousingTypeBulkUploadDialog({
                           {/* Inline error row */}
                           {hasErr && (
                             <tr className="bg-red-50/40 dark:bg-red-950/10">
-                              <td colSpan={11} className="px-3 py-1.5">
+                              <td colSpan={10} className="px-3 py-1.5">
                                 <div className="flex flex-wrap gap-x-4 gap-y-0.5">
                                   {row.errors.map(e => (
                                     <span key={e.field} className="text-[10px] text-destructive flex items-center gap-1">

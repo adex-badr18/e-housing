@@ -60,7 +60,7 @@ export default async function StaffBQPage() {
   const housingType = unit ? mockDB.housingTypes.find(ht => ht.id === unit.housingTypeId) : null;
 
   // Unit has no BQs
-  if (!housingType?.hasBQ || housingType.numberOfBQ === 0) {
+  if (!housingType?.hasBQ) {
     return (
       <div className="w-full space-y-6">
         <div>
@@ -100,12 +100,12 @@ export default async function StaffBQPage() {
           </div>
           <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/5 border border-primary/20 text-sm text-primary/80">
             <Home className="h-4 w-4" />
-            <span className="font-medium">{housingType.numberOfBQ} BQ unit{housingType.numberOfBQ !== 1 ? 's' : ''} attached</span>
+            <span className="font-medium">1 BQ unit attached</span>
           </div>
         </div>
       </div>
 
-      <BQPortal bqs={bqs} maxBQs={housingType.numberOfBQ} />
+      <BQPortal bqs={bqs} maxBQs={1} />
     </div>
   );
 }

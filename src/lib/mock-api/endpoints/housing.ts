@@ -180,20 +180,18 @@ export async function createHousingUnit(
   };
   mockDB.housingUnits.push(unit);
 
-  // Auto-create BQ sub-units based on the housing type spec
+  // Auto-create BQ sub-unit if housing type has BQ
   const ht = mockDB.housingTypes.find(h => h.id === data.housingTypeId)!;
-  if (ht.hasBQ && ht.numberOfBQ > 0) {
-    for (let i = 1; i <= ht.numberOfBQ; i++) {
-      const bq: BQ = {
-        id: mockDB.generateId('bq'),
-        housingUnitId: unit.id,
-        label: `BQ ${i}`,
-        status: 'VACANT',
-        createdAt: now,
-        updatedAt: now,
-      };
-      mockDB.bqs.push(bq);
-    }
+  if (ht.hasBQ) {
+    const bq: BQ = {
+      id: mockDB.generateId('bq'),
+      housingUnitId: unit.id,
+      label: 'BQ 1',
+      status: 'VACANT',
+      createdAt: now,
+      updatedAt: now,
+    };
+    mockDB.bqs.push(bq);
   }
 
   return unit;

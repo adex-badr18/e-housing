@@ -55,33 +55,16 @@ export const housingTypeBaseSchema = z.object({
   hasStudyRoom: z.boolean(),
   parkingSpace: parkingSpaceSchema,
   hasBQ: z.boolean(),
-  numberOfBQ: z.coerce.number().int().min(0),
   hasCourtyard: z.boolean(),
   allocationPoints: z.coerce
     .number()
     .int()
-    .min(1, 'Allocation points must be at least 1'),
+    .optional(),
   annualRent: z.coerce.number().min(0, 'Annual rent cannot be negative'),
   isActive: z.boolean(),
 });
 
-// Full schema with cross-field refinements — used for create validation.
-export const housingTypeSchema = housingTypeBaseSchema.superRefine((data, ctx) => {
-  if (data.hasBQ && data.numberOfBQ < 1) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'If BQ is available, number of BQs must be at least 1',
-      path: ['numberOfBQ'],
-    });
-  }
-  if (!data.hasBQ && data.numberOfBQ > 0) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Number of BQs must be 0 when BQ is not available',
-      path: ['numberOfBQ'],
-    });
-  }
-});
+export const housingTypeSchema = housingTypeBaseSchema;
 
 export type HousingTypeFormValues = z.infer<typeof housingTypeSchema>;
 

@@ -208,7 +208,7 @@ export function TenancyAgreementView({ occupancy, agreement, unit, housingType, 
               </div>
               <div>
                 <p className="text-xs text-muted-foreground print:text-black/60 font-semibold uppercase tracking-wider mb-1">BQ Units</p>
-                <p className="font-semibold">{housingType.numberOfBQ} ({housingType.hasBQ ? 'Available' : 'None'})</p>
+                <p className="font-semibold">{housingType.hasBQ ? '1 Unit Available' : 'None'}</p>
               </div>
             </div>
           </div>

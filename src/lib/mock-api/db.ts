@@ -96,7 +96,6 @@ export interface HousingType {
   hasStudyRoom: boolean;
   parkingSpace: ParkingSpace;
   hasBQ: boolean;
-  numberOfBQ: number;
   hasCourtyard: boolean;
   /** Base points used in the allocation scoring formula */
   allocationPoints: number;
@@ -335,12 +334,12 @@ export interface QuitRequest {
   requestedById: string;
   reason: string;
   status: QuitRequestStatus;
-  
+
   /** FK -> User (Housing Secretary who reviewed it) */
   reviewedById?: string | null;
   reviewedAt?: string | null;
   reviewNotes?: string | null;
-  
+
   createdAt: string;
   updatedAt?: string;
 }
@@ -605,16 +604,15 @@ const initialHousingTypes: HousingType[] = [
   {
     id: 'ht-1',
     name: 'A1',
-    buildingType: 'BUNGALOW',
-    numberOfBedrooms: 4,
-    numberOfBathrooms: 3,
+    buildingType: 'STOREY',
+    numberOfBedrooms: 5,
+    numberOfBathrooms: 4,
     numberOfToilets: 4,
     hasStudyRoom: true,
     parkingSpace: 'Garage',
     hasBQ: true,
-    numberOfBQ: 2,
-    hasCourtyard: true,
-    allocationPoints: 70,
+    hasCourtyard: false,
+    allocationPoints: 36,
     annualRent: 220000,
     isActive: true,
     createdAt: '2024-01-01T00:00:00.000Z',
@@ -622,16 +620,15 @@ const initialHousingTypes: HousingType[] = [
   {
     id: 'ht-2',
     name: 'B1/2',
-    buildingType: 'STOREY',
+    buildingType: 'BUNGALOW',
     numberOfBedrooms: 3,
     numberOfBathrooms: 2,
-    numberOfToilets: 3,
+    numberOfToilets: 2,
     hasStudyRoom: true,
-    parkingSpace: 'Car Park',
-    hasBQ: false,
-    numberOfBQ: 0,
-    hasCourtyard: false,
-    allocationPoints: 50,
+    parkingSpace: 'Garage',
+    hasBQ: true,
+    hasCourtyard: true,
+    allocationPoints: 33,
     annualRent: 150000,
     isActive: true,
     createdAt: '2024-01-01T00:00:00.000Z',
@@ -642,13 +639,12 @@ const initialHousingTypes: HousingType[] = [
     buildingType: 'BUNGALOW',
     numberOfBedrooms: 3,
     numberOfBathrooms: 2,
-    numberOfToilets: 3,
-    hasStudyRoom: false,
-    parkingSpace: 'Garage',
+    numberOfToilets: 2,
+    hasStudyRoom: true,
+    parkingSpace: 'Car Park',
     hasBQ: true,
-    numberOfBQ: 1,
     hasCourtyard: true,
-    allocationPoints: 55,
+    allocationPoints: 32,
     annualRent: 160000,
     isActive: true,
     createdAt: '2024-01-01T00:00:00.000Z',
@@ -656,16 +652,15 @@ const initialHousingTypes: HousingType[] = [
   {
     id: 'ht-4',
     name: 'H',
-    buildingType: 'STOREY',
+    buildingType: 'BUNGALOW',
     numberOfBedrooms: 2,
-    numberOfBathrooms: 1,
+    numberOfBathrooms: 2,
     numberOfToilets: 2,
-    hasStudyRoom: false,
-    parkingSpace: 'Nil',
-    hasBQ: false,
-    numberOfBQ: 0,
+    hasStudyRoom: true,
+    parkingSpace: 'Garage',
+    hasBQ: true,
     hasCourtyard: false,
-    allocationPoints: 30,
+    allocationPoints: 32,
     annualRent: 90000,
     isActive: true,
     createdAt: '2024-01-01T00:00:00.000Z',
@@ -674,15 +669,14 @@ const initialHousingTypes: HousingType[] = [
     id: 'ht-5',
     name: 'LG House',
     buildingType: 'BUNGALOW',
-    numberOfBedrooms: 2,
+    numberOfBedrooms: 3,
     numberOfBathrooms: 2,
     numberOfToilets: 2,
     hasStudyRoom: false,
     parkingSpace: 'Car Park',
     hasBQ: true,
-    numberOfBQ: 1,
     hasCourtyard: false,
-    allocationPoints: 35,
+    allocationPoints: 24,
     annualRent: 100000,
     isActive: true,
     createdAt: '2024-01-01T00:00:00.000Z',
@@ -690,16 +684,15 @@ const initialHousingTypes: HousingType[] = [
   {
     id: 'ht-6',
     name: 'JSQ 1',
-    buildingType: 'STOREY',
-    numberOfBedrooms: 1,
-    numberOfBathrooms: 1,
+    buildingType: 'BUNGALOW',
+    numberOfBedrooms: 3,
+    numberOfBathrooms: 0,
     numberOfToilets: 1,
     hasStudyRoom: false,
     parkingSpace: 'Nil',
     hasBQ: false,
-    numberOfBQ: 0,
-    hasCourtyard: false,
-    allocationPoints: 20,
+    hasCourtyard: true,
+    allocationPoints: 0,
     annualRent: 60000,
     isActive: false,
     createdAt: '2024-01-01T00:00:00.000Z',
@@ -808,14 +801,6 @@ const initialBQs: BQ[] = [
     status: 'OCCUPIED', // has an occupant
     createdAt: '2024-01-05T00:00:00.000Z',
     updatedAt: '2025-01-10T00:00:00.000Z',
-  },
-  {
-    id: 'bq-2',
-    housingUnitId: 'hu-1',
-    label: 'BQ 2',
-    status: 'VACANT',
-    createdAt: '2024-01-05T00:00:00.000Z',
-    updatedAt: '2024-01-05T00:00:00.000Z',
   },
   {
     id: 'bq-3',
@@ -1567,11 +1552,11 @@ export class MockDB {
 
   getActiveApplicationForUser(userId: string): HousingApplication | undefined {
     return this.housingApplications.find(
-      a => a.userId === userId && 
-      a.status !== 'APPROVED' && 
-      a.status !== 'REJECTED' &&
-      a.status !== 'WITHDRAWN' &&
-      a.status !== 'TERMINATED'
+      a => a.userId === userId &&
+        a.status !== 'APPROVED' &&
+        a.status !== 'REJECTED' &&
+        a.status !== 'WITHDRAWN' &&
+        a.status !== 'TERMINATED'
     );
   }
 

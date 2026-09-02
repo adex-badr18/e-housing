@@ -47,7 +47,6 @@ const defaults: HousingTypeFormValues = {
   hasStudyRoom: false,
   parkingSpace: 'Nil',
   hasBQ: false,
-  numberOfBQ: 0,
   hasCourtyard: false,
   allocationPoints: 20,
   annualRent: 80000,
@@ -87,7 +86,6 @@ export function HousingTypeDialog({
         hasStudyRoom: existing.hasStudyRoom,
         parkingSpace: existing.parkingSpace,
         hasBQ: existing.hasBQ,
-        numberOfBQ: existing.numberOfBQ,
         hasCourtyard: existing.hasCourtyard,
         allocationPoints: existing.allocationPoints,
         annualRent: existing.annualRent,
@@ -263,42 +261,20 @@ export function HousingTypeDialog({
               </div>
 
               {/* BQ Toggle */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border">
-                  <div>
-                    <Label htmlFor="ht-hasBQ" className="cursor-pointer">
-                      Boys Quarters (BQ)
-                    </Label>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      BQ units will be auto-created with each housing unit of this type
-                    </p>
-                  </div>
-                  <Switch
-                    id="ht-hasBQ"
-                    checked={hasBQ}
-                    onCheckedChange={(v) => {
-                      setValue('hasBQ', v);
-                      if (!v) setValue('numberOfBQ', 0);
-                      else if (watch('numberOfBQ') < 1) setValue('numberOfBQ', 1);
-                    }}
-                  />
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border">
+                <div>
+                  <Label htmlFor="ht-hasBQ" className="cursor-pointer">
+                    Boys Quarters (BQ)
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    1 BQ unit will be auto-created with each housing unit of this type
+                  </p>
                 </div>
-                {hasBQ && (
-                  <div className="ml-1 pl-4 border-l-2 border-primary/20 space-y-1.5 animate-in slide-in-from-top-2 duration-200">
-                    <Label htmlFor="ht-numBQ">No. of BQ Units *</Label>
-                    <Input
-                      id="ht-numBQ"
-                      type="number"
-                      min={1}
-                      max={10}
-                      className={`w-32 ${errors.numberOfBQ ? 'border-destructive' : ''}`}
-                      {...register('numberOfBQ')}
-                    />
-                    {errors.numberOfBQ && (
-                      <p className="text-xs text-destructive">{errors.numberOfBQ.message}</p>
-                    )}
-                  </div>
-                )}
+                <Switch
+                  id="ht-hasBQ"
+                  checked={hasBQ}
+                  onCheckedChange={(v) => setValue('hasBQ', v)}
+                />
               </div>
             </div>
           </div>
@@ -316,7 +292,6 @@ export function HousingTypeDialog({
                 <Input
                   id="ht-points"
                   type="number"
-                  min={1}
                   {...register('allocationPoints')}
                   className={errors.allocationPoints ? 'border-destructive' : ''}
                 />

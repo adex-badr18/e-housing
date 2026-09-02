@@ -168,10 +168,10 @@ export function HousingUnitDialog({
                   Rent: <span className="font-medium text-foreground">₦{selectedType.annualRent.toLocaleString()}/yr</span>
                 </div>
               </div>
-              {selectedType.hasBQ && selectedType.numberOfBQ > 0 && (
+              {selectedType.hasBQ && (
                 <div className="flex items-center gap-2 pt-1 border-t border-border">
                   <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
-                    Auto-creates {selectedType.numberOfBQ} BQ{selectedType.numberOfBQ !== 1 ? 's' : ''}
+                    Auto-creates 1 BQ
                   </Badge>
                   <span className="text-xs text-muted-foreground">
                     Boys Quarters will be created automatically

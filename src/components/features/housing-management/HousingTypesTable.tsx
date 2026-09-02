@@ -252,8 +252,8 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
                   </TableCell>
                   <TableCell>
                     {ht.hasBQ ? (
-                      <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-xs">
-                        {ht.numberOfBQ} BQ{ht.numberOfBQ !== 1 ? 's' : ''}
+                      <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-xs font-medium">
+                        BQ
                       </Badge>
                     ) : (
                       <span className="text-muted-foreground text-xs">—</span>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useMemo } from 'react';
+import { useState, useEffect, useTransition, useMemo } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,6 +45,8 @@ import {
   Trash2,
   Home,
   Upload,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 type SortField = 'name' | 'allocationPoints' | 'annualRent';
@@ -75,6 +77,8 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
   const [deleteTarget, setDeleteTarget] = useState<HousingType | null>(null);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [isPendingDelete, startDeleteTransition] = useTransition();
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 10;
 
   // Propagate mutation upstream if needed
   const refresh = (record?: HousingType) => {
@@ -109,6 +113,14 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
         return sortDir === 'asc' ? cmp : -cmp;
       });
   }, [data, searchQuery, activeFilter, sortField, sortDir]);
+
+  // Reset to first page whenever filters change
+  useEffect(() => {
+    setPage(0);
+  }, [searchQuery, activeFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   const handleDelete = () => {
     if (!deleteTarget) return;
@@ -208,7 +220,7 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.length === 0 ? (
+            {paginated.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={9}
@@ -221,7 +233,7 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
                 </TableCell>
               </TableRow>
             ) : (
-              filtered.map((ht) => (
+              paginated.map((ht) => (
                 <TableRow
                   key={ht.id}
                   className="hover:bg-muted/20 transition-colors group cursor-pointer"
@@ -290,6 +302,50 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between pt-1">
+          <p className="text-xs text-muted-foreground">
+            Page <span className="font-semibold text-foreground">{page + 1}</span> of{' '}
+            <span className="font-semibold text-foreground">{totalPages}</span>
+            {' '}·{' '}
+            <span className="font-semibold text-foreground">{filtered.length}</span> types total
+          </p>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="h-8 w-8 rounded-lg border flex items-center justify-center hover:bg-muted transition disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+              const pageNum = totalPages <= 7 ? i : Math.max(0, Math.min(page - 3, totalPages - 7)) + i;
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setPage(pageNum)}
+                  className={`h-8 w-8 rounded-lg border text-xs font-medium transition ${
+                    pageNum === page
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'hover:bg-muted'
+                  }`}
+                >
+                  {pageNum + 1}
+                </button>
+              );
+            })}
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={page === totalPages - 1}
+              className="h-8 w-8 rounded-lg border flex items-center justify-center hover:bg-muted transition disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Detail Dialog — row click */}
       <HousingTypeDetailDialog

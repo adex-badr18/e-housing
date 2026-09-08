@@ -22,7 +22,7 @@ export function StaffProfileForm({ initialData }: StaffProfileFormProps) {
     handleSubmit,
     formState: { errors },
   } = useForm({
-    resolver: zodResolver(staffProfileSchema),
+    resolver: zodResolver(staffProfileSchema) as any,
     defaultValues: {
       firstName: initialData.firstName || '',
       lastName: initialData.lastName || '',
@@ -41,7 +41,7 @@ export function StaffProfileForm({ initialData }: StaffProfileFormProps) {
     },
   });
 
-  const onSubmit = async (data: StaffProfileFormValues) => {
+  const onSubmit = async (data: any) => {
     setIsSubmitting(true);
     try {
       const result = await submitProfileForm(data);

@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { checkGoogleOauthConfiguredAction } from "@/app/actions/auth";
 
 const registerSchema = z
   .object({
@@ -66,12 +67,17 @@ export default function RegisterPage() {
   async function handleGoogleSignIn() {
     setOauthLoading(true);
     try {
+      const { isConfigured } = await checkGoogleOauthConfiguredAction();
+      if (!isConfigured) {
+        toast.warning(
+          "Google OAuth is not configured in .env.local with a valid GOOGLE_CLIENT_ID & GOOGLE_CLIENT_SECRET. Please use the institutional sign-in form below."
+        );
+        setOauthLoading(false);
+        return;
+      }
       await signIn("google", { callbackUrl: "/dashboard" });
     } catch {
-      toast.info(
-        "Google OAuth is not yet configured. Please use the manual form or contact the Housing Unit."
-      );
-    } finally {
+      toast.error("Google authentication failed. Please try again.");
       setOauthLoading(false);
     }
   }

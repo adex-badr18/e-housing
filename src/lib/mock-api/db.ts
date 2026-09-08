@@ -55,6 +55,7 @@ export interface User {
   phoneNumber?: string;
   isActive: boolean;
   mustChangePassword?: boolean;
+  profileCompleted?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -63,11 +64,18 @@ export interface User {
 // 2. STAFF PROFILE
 // ---------------------------------------------------------------------------
 
+export interface ChildDependant {
+  name: string;
+  age: number;
+}
+
 export interface StaffProfile {
   id: string;
   userId: string;
   staffId: string;
+  title?: string;
   middleName?: string;
+  phoneNumber?: string;
   gender?: Gender;
   department: string;
   faculty: string;
@@ -76,6 +84,26 @@ export interface StaffProfile {
   employmentDate: string;
   maritalStatus: MaritalStatus;
   numberOfDependents: number;
+
+  // Additional Onboarding Details
+  nationality?: string;
+  presentAddress?: string;
+  ippisNumber?: string;
+  assumptionDate?: string;
+  expectedRetirementDate?: string;
+  onLeaveWithoutPay?: boolean;
+  previousExperience?: {
+    employer?: string;
+    seniorStaffDate?: string;
+    responsibility?: string;
+    period?: string;
+  };
+  children?: ChildDependant[];
+  spouseName?: string;
+  spouseEmployedInOAU?: boolean;
+  spouseDepartment?: string;
+  spouseEmploymentAddress?: string;
+
   /** System-managed — never set directly via user-facing forms */
   currentHousingStatus: CurrentHousingStatus;
   createdAt?: string;
@@ -375,6 +403,7 @@ const initialUsers: User[] = [
     role: 'SUPER_ADMIN',
     isActive: true,
     mustChangePassword: false,
+    profileCompleted: true,
     phoneNumber: '08000000001',
     createdAt: '2024-01-01T00:00:00.000Z',
   },
@@ -387,6 +416,7 @@ const initialUsers: User[] = [
     role: 'HOUSING_SECRETARY',
     isActive: true,
     mustChangePassword: false,
+    profileCompleted: true,
     phoneNumber: '08000000002',
     createdAt: '2024-01-01T00:00:00.000Z',
   },
@@ -399,6 +429,7 @@ const initialUsers: User[] = [
     role: 'ESTATE_OFFICER',
     isActive: true,
     mustChangePassword: false,
+    profileCompleted: true,
     phoneNumber: '08000000003',
     createdAt: '2024-01-01T00:00:00.000Z',
   },
@@ -411,6 +442,7 @@ const initialUsers: User[] = [
     role: 'DVC_ADMIN',
     isActive: true,
     mustChangePassword: false,
+    profileCompleted: true,
     phoneNumber: '08000000004',
     createdAt: '2024-01-01T00:00:00.000Z',
   },
@@ -423,6 +455,7 @@ const initialUsers: User[] = [
     role: 'ELECTRICAL_OFFICER',
     isActive: true,
     mustChangePassword: false,
+    profileCompleted: true,
     phoneNumber: '08000000005',
     createdAt: '2024-01-01T00:00:00.000Z',
   },
@@ -435,6 +468,7 @@ const initialUsers: User[] = [
     role: 'STAFF',
     isActive: true,
     mustChangePassword: false,
+    profileCompleted: true,
     phoneNumber: '08012345678',
     createdAt: '2024-02-01T00:00:00.000Z',
   },
@@ -447,6 +481,7 @@ const initialUsers: User[] = [
     role: 'STAFF',
     isActive: true,
     mustChangePassword: false,
+    profileCompleted: true,
     phoneNumber: '08087654321',
     createdAt: '2024-02-15T00:00:00.000Z',
   },
@@ -459,6 +494,7 @@ const initialUsers: User[] = [
     role: 'STAFF',
     isActive: true,
     mustChangePassword: false,
+    profileCompleted: true,
     phoneNumber: '08031122334',
     createdAt: '2024-03-01T00:00:00.000Z',
   },
@@ -471,6 +507,7 @@ const initialUsers: User[] = [
     role: 'STAFF',
     isActive: true,
     mustChangePassword: false,
+    profileCompleted: true,
     phoneNumber: '08055667788',
     createdAt: '2024-03-20T00:00:00.000Z',
   },
@@ -483,6 +520,7 @@ const initialUsers: User[] = [
     role: 'STAFF',
     isActive: true,
     mustChangePassword: false,
+    profileCompleted: true,
     phoneNumber: '08099001122',
     createdAt: '2024-04-10T00:00:00.000Z',
   },
@@ -495,6 +533,7 @@ const initialUsers: User[] = [
     role: 'STAFF',
     isActive: false,
     mustChangePassword: false,
+    profileCompleted: true,
     phoneNumber: '08044556677',
     createdAt: '2024-05-05T00:00:00.000Z',
   },

@@ -13,8 +13,8 @@ import { DashboardSection } from '@/components/shared/DashboardSection';
 import { SnapshotTable } from '@/components/shared/SnapshotTable';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { Badge } from '@/components/ui/badge';
+import { StaffHousingActions } from '@/app/dashboard/components/StaffHousingActions';
 import { cn } from '@/lib/utils';
-
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-GB', {
@@ -96,6 +96,12 @@ export default async function StaffDashboardPage() {
           </Link>
         </div>
       )}
+
+      {/* Post-Onboarding Housing Actions */}
+      <StaffHousingActions
+        currentHousingStatus={profile?.currentHousingStatus}
+        hasActiveApplication={!!activeApplication}
+      />
 
       {/* Row 1: KPI Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

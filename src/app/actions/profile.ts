@@ -102,3 +102,57 @@ export async function completeStaffOnboarding(data: unknown) {
 export async function submitProfileForm(data: unknown) {
   return completeStaffOnboarding(data);
 }
+
+export async function updateDependantsInfo(data: unknown) {
+  const session = await auth();
+
+  if (!session?.user) {
+    return { success: false, error: 'Unauthorized. Please sign in.' };
+  }
+
+  if (session.user.role !== 'STAFF') {
+    return { success: false, error: 'Access denied.' };
+  }
+
+  const parsed = (await import('@/lib/validations/profile')).dependantsInfoSchema.safeParse(data);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: 'Validation failed. Please review the highlighted fields.',
+      details: parsed.error.format(),
+    };
+  }
+
+  try {
+    const val = parsed.data;
+
+    await updateStaffProfile(session.user.id, {
+      spouseName: val.spouseName,
+      spouseEmployedInOAU: val.spouseEmployedInOAU,
+      spouseDepartment: val.spouseDepartment,
+      spouseEmploymentAddress: val.spouseEmploymentAddress,
+      children: val.children,
+      numberOfDependents: val.children ? val.children.length : val.numberOfDependents,
+    });
+
+    mockDB.writeAuditLog({
+      actorId: session.user.id,
+      action: 'DEPENDANTS_INFO_UPDATED',
+      entityType: 'User',
+      entityId: session.user.id,
+      status: 'SUCCESS',
+      metadata: {
+        childrenCount: val.children?.length ?? 0,
+        spouseName: val.spouseName,
+      },
+    });
+
+    revalidatePath('/staff/profile');
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating dependants info:', error);
+    return { success: false, error: 'An error occurred while saving dependants information.' };
+  }
+}
+

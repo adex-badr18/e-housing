@@ -149,9 +149,23 @@ export function StaffProfileForm({ initialData }: StaffProfileFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="numberOfDependents">Number of Dependents</Label>
-          <Input id="numberOfDependents" type="number" {...register('numberOfDependents')} min="0" />
-          {errors.numberOfDependents && <p className="text-xs text-destructive">{errors.numberOfDependents.message}</p>}
+          <Label htmlFor="numberOfDependents" className="flex items-center gap-1.5">
+            Number of Dependents
+            <span className="text-[10px] font-normal text-muted-foreground bg-muted px-1.5 py-0.5 rounded ml-1">
+              Auto-synced from Dependants section
+            </span>
+          </Label>
+          <Input
+            id="numberOfDependents"
+            type="number"
+            {...register('numberOfDependents')}
+            readOnly
+            className="bg-muted/50 cursor-not-allowed select-none"
+            tabIndex={-1}
+          />
+          <p className="text-[11px] text-muted-foreground">
+            This count is automatically updated when you add or remove children in the <strong>Dependants Information</strong> section below.
+          </p>
         </div>
       </div>
       

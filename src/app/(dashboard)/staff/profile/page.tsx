@@ -2,7 +2,9 @@ import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { getStaffDashboardData } from '@/lib/mock-api/endpoints/metrics';
 import { StaffProfileForm } from '@/components/features/profile/StaffProfileForm';
+import { DependantsEditForm } from '@/components/features/profile/DependantsEditForm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Users } from 'lucide-react';
 
 export default async function StaffProfilePage() {
   const session = await auth();
@@ -37,6 +39,7 @@ export default async function StaffProfilePage() {
         <p className="text-muted-foreground">Manage your personal and professional information.</p>
       </div>
 
+      {/* Personal & Appointment Details */}
       <Card>
         <CardHeader>
           <CardTitle>Personal Details</CardTitle>
@@ -48,6 +51,33 @@ export default async function StaffProfilePage() {
           <StaffProfileForm initialData={initialData} />
         </CardContent>
       </Card>
+
+      {/* Dependants Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="size-5 text-amber-600" />
+            Dependants Information
+          </CardTitle>
+          <CardDescription>
+            Update your spouse details and child dependants. Changes are saved immediately to your institutional record.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DependantsEditForm
+            initialData={{
+              spouseName: profile?.spouseName,
+              spouseEmployedInOAU: profile?.spouseEmployedInOAU,
+              spouseDepartment: profile?.spouseDepartment,
+              spouseEmploymentAddress: profile?.spouseEmploymentAddress,
+              children: profile?.children,
+              numberOfDependents: profile?.numberOfDependents,
+              maritalStatus: profile?.maritalStatus,
+            }}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }
+

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Oxygen, Geist_Mono } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
+import { Providers } from "@/components/providers";
 import "./globals.css";
 
 const oxygen = Oxygen({
@@ -41,10 +42,12 @@ export default function RootLayout({
       className={`${oxygen.variable} ${geistMono.variable} ${oxygenHeading.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <TooltipProvider>
-          {children}
-          <Toaster richColors closeButton position="top-right" />
-        </TooltipProvider>
+        <Providers>
+          <TooltipProvider>
+            {children}
+            <Toaster richColors closeButton position="top-right" />
+          </TooltipProvider>
+        </Providers>
       </body>
     </html>
   );

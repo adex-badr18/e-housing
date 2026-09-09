@@ -102,20 +102,29 @@ export const authOptions: NextAuthConfig = {
 
       return dbUser.isActive;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
         token.profileCompleted = user.profileCompleted;
       }
 
-      // Re-hydrate latest user profile state from DB
-      if (token.id) {
-        const dbUser = mockDB.findUserById(token.id as string);
-        if (dbUser) {
-          token.role = dbUser.role;
-          token.profileCompleted = dbUser.profileCompleted ?? false;
-        }
+      if (trigger === 'update' && session?.profileCompleted !== undefined) {
+        token.profileCompleted = session.profileCompleted;
+      }
+
+      // Re-hydrate latest user profile state from DB (check by ID first, then by Email)
+      const email = token.email as string | undefined;
+      const id = token.id as string | undefined;
+
+      const dbUser =
+        (id ? mockDB.findUserById(id) : undefined) ||
+        (email ? mockDB.findUserByEmail(email) : undefined);
+
+      if (dbUser) {
+        token.id = dbUser.id;
+        token.role = dbUser.role;
+        token.profileCompleted = dbUser.profileCompleted ?? false;
       }
 
       return token;

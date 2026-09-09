@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -96,6 +97,7 @@ const RANKS = [
 
 export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
   const router = useRouter();
+  const { update: updateSession } = useSession();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -193,8 +195,10 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
 
       if (result.success) {
         toast.success('Onboarding complete! Redirecting to staff portal...');
-        router.push(result.redirectUrl || '/dashboard');
-        router.refresh();
+        // Force a full JWT session refresh (re-reads profileCompleted=true from mockDB and updates token)
+        await updateSession({ profileCompleted: true });
+        const dest = result.redirectUrl || '/staff';
+        window.location.href = dest;
       } else {
         toast.error(result.error || 'Failed to complete onboarding.');
       }
@@ -276,7 +280,7 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
 
       {/* Main Form Card */}
       <Card className="shadow-lg border-0 bg-white">
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form onSubmit={(e) => e.preventDefault()}>
           {/* STEP 1: PERSONAL INFO */}
           {currentStep === 1 && (
             <>
@@ -832,13 +836,20 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
             )}
 
             {currentStep < 3 ? (
-              <Button type="button" onClick={handleNext} className="gap-2 bg-[rgb(27,34,50)] hover:bg-[rgb(27,34,50)]/90 text-xs px-6">
+              <Button
+                key="next-btn"
+                type="button"
+                onClick={handleNext}
+                className="gap-2 bg-[rgb(27,34,50)] hover:bg-[rgb(27,34,50)]/90 text-xs px-6"
+              >
                 Next <ArrowRight className="size-4" />
               </Button>
             ) : (
               <Button
-                type="submit"
+                key="submit-btn"
+                type="button"
                 disabled={isSubmitting}
+                onClick={form.handleSubmit(onSubmit)}
                 className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-8 shadow-md"
               >
                 {isSubmitting ? (

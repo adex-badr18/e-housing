@@ -65,7 +65,7 @@ export async function completeStaffOnboarding(data: unknown) {
     });
 
     // Update user record state to completed
-    const user = mockDB.findUserById(session.user.id);
+    const user = mockDB.findUserById(session.user.id) || (session.user.email ? mockDB.findUserByEmail(session.user.email) : undefined);
     if (user) {
       user.profileCompleted = true;
       if (val.phoneNumber) user.phoneNumber = val.phoneNumber;
@@ -91,7 +91,8 @@ export async function completeStaffOnboarding(data: unknown) {
     revalidatePath('/staff');
     revalidatePath('/staff/profile');
 
-    return { success: true, redirectUrl: '/dashboard' };
+    const redirectUrl = session.user.role === 'STAFF' ? '/staff' : '/dashboard';
+    return { success: true, redirectUrl };
   } catch (error) {
     console.error('Error completing staff onboarding:', error);
     return { success: false, error: 'An error occurred while saving your onboarding details. Please try again.' };

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { signIn, getSession } from 'next-auth/react';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -59,7 +59,9 @@ export default function LoginPage() {
         setIsLoading(false);
         return;
       }
-      await signIn('google', { callbackUrl: '/dashboard' });
+      // callbackUrl points to /staff; middleware will redirect to /onboarding
+      // if profileCompleted=false, or let the staff portal load if completed.
+      await signIn('google', { callbackUrl: '/staff' });
     } catch {
       toast.error("Google authentication failed. Please try again.");
       setIsLoading(false);
@@ -85,7 +87,16 @@ export default function LoginPage() {
 
       if (!response?.error) {
         toast.success("Authenticated with OAU credentials!");
-        router.push('/dashboard');
+        // Fetch the fresh session to check whether this user has already
+        // completed onboarding, and route them appropriately.
+        const session = await getSession();
+        const profileCompleted = (session?.user as any)?.profileCompleted ?? false;
+        const isStaff = (session?.user as any)?.role === 'STAFF';
+        if (!profileCompleted) {
+          router.push('/onboarding');
+        } else {
+          router.push(isStaff ? '/staff' : '/dashboard');
+        }
         router.refresh();
       } else {
         toast.error("Authentication failed. Only @oauife.edu.ng institutional emails are permitted.");

@@ -41,13 +41,19 @@ export default auth((req) => {
       }
     }
 
-    // Redirect logged-in users away from login pages
+    // Redirect logged-in users away from login pages only when they are fully set up.
+    // Users with an incomplete profile can still visit /login (e.g. to switch accounts
+    // or re-authenticate). They will be sent to /onboarding AFTER sign-in via the
+    // auth callback → jwt profileCompleted=false → the protected route guards above.
     if (pathname === '/login' || pathname === '/admin/login') {
-      if (!profileCompleted) {
-        return NextResponse.redirect(new URL('/onboarding', req.url));
+      if (profileCompleted) {
+        // Already fully onboarded — send them straight to the portal.
+        const dest = isStaff ? '/staff' : '/dashboard';
+        return NextResponse.redirect(new URL(dest, req.url));
       }
-      const dest = isStaff ? '/staff' : '/dashboard';
-      return NextResponse.redirect(new URL(dest, req.url));
+      // profileCompleted=false → let the login page render so the user can sign in.
+      // After sign-in the jwt callback will set profileCompleted, and subsequent
+      // navigation to /staff or /dashboard will trigger the onboarding guard above.
     }
 
     // Basic routing restrictions based on Role

@@ -358,3 +358,16 @@ export const allocationResponseSchema = z.object({
 });
 
 export type AllocationResponseValues = z.infer<typeof allocationResponseSchema>;
+
+// ---------------------------------------------------------------------------
+// 12. Claim Existing Allocation — staff registers current physical quarters
+// ---------------------------------------------------------------------------
+
+export const claimAllocationSchema = z.object({
+  houseNumber: z.string().min(1, 'House Number is required'),
+  roadNumber: z.string().min(1, 'Road Number is required'),
+  housingTypeId: z.string().min(1, 'Please select a House Type'),
+});
+
+export type ClaimAllocationFormValues = z.infer<typeof claimAllocationSchema>;
+

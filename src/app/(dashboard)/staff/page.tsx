@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { getStaffDashboardData } from '@/lib/mock-api/endpoints/metrics';
+import { getActiveHousingTypes } from '@/lib/mock-api/endpoints/housing';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { buttonVariants } from '@/components/ui/button';
 import Link from 'next/link';
@@ -37,7 +38,10 @@ export default async function StaffDashboardPage() {
     );
   }
 
-  const data = await getStaffDashboardData(session.user.id);
+  const [data, housingTypes] = await Promise.all([
+    getStaffDashboardData(session.user.id),
+    getActiveHousingTypes(),
+  ]);
   const {
     user,
     profile,
@@ -99,6 +103,7 @@ export default async function StaffDashboardPage() {
 
       {/* Post-Onboarding Housing Actions */}
       <StaffHousingActions
+        housingTypes={housingTypes}
         currentHousingStatus={profile?.currentHousingStatus}
         hasActiveApplication={!!activeApplication}
       />

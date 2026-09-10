@@ -27,6 +27,7 @@ import {
   housingTypeBaseSchema,
   housingUnitSchema,
   bqOccupantSchema,
+  claimAllocationSchema,
 } from '@/lib/validations/housing';
 import { writeAuditEntry } from '@/lib/mock-api/endpoints/audit';
 import { mockDB } from '@/lib/mock-api/db';
@@ -484,3 +485,126 @@ export async function getMyTenancyAgreementAction() {
     return { success: false as const, error: err instanceof Error ? err.message : 'Failed to fetch tenancy data' };
   }
 }
+
+// ---------------------------------------------------------------------------
+// Staff: Claim existing physical quarter allocation
+// ---------------------------------------------------------------------------
+
+export async function claimExistingAllocationAction(data: unknown) {
+  const session = await auth();
+  if (!session?.user) return { success: false, error: 'Unauthorized' };
+
+  const parsed = claimAllocationSchema.safeParse(data);
+  if (!parsed.success) {
+    return { success: false, error: 'Validation failed', details: parsed.error.format() };
+  }
+
+  const { houseNumber, roadNumber, housingTypeId } = parsed.data;
+  const userId = session.user.id;
+
+  try {
+    // 1. Verify Housing Type exists
+    const housingType = mockDB.housingTypes.find(ht => ht.id === housingTypeId);
+    if (!housingType) {
+      return { success: false, error: 'Selected housing type does not exist.' };
+    }
+
+    // 2. Find or create matching Housing Unit
+    let unit = mockDB.housingUnits.find(
+      u =>
+        u.housingTypeId === housingTypeId &&
+        u.houseNumber?.trim().toLowerCase() === houseNumber.trim().toLowerCase() &&
+        u.roadNumber?.trim().toLowerCase() === roadNumber.trim().toLowerCase()
+    );
+
+    if (unit) {
+      if (unit.status === 'OCCUPIED' && unit.currentOccupantId && unit.currentOccupantId !== userId) {
+        return {
+          success: false,
+          error: `Quarter ${unit.name} is already listed as occupied by another staff member. Please contact Housing Office if this is an error.`,
+        };
+      }
+      unit.status = 'OCCUPIED';
+      unit.currentOccupantId = userId;
+      unit.updatedAt = new Date().toISOString();
+    } else {
+      const now = new Date().toISOString();
+      unit = {
+        id: mockDB.generateId('hu'),
+        name: `House ${houseNumber.trim()}, ${roadNumber.trim()}`,
+        houseNumber: houseNumber.trim(),
+        roadNumber: roadNumber.trim(),
+        housingTypeId,
+        status: 'OCCUPIED',
+        currentOccupantId: userId,
+        createdAt: now,
+        updatedAt: now,
+      };
+      mockDB.housingUnits.push(unit);
+    }
+
+    // 3. Check for existing active occupancy or create new Occupancy record
+    let occupancy = mockDB.occupancies.find(
+      o => o.userId === userId && o.status === 'ACTIVE'
+    );
+
+    if (occupancy) {
+      occupancy.housingUnitId = unit.id;
+      occupancy.updatedAt = new Date().toISOString();
+    } else {
+      const now = new Date().toISOString();
+      occupancy = {
+        id: mockDB.generateId('occ'),
+        userId,
+        housingUnitId: unit.id,
+        checkInDate: now.split('T')[0],
+        status: 'ACTIVE',
+        createdAt: now,
+        updatedAt: now,
+      };
+      mockDB.occupancies.push(occupancy);
+    }
+
+    // 4. Update staff profile housing status
+    const profileIdx = mockDB.staffProfiles.findIndex(sp => sp.userId === userId);
+    if (profileIdx !== -1) {
+      mockDB.staffProfiles[profileIdx] = {
+        ...mockDB.staffProfiles[profileIdx],
+        currentHousingStatus: 'HAS_ALLOCATION',
+        updatedAt: new Date().toISOString(),
+      };
+    }
+
+    // 5. Write audit log
+    await writeAuditEntry({
+      actorId: userId,
+      action: 'HOUSING_CLAIMED',
+      entityType: 'Occupancy',
+      entityId: occupancy.id,
+      status: 'SUCCESS',
+      metadata: {
+        unitId: unit.id,
+        houseNumber: unit.houseNumber,
+        roadNumber: unit.roadNumber,
+        housingTypeId,
+      },
+    });
+
+    revalidatePath('/staff');
+    revalidatePath('/staff/housing');
+    revalidatePath('/staff/profile');
+
+    return { success: true, data: { unit, occupancy } };
+  } catch (err) {
+    await writeAuditEntry({
+      actorId: session.user.id,
+      action: 'HOUSING_CLAIMED',
+      entityType: 'Occupancy',
+      entityId: 'unknown',
+      status: 'FAILURE',
+      metadata: { error: String(err) },
+    });
+    return { success: false, error: err instanceof Error ? err.message : 'Failed to claim allocation' };
+  }
+}
+

@@ -34,7 +34,7 @@ export default async function StaffApplicationDetailPage({
   }
 
   return (
-    <div className="space-y-6 w-full max-w-5xl">
+    <div className="space-y-6 w-full">
       {/* Header */}
       <div className="flex flex-col gap-4">
         <Link

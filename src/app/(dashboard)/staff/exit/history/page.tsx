@@ -20,7 +20,7 @@ export default async function StaffExitHistoryPage() {
   const notices = res.success && res.data ? res.data : [];
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6 w-full">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">

@@ -30,7 +30,7 @@ export default async function ManagementExitHistoryPage() {
   }, {} as Record<string, typeof mockDB.users[0]>);
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 w-full">
       {/* Header */}
       <div className="flex items-start gap-4">
         <Link

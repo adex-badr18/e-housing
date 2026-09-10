@@ -41,7 +41,7 @@ export default async function NewHousingApplicationPage() {
   if (session.user.role !== 'STAFF') redirect('/staff');
 
   return (
-    <div className="space-y-6 w-full max-w-5xl">
+    <div className="space-y-6 w-full">
       <Link
         href="/staff/applications"
         className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-fit"

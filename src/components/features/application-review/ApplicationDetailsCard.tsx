@@ -134,8 +134,8 @@ export function ApplicationDetailsCard({
   const yearsOfService = applicantProfile?.employmentDate
     ? computeYearsOfService(applicantProfile.employmentDate)
     : null;
-  const staffCategory = applicantProfile?.salaryGradeLevel
-    ? inferStaffCategory(applicantProfile.salaryGradeLevel)
+  const staffCategory = (applicantProfile?.salaryLevel || applicantProfile?.salaryGradeLevel)
+    ? inferStaffCategory(applicantProfile.salaryLevel || applicantProfile.salaryGradeLevel || '')
     : null;
 
   return (
@@ -181,8 +181,13 @@ export function ApplicationDetailsCard({
             value={applicantProfile?.faculty ?? '—'}
           />
           <InfoRow
-            label="Salary Grade Level"
-            value={applicantProfile?.salaryGradeLevel ?? '—'}
+            label="Salary Level"
+            value={applicantProfile?.salaryLevel ?? (applicantProfile?.salaryGradeLevel ? applicantProfile.salaryGradeLevel.split(' ')[0] : '—')}
+            mono
+          />
+          <InfoRow
+            label="Salary Step"
+            value={applicantProfile?.salaryStep ?? '—'}
             mono
           />
           <InfoRow

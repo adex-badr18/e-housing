@@ -223,7 +223,9 @@ export function HousingSecretaryPanel({
             <GraduationCap className="h-4 w-4 text-muted-foreground" />
             <div>
               <p className="text-xs text-muted-foreground">Rank / Grade</p>
-              <p className="font-semibold">{applicantProfile.rank} · {applicantProfile.salaryGradeLevel}</p>
+              <p className="font-semibold">
+                {applicantProfile.rank} · {applicantProfile.salaryLevel || applicantProfile.salaryGradeLevel} {applicantProfile.salaryStep ? `(${applicantProfile.salaryStep})` : ''}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">

@@ -27,7 +27,7 @@ const STEPS = [
     label: 'Professional Profile',
     description: 'Rank & grade level',
     validateFields: [
-      'rank', 'salaryGradeLevel', 'department', 'faculty', 'employmentDate', 'maritalStatus',
+      'rank', 'salaryLevel', 'salaryStep', 'department', 'faculty', 'employmentDate', 'maritalStatus',
     ] as const,
   },
   {
@@ -70,7 +70,8 @@ export function ApplicationWizard({
     mode: 'onChange',
     defaultValues: {
       rank: profile?.rank ?? '',
-      salaryGradeLevel: profile?.salaryGradeLevel ?? '',
+      salaryLevel: profile?.salaryLevel ?? (profile?.salaryGradeLevel ? profile.salaryGradeLevel.split(' ')[0] : 'CONUASS 4'),
+      salaryStep: profile?.salaryStep ?? 'Step 1',
       department: profile?.department ?? '',
       faculty: profile?.faculty ?? '',
       employmentDate: profile?.employmentDate ?? '',

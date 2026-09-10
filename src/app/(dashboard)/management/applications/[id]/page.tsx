@@ -103,7 +103,7 @@ export default async function ApplicationReviewPage({
                 </strong>
                 {applicantProfile && (
                   <span className="ml-2">
-                    · {applicantProfile.rank} · {applicantProfile.salaryGradeLevel}
+                    · {applicantProfile.rank} · {applicantProfile.salaryLevel || applicantProfile.salaryGradeLevel || ''} {applicantProfile.salaryStep ? `(${applicantProfile.salaryStep})` : ''}
                   </span>
                 )}
               </p>

@@ -65,19 +65,46 @@ const STEPS = [
 const TITLES = ['Prof.', 'Dr.', 'Mr.', 'Mrs.', 'Miss', 'Rev.', 'Engr.', 'Arc.', 'Barr.'];
 
 const FACULTIES = [
-  'Administration',
-  'Agriculture',
-  'Arts',
-  'Basic Medical Sciences',
-  'Clinical Sciences',
-  'Dentistry',
-  'Education',
-  'Environmental Design & Management',
-  'Law',
-  'Pharmacy',
-  'Science',
-  'Social Sciences',
-  'Technology',
+  "Faculty of Agriculture",
+  "Faculty of Arts",
+  "Faculty of Basic Medical Sciences",
+  "Faculty of Clinical Sciences",
+  "Faculty of Dentistry",
+  "Faculty of Education",
+  "Faculty of Environmental Design and Management",
+  "Faculty of Law",
+  "Faculty of Pharmacy",
+  "Faculty of Science",
+  "Faculty of Social Sciences",
+  "Faculty of Technology",
+  "Faculty of Computing Science & Engineering",
+  "Postgraduate College",
+  "Directorate of Academic Affairs",
+  "Directorate of Corporate Services",
+  "Directorate of Student Affairs",
+  "Directorate of Technological Infrastructure (DTI / ICT Centre)",
+  "Directorate of Physical Planning and Development",
+  "Directorate of Works and Maintenance",
+  "Bursary Department",
+  "University Library (Hezekiah Oluwasanmi Library)",
+  "Medical and Health Services (Health Centre)",
+  "Division of Educational Services",
+  "Institute of Ecology and Environmental Studies",
+  "Institute of Agricultural Research and Training (IAR&T)",
+  "Institute of Cultural Studies",
+  "Centre for Distance Learning (CDL)",
+  "Centre for Energy Research and Development (CERD)",
+  "Centre for Gender and Social Policy Studies",
+  "Centre for Industrial Research and Development (CIRD)",
+  "Centre for Space Research and Applications",
+  "Obafemi Awolowo University Teaching Hospitals Complex (OAUTHC)",
+  "Security Unit",
+  "Audit Unit",
+  "Legal Unit",
+  "Public Relations Unit",
+  "Parks and Gardens Unit",
+  "Commercial Farm Unit",
+  "Other"
 ];
 
 const RANKS = [
@@ -93,7 +120,79 @@ const RANKS = [
   'Senior Assistant Registrar / Assistant Director',
   'Administrative Officer I / Senior Accountant',
   'Administrative Officer II / Accountant',
+  'Bursar',
+  'Director',
+  'Deputy Director',
+  'Deputy Bursar',
+  'Bursary',
+  'ICT',
+  'Registry',
+  'Works and Maintenance',
+  'Health Services',
+  'Library',
+  'Security',
+  'Sports',
+  'Student Affairs',
+  'Technologist I',
+  'Technologist II',
+  'Technical Officer I',
+  'Technical Officer II',
+  'System programmer I',
+  'System programmer II',
+  'Executive Officer I',
+  'Executive Officer II',
+  'Senior Executive Officer',
+  'Principal Executive Officer',
+  'Assistant Chief Executive Officer',
+  'Chief Executive Officer',
 ];
+
+const SALARY_LEVELS = [
+  "CONUASS 1",
+  "CONUASS 2",
+  "CONUASS 3",
+  "CONUASS 4",
+  "CONUASS 5",
+  "CONUASS 6",
+  "CONUASS 7",
+  "CONTISS 1",
+  "CONTISS 2",
+  "CONTISS 3",
+  "CONTISS 4",
+  "CONTISS 5",
+  "CONTISS 6",
+  "CONTISS 7",
+  "CONTISS 8",
+  "CONTISS 9",
+  "CONTISS 11",
+  "CONTISS 13",
+  "CONTISS 14",
+  "CONTISS 15",
+  "CONHESS 1",
+  "CONHESS 2",
+  "CONHESS 3",
+  "CONHESS 4",
+  "CONHESS 5",
+  "CONHESS 6",
+  "CONHESS 7",
+  "CONHESS 8",
+  "CONHESS 9",
+  "CONHESS 10",
+  "CONHESS 11",
+  "CONHESS 12",
+  "CONHESS 13",
+  "CONHESS 14",
+  "CONHESS 15",
+  "CONMESS 1",
+  "CONMESS 2",
+  "CONMESS 3",
+  "CONMESS 4",
+  "CONMESS 5",
+  "CONMESS 6",
+  "CONMESS 7"
+];
+
+const SALARY_STEPS = Array.from({ length: 15 }, (_, i) => `Step ${i + 1}`);
 
 export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
   const router = useRouter();
@@ -117,7 +216,8 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
       faculty: 'Technology',
       department: 'Computer Science & Engineering',
       rank: 'Lecturer I',
-      salaryGradeLevel: 'CONUASS 4 Step 2',
+      salaryLevel: 'CONUASS 4',
+      salaryStep: 'Step 2',
       ippisNumber: '',
       employmentDate: '',
       assumptionDate: '',
@@ -159,7 +259,8 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
           'faculty',
           'department',
           'rank',
-          'salaryGradeLevel',
+          'salaryLevel',
+          'salaryStep',
           'ippisNumber',
           'employmentDate',
           'assumptionDate',
@@ -215,7 +316,7 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-xl font-bold text-[rgb(27,34,50)]">First-Time Staff Onboarding</h2>
+            <h2 className="text-xl font-bold text-[rgb(27,34,50)]">Staff Onboarding</h2>
             <p className="text-xs text-muted-foreground mt-0.5">
               Complete your institutional record to unlock your housing portal account.
             </p>
@@ -247,22 +348,20 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                   if (step.id < currentStep) setCurrentStep(step.id);
                   else if (step.id === currentStep + 1) handleNext();
                 }}
-                className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${
-                  isActive
-                    ? 'bg-[rgb(27,34,50)] text-white border-[rgb(27,34,50)] shadow-md'
-                    : isCompleted
+                className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${isActive
+                  ? 'bg-[rgb(27,34,50)] text-white border-[rgb(27,34,50)] shadow-md'
+                  : isCompleted
                     ? 'bg-emerald-50 text-emerald-900 border-emerald-200 hover:bg-emerald-100/70'
                     : 'bg-gray-50 text-gray-400 border-gray-100'
-                }`}
+                  }`}
               >
                 <div
-                  className={`size-8 rounded-lg flex items-center justify-center shrink-0 ${
-                    isActive
-                      ? 'bg-amber-400 text-[rgb(27,34,50)]'
-                      : isCompleted
+                  className={`size-8 rounded-lg flex items-center justify-center shrink-0 ${isActive
+                    ? 'bg-amber-400 text-[rgb(27,34,50)]'
+                    : isCompleted
                       ? 'bg-emerald-500 text-white'
                       : 'bg-gray-200 text-gray-500'
-                  }`}
+                    }`}
                 >
                   {isCompleted ? <CheckCircle2 className="size-4" /> : <Icon className="size-4" />}
                 </div>
@@ -313,7 +412,7 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                       value={form.watch('title') || 'Dr.'}
                       onValueChange={(val) => form.setValue('title', val || '', { shouldValidate: true })}
                     >
-                      <SelectTrigger id="title" className="mt-1">
+                      <SelectTrigger id="title" className="w-full mt-1">
                         <SelectValue placeholder="Select Title" />
                       </SelectTrigger>
                       <SelectContent>
@@ -327,11 +426,11 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                   {/* Full Name (Locked) */}
                   <div className="md:col-span-2">
                     <Label className="text-xs font-semibold">Official Full Name (Locked)</Label>
-                    <div className="relative mt-1">
+                    <div className="relative mt-1 w-full">
                       <Input
                         value={`${initialUser.name || ''}`}
                         disabled
-                        className="bg-gray-100 text-gray-700 pr-9 font-medium"
+                        className="w-full bg-gray-100 text-gray-700 pr-9 font-medium"
                       />
                       <Lock className="size-4 text-gray-400 absolute right-3 top-2.5" />
                     </div>
@@ -342,11 +441,11 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                   {/* Email (Locked) */}
                   <div>
                     <Label className="text-xs font-semibold">Official Email Address (Locked)</Label>
-                    <div className="relative mt-1">
+                    <div className="relative mt-1 w-full">
                       <Input
                         value={initialUser.email || ''}
                         disabled
-                        className="bg-gray-100 text-gray-700 pr-9 font-mono text-xs"
+                        className="w-full bg-gray-100 text-gray-700 pr-9 font-mono text-xs"
                       />
                       <Lock className="size-4 text-gray-400 absolute right-3 top-2.5" />
                     </div>
@@ -359,7 +458,7 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                       id="phoneNumber"
                       type="tel"
                       placeholder="e.g. 08012345678"
-                      className="mt-1"
+                      className="w-full mt-1"
                       {...form.register('phoneNumber')}
                     />
                     {form.formState.errors.phoneNumber && (
@@ -377,7 +476,7 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                     <Input
                       id="nationality"
                       placeholder="e.g. Nigerian"
-                      className="mt-1"
+                      className="w-full mt-1"
                       {...form.register('nationality')}
                     />
                     {form.formState.errors.nationality && (
@@ -396,7 +495,7 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                         form.setValue('maritalStatus', val as any, { shouldValidate: true })
                       }
                     >
-                      <SelectTrigger id="maritalStatus" className="mt-1">
+                      <SelectTrigger id="maritalStatus" className="w-full mt-1">
                         <SelectValue placeholder="Select Status" />
                       </SelectTrigger>
                       <SelectContent>
@@ -417,7 +516,7 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                         form.setValue('gender', val as any, { shouldValidate: true })
                       }
                     >
-                      <SelectTrigger id="gender" className="mt-1">
+                      <SelectTrigger id="gender" className="w-full mt-1">
                         <SelectValue placeholder="Select Gender" />
                       </SelectTrigger>
                       <SelectContent>
@@ -437,7 +536,7 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                     id="presentAddress"
                     rows={3}
                     placeholder="Enter your current residential residential address (e.g. Line 2, Road 7, Senior Staff Quarters, OAU Campus)"
-                    className="mt-1 text-xs"
+                    className="w-full mt-1 text-xs"
                     {...form.register('presentAddress')}
                   />
                   {form.formState.errors.presentAddress && (
@@ -463,14 +562,14 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Staff ID */}
                   <div>
-                    <Label htmlFor="staffId" className="text-xs font-semibold">Staff File No / P-Number *</Label>
+                    <Label htmlFor="staffId" className="text-xs font-semibold">Staff ID *</Label>
                     <Input
                       id="staffId"
-                      placeholder="e.g. P/14892 or STF-009"
-                      className="mt-1 font-mono text-xs"
+                      placeholder="e.g. STF-009"
+                      className="w-full mt-1 font-mono text-xs"
                       {...form.register('staffId')}
                     />
                     {form.formState.errors.staffId && (
@@ -486,7 +585,7 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                     <Input
                       id="ippisNumber"
                       placeholder="e.g. 10094821"
-                      className="mt-1 font-mono text-xs"
+                      className="w-full mt-1 font-mono text-xs"
                       {...form.register('ippisNumber')}
                     />
                     {form.formState.errors.ippisNumber && (
@@ -503,7 +602,7 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                       value={form.watch('faculty') || 'Technology'}
                       onValueChange={(val) => form.setValue('faculty', val || '', { shouldValidate: true })}
                     >
-                      <SelectTrigger id="faculty" className="mt-1">
+                      <SelectTrigger id="faculty" className="w-full mt-1">
                         <SelectValue placeholder="Select Faculty" />
                       </SelectTrigger>
                       <SelectContent>
@@ -513,16 +612,14 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Department */}
                   <div>
                     <Label htmlFor="department" className="text-xs font-semibold">Department / Unit *</Label>
                     <Input
                       id="department"
                       placeholder="e.g. Computer Science & Engineering"
-                      className="mt-1"
+                      className="w-full mt-1"
                       {...form.register('department')}
                     />
                     {form.formState.errors.department && (
@@ -539,7 +636,7 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                       value={form.watch('rank') || 'Lecturer I'}
                       onValueChange={(val) => form.setValue('rank', val || '', { shouldValidate: true })}
                     >
-                      <SelectTrigger id="rank" className="mt-1">
+                      <SelectTrigger id="rank" className="w-full mt-1">
                         <SelectValue placeholder="Select Rank" />
                       </SelectTrigger>
                       <SelectContent>
@@ -550,31 +647,59 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                     </Select>
                   </div>
 
-                  {/* Salary Level / Step */}
+                  {/* Salary Level / Grade */}
                   <div>
-                    <Label htmlFor="salaryGradeLevel" className="text-xs font-semibold">Salary Level / Step *</Label>
-                    <Input
-                      id="salaryGradeLevel"
-                      placeholder="e.g. CONUASS 5 Step 3"
-                      className="mt-1 font-mono text-xs"
-                      {...form.register('salaryGradeLevel')}
-                    />
-                    {form.formState.errors.salaryGradeLevel && (
+                    <Label htmlFor="salaryLevel" className="text-xs font-semibold">Salary Level / Grade *</Label>
+                    <Select
+                      value={form.watch('salaryLevel') || 'CONUASS 4'}
+                      onValueChange={(val) => form.setValue('salaryLevel', val || '', { shouldValidate: true })}
+                    >
+                      <SelectTrigger id="salaryLevel" className="w-full mt-1">
+                        <SelectValue placeholder="Select Level" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SALARY_LEVELS.map((lvl) => (
+                          <SelectItem key={lvl} value={lvl}>{lvl}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {form.formState.errors.salaryLevel && (
                       <p className="text-xs text-destructive mt-1">
-                        {form.formState.errors.salaryGradeLevel.message}
+                        {form.formState.errors.salaryLevel.message}
                       </p>
                     )}
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Salary Step */}
+                  <div>
+                    <Label htmlFor="salaryStep" className="text-xs font-semibold">Salary Step *</Label>
+                    <Select
+                      value={form.watch('salaryStep') || 'Step 2'}
+                      onValueChange={(val) => form.setValue('salaryStep', val || '', { shouldValidate: true })}
+                    >
+                      <SelectTrigger id="salaryStep" className="w-full mt-1">
+                        <SelectValue placeholder="Select Step" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SALARY_STEPS.map((s) => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {form.formState.errors.salaryStep && (
+                      <p className="text-xs text-destructive mt-1">
+                        {form.formState.errors.salaryStep.message}
+                      </p>
+                    )}
+                  </div>
+
                   {/* Date of Employment */}
                   <div>
                     <Label htmlFor="employmentDate" className="text-xs font-semibold">Date of Employment *</Label>
                     <Input
                       id="employmentDate"
                       type="date"
-                      className="mt-1"
+                      className="w-full mt-1"
                       {...form.register('employmentDate')}
                     />
                     {form.formState.errors.employmentDate && (
@@ -590,7 +715,7 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                     <Input
                       id="assumptionDate"
                       type="date"
-                      className="mt-1"
+                      className="w-full mt-1"
                       {...form.register('assumptionDate')}
                     />
                     {form.formState.errors.assumptionDate && (
@@ -606,7 +731,7 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                     <Input
                       id="expectedRetirementDate"
                       type="date"
-                      className="mt-1"
+                      className="w-full mt-1"
                       {...form.register('expectedRetirementDate')}
                     />
                     {form.formState.errors.expectedRetirementDate && (
@@ -615,21 +740,32 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                       </p>
                     )}
                   </div>
+
+                  {/* Date of Becoming Senior Staff */}
+                  <div>
+                    <Label htmlFor="previousSeniorStaffDate" className="text-xs font-semibold">Date of Becoming Senior Staff</Label>
+                    <Input
+                      id="previousSeniorStaffDate"
+                      type="date"
+                      className="w-full mt-1 text-xs"
+                      {...form.register('previousSeniorStaffDate')}
+                    />
+                  </div>
                 </div>
 
                 {/* Leave Without Pay Switch */}
                 <div className="p-4 bg-gray-50 rounded-xl border border-gray-200/80 flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-semibold text-[rgb(27,34,50)]">Are you currently on Leave Without Pay?</p>
+                    <p className="text-xs font-semibold text-[rgb(27,34,50)]">Are you currently on Leave?</p>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
-                      Indicate whether you are on approved sabbatical or leave without pay.
+                      Indicate whether you are on approved Secondment, Sabbatical Leave or Leave of Absence without Pay.
                     </p>
                   </div>
                   <Select
                     value={form.watch('onLeaveWithoutPay') ? 'yes' : 'no'}
                     onValueChange={(val) => form.setValue('onLeaveWithoutPay', val === 'yes')}
                   >
-                    <SelectTrigger className="w-28 text-xs bg-white">
+                    <SelectTrigger className="w-28 sm:w-36 text-xs bg-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -643,25 +779,16 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                 <div className="border border-gray-200 rounded-xl p-4 space-y-4">
                   <p className="text-xs font-bold text-[rgb(27,34,50)] flex items-center gap-1.5">
                     <GraduationCap className="size-4 text-amber-600" />
-                    Previous Teaching / Senior Staff Experience (Optional)
+                    Previous Teaching (Optional)
                   </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <Label htmlFor="previousEmployer" className="text-xs">Previous Employer</Label>
                       <Input
                         id="previousEmployer"
                         placeholder="e.g. University of Lagos"
-                        className="mt-1 text-xs"
+                        className="w-full mt-1 text-xs"
                         {...form.register('previousEmployer')}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="previousSeniorStaffDate" className="text-xs">Date of Becoming Senior Staff</Label>
-                      <Input
-                        id="previousSeniorStaffDate"
-                        type="date"
-                        className="mt-1 text-xs"
-                        {...form.register('previousSeniorStaffDate')}
                       />
                     </div>
                     <div>
@@ -669,7 +796,7 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                       <Input
                         id="previousResponsibility"
                         placeholder="e.g. Lecturer II / Researcher"
-                        className="mt-1 text-xs"
+                        className="w-full mt-1 text-xs"
                         {...form.register('previousResponsibility')}
                       />
                     </div>
@@ -678,7 +805,7 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                       <Input
                         id="previousPeriod"
                         placeholder="e.g. 2018 - 2021 (3 years)"
-                        className="mt-1 text-xs"
+                        className="w-full mt-1 text-xs"
                         {...form.register('previousPeriod')}
                       />
                     </div>
@@ -710,7 +837,7 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                       <Input
                         id="spouseName"
                         placeholder="e.g. Dr. (Mrs) Funke Bakare"
-                        className="mt-1 text-xs"
+                        className="w-full mt-1 text-xs"
                         {...form.register('spouseName')}
                       />
                     </div>
@@ -721,7 +848,7 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                         value={form.watch('spouseEmployedInOAU') ? 'yes' : 'no'}
                         onValueChange={(val) => form.setValue('spouseEmployedInOAU', val === 'yes')}
                       >
-                        <SelectTrigger className="mt-1 text-xs">
+                        <SelectTrigger className="w-full mt-1 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -738,7 +865,7 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                       <Input
                         id="spouseDepartment"
                         placeholder="e.g. Department of Biochemistry"
-                        className="mt-1 text-xs"
+                        className="w-full mt-1 text-xs"
                         {...form.register('spouseDepartment')}
                       />
                     </div>
@@ -749,7 +876,7 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                     <Input
                       id="spouseEmploymentAddress"
                       placeholder="e.g. Obafemi Awolowo University Teaching Hospitals Complex (OAUTHC)"
-                      className="mt-1 text-xs"
+                      className="w-full mt-1 text-xs"
                       {...form.register('spouseEmploymentAddress')}
                     />
                   </div>

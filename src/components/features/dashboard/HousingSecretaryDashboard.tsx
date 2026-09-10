@@ -95,9 +95,11 @@ export async function HousingSecretaryDashboard() {
               },
               {
                 key: 'grade',
-                header: 'Grade Level',
+                header: 'Grade / Step',
                 render: r => (
-                  <span className="text-xs text-muted-foreground">{r.applicantProfile?.salaryGradeLevel ?? '—'}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {r.applicantProfile ? `${r.applicantProfile.salaryLevel || r.applicantProfile.salaryGradeLevel || '—'} ${r.applicantProfile.salaryStep ? `(${r.applicantProfile.salaryStep})` : ''}` : '—'}
+                  </span>
                 ),
               },
               {

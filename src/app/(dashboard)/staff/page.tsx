@@ -221,7 +221,7 @@ export default async function StaffDashboardPage() {
                 </div>
                 <div className="flex justify-between border-b pb-1.5 border-border/40">
                   <span className="text-muted-foreground">Rank & Grade:</span>
-                  <span className="font-medium">{profile.rank} ({profile.salaryGradeLevel})</span>
+                  <span className="font-medium">{profile.rank} ({profile.salaryLevel || profile.salaryGradeLevel} {profile.salaryStep ? `· ${profile.salaryStep}` : ''})</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Dependents:</span>

@@ -38,7 +38,7 @@ const RANKS = [
   'Technologist II',
 ];
 
-const GRADE_LEVELS = [
+const SALARY_LEVELS = [
   'CONUASS 1', 'CONUASS 2', 'CONUASS 3', 'CONUASS 4',
   'CONUASS 5', 'CONUASS 6', 'CONUASS 7',
   'CONTISS 2', 'CONTISS 3', 'CONTISS 4', 'CONTISS 5',
@@ -46,6 +46,8 @@ const GRADE_LEVELS = [
   'CONTISS 10', 'CONTISS 11', 'CONTISS 12', 'CONTISS 13',
   'CONTISS 14', 'CONTISS 15',
 ];
+
+const SALARY_STEPS = Array.from({ length: 15 }, (_, i) => `Step ${i + 1}`);
 
 const MARITAL_STATUSES = [
   { value: 'SINGLE', label: 'Single' },
@@ -111,25 +113,48 @@ export function StepProfessionalProfile({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="wiz-grade">Salary Grade Level *</Label>
+            <Label htmlFor="wiz-salary-level">Salary Level / Grade *</Label>
             <Controller
-              name="salaryGradeLevel"
+              name="salaryLevel"
               control={control}
               render={({ field }) => (
                 <Select value={field.value} onValueChange={(v) => v != null && field.onChange(v)}>
-                  <SelectTrigger id="wiz-grade" className={errors.salaryGradeLevel ? 'border-destructive' : ''}>
-                    <SelectValue placeholder="Select grade level…" />
+                  <SelectTrigger id="wiz-salary-level" className={errors.salaryLevel ? 'border-destructive' : ''}>
+                    <SelectValue placeholder="Select salary level…" />
                   </SelectTrigger>
                   <SelectContent>
-                    {GRADE_LEVELS.map((g) => (
+                    {SALARY_LEVELS.map((g) => (
                       <SelectItem key={g} value={g}>{g}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               )}
             />
-            {errors.salaryGradeLevel && (
-              <p className="text-xs text-destructive">{errors.salaryGradeLevel.message}</p>
+            {errors.salaryLevel && (
+              <p className="text-xs text-destructive">{errors.salaryLevel.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="wiz-salary-step">Salary Step *</Label>
+            <Controller
+              name="salaryStep"
+              control={control}
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={(v) => v != null && field.onChange(v)}>
+                  <SelectTrigger id="wiz-salary-step" className={errors.salaryStep ? 'border-destructive' : ''}>
+                    <SelectValue placeholder="Select step…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SALARY_STEPS.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.salaryStep && (
+              <p className="text-xs text-destructive">{errors.salaryStep.message}</p>
             )}
           </div>
 
@@ -220,12 +245,11 @@ export function StepProfessionalProfile({
         </div>
       </div>
 
-      {/* Eligibility hint */}
-      {watch('salaryGradeLevel') && (
+      {watch('salaryLevel') && (
         <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-sm">
           <p className="font-medium text-primary">
             {(() => {
-              const gl = watch('salaryGradeLevel');
+              const gl = watch('salaryLevel') || '';
               const isSenior =
                 /CONUASS [4-7]/.test(gl) || /CONTISS 1[3-5]/.test(gl);
               return isSenior

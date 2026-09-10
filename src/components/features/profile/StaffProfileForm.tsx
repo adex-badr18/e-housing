@@ -34,7 +34,8 @@ export function StaffProfileForm({ initialData }: StaffProfileFormProps) {
       department: initialData.department || '',
       faculty: initialData.faculty || '',
       rank: initialData.rank || '',
-      salaryGradeLevel: initialData.salaryGradeLevel || '',
+      salaryLevel: (initialData as any).salaryLevel || 'CONUASS 4',
+      salaryStep: (initialData as any).salaryStep || 'Step 1',
       employmentDate: initialData.employmentDate || '',
       maritalStatus: initialData.maritalStatus || 'SINGLE',
       numberOfDependents: initialData.numberOfDependents || 0,
@@ -126,9 +127,19 @@ export function StaffProfileForm({ initialData }: StaffProfileFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="salaryGradeLevel">Salary Grade Level</Label>
-          <Input id="salaryGradeLevel" {...register('salaryGradeLevel')} />
-          {errors.salaryGradeLevel && <p className="text-xs text-destructive">{errors.salaryGradeLevel.message}</p>}
+          <Label htmlFor="salaryLevel">Salary Level / Grade</Label>
+          <Input id="salaryLevel" placeholder="e.g. CONUASS 4" {...register('salaryLevel')} />
+          {(errors as any).salaryLevel && <p className="text-xs text-destructive">{(errors as any).salaryLevel.message}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="salaryStep">Salary Step</Label>
+          <select id="salaryStep" {...register('salaryStep')} className={selectClassName}>
+            {Array.from({ length: 15 }, (_, i) => `Step ${i + 1}`).map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+          {(errors as any).salaryStep && <p className="text-xs text-destructive">{(errors as any).salaryStep.message}</p>}
         </div>
 
         <div className="space-y-2">

@@ -19,7 +19,9 @@ import type { MaritalStatus } from '@/lib/mock-api/db';
 
 export interface ScoringInput {
   rank: string;
-  salaryGradeLevel: string;
+  salaryLevel?: string;
+  salaryStep?: string;
+  salaryGradeLevel?: string;
   /** ISO date string, e.g. "2015-08-01" */
   employmentDate: string;
   numberOfDependents: number;
@@ -201,10 +203,10 @@ const MARITAL_POINTS: Record<MaritalStatus, number> = {
  * @returns       - Full breakdown and summary string
  */
 export function calculateScore(input: ScoringInput, refDate?: Date): ScoringResult {
-  const { rank, salaryGradeLevel, employmentDate, numberOfDependents, maritalStatus } = input;
+  const { rank, salaryLevel, salaryGradeLevel, employmentDate, numberOfDependents, maritalStatus } = input;
 
   const rankResult      = scoreRank(rank);
-  const gradeResult     = scoreGrade(salaryGradeLevel);
+  const gradeResult     = scoreGrade(salaryLevel || salaryGradeLevel || '');
   const years           = computeYearsOfService(employmentDate, refDate);
   const seniorityPts    = scoreSeniority(years);
   const dependentsPts   = scoreDependents(numberOfDependents);

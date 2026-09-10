@@ -103,7 +103,9 @@ export default async function ExitNoticeDetailPage({ params }: Props) {
                 <div>
                   <p className="text-xs text-muted-foreground">Department / Rank</p>
                   <p className="font-semibold">{staffProfile.department}</p>
-                  <p className="text-xs text-muted-foreground">{staffProfile.rank} · {staffProfile.salaryGradeLevel}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {staffProfile.rank} · {staffProfile.salaryLevel || staffProfile.salaryGradeLevel || ''} {staffProfile.salaryStep ? `(${staffProfile.salaryStep})` : ''}
+                  </p>
                 </div>
               </div>
             )}

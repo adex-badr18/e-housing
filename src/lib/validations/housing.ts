@@ -135,7 +135,9 @@ export type DependentValues = z.infer<typeof dependentSchema>;
 export const applicationWizardSchema = z.object({
   // Step 1 — Professional Profile (read-only from profile, editable if incomplete)
   rank: z.string().min(2, 'Rank is required'),
-  salaryGradeLevel: z.string().min(2, 'Grade level is required'),
+  salaryLevel: z.string().min(1, 'Salary Level is required'),
+  salaryStep: z.string().min(1, 'Salary Step is required'),
+  salaryGradeLevel: z.string().optional(),
   department: z.string().min(2, 'Department is required'),
   faculty: z.string().min(2, 'Faculty is required'),
   employmentDate: z.string().min(1, 'Employment date is required'),

@@ -136,7 +136,7 @@ export function DVCAdminPanel({
         <StatCard
           label="Rank"
           value={applicantProfile?.rank ?? '—'}
-          sub={applicantProfile?.salaryGradeLevel}
+          sub={applicantProfile ? `${applicantProfile.salaryLevel || applicantProfile.salaryGradeLevel || ''} ${applicantProfile.salaryStep ? `(${applicantProfile.salaryStep})` : ''}`.trim() : undefined}
         />
         <StatCard
           label="Submitted"

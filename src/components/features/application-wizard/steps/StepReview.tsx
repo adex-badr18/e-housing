@@ -60,7 +60,8 @@ export function StepReview({ form, housingTypes }: StepReviewProps) {
         </div>
         <div className="px-4 py-3 space-y-0.5">
           <ReviewRow label="Rank" value={values.rank} />
-          <ReviewRow label="Grade Level" value={values.salaryGradeLevel} />
+          <ReviewRow label="Salary Level" value={values.salaryLevel} />
+          <ReviewRow label="Salary Step" value={values.salaryStep} />
           <ReviewRow label="Department" value={values.department} />
           <ReviewRow label="Faculty" value={values.faculty} />
           <ReviewRow label="Employment Date" value={values.employmentDate} />

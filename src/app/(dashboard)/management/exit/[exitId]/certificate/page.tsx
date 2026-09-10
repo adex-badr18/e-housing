@@ -125,7 +125,7 @@ export default async function ClearanceCertificatePage({ params }: Props) {
                 { label: 'Full Name', value: staff ? `${staff.firstName} ${staff.lastName}` : '—' },
                 { label: 'Email Address', value: staff?.email ?? '—' },
                 { label: 'Staff ID', value: staffProfile?.staffId ?? '—' },
-                { label: 'Rank / Grade', value: staffProfile ? `${staffProfile.rank} · ${staffProfile.salaryGradeLevel}` : '—' },
+                { label: 'Rank / Grade', value: staffProfile ? `${staffProfile.rank} · ${staffProfile.salaryLevel || staffProfile.salaryGradeLevel || ''} ${staffProfile.salaryStep ? `(${staffProfile.salaryStep})` : ''}` : '—' },
                 { label: 'Faculty', value: staffProfile?.faculty ?? '—' },
                 { label: 'Department', value: staffProfile?.department ?? '—' },
               ].map(row => (

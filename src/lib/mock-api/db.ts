@@ -80,7 +80,9 @@ export interface StaffProfile {
   department: string;
   faculty: string;
   rank: string;
-  salaryGradeLevel: string;
+  salaryLevel: string;
+  salaryStep: string;
+  salaryGradeLevel?: string;
   employmentDate: string;
   maritalStatus: MaritalStatus;
   numberOfDependents: number;
@@ -549,7 +551,9 @@ const initialStaffProfiles: StaffProfile[] = [
     department: 'Computer Science',
     faculty: 'Technology',
     rank: 'Senior Lecturer',
-    salaryGradeLevel: 'CONUASS 5',
+    salaryLevel: 'CONUASS 5',
+    salaryStep: 'Step 3',
+    salaryGradeLevel: 'CONUASS 5 Step 3',
     employmentDate: '2015-08-01',
     maritalStatus: 'MARRIED',
     numberOfDependents: 3,
@@ -567,7 +571,9 @@ const initialStaffProfiles: StaffProfile[] = [
     department: 'Biochemistry',
     faculty: 'Science',
     rank: 'Lecturer I',
-    salaryGradeLevel: 'CONUASS 3',
+    salaryLevel: 'CONUASS 3',
+    salaryStep: 'Step 2',
+    salaryGradeLevel: 'CONUASS 3 Step 2',
     employmentDate: '2019-03-15',
     maritalStatus: 'SINGLE',
     numberOfDependents: 0,
@@ -583,7 +589,9 @@ const initialStaffProfiles: StaffProfile[] = [
     department: 'Electrical Engineering',
     faculty: 'Technology',
     rank: 'Professor',
-    salaryGradeLevel: 'CONUASS 7',
+    salaryLevel: 'CONUASS 7',
+    salaryStep: 'Step 5',
+    salaryGradeLevel: 'CONUASS 7 Step 5',
     employmentDate: '2010-01-15',
     maritalStatus: 'MARRIED',
     numberOfDependents: 4,
@@ -599,7 +607,9 @@ const initialStaffProfiles: StaffProfile[] = [
     department: 'Economics',
     faculty: 'Social Sciences',
     rank: 'Lecturer II',
-    salaryGradeLevel: 'CONUASS 2',
+    salaryLevel: 'CONUASS 2',
+    salaryStep: 'Step 1',
+    salaryGradeLevel: 'CONUASS 2 Step 1',
     employmentDate: '2021-09-01',
     maritalStatus: 'MARRIED',
     numberOfDependents: 1,
@@ -611,11 +621,13 @@ const initialStaffProfiles: StaffProfile[] = [
     id: 'sp-5',
     userId: 'u-10',
     staffId: 'STF-005',
-    gender: 'MALE',
+    gender: 'FEMALE',
     department: 'History',
     faculty: 'Arts',
     rank: 'Associate Professor',
-    salaryGradeLevel: 'CONUASS 6',
+    salaryLevel: 'CONUASS 6',
+    salaryStep: 'Step 4',
+    salaryGradeLevel: 'CONUASS 6 Step 4',
     employmentDate: '2012-04-01',
     maritalStatus: 'DIVORCED',
     numberOfDependents: 2,
@@ -631,7 +643,9 @@ const initialStaffProfiles: StaffProfile[] = [
     department: 'Nursing',
     faculty: 'Health Sciences',
     rank: 'Senior Lecturer',
-    salaryGradeLevel: 'CONUASS 5',
+    salaryLevel: 'CONUASS 5',
+    salaryStep: 'Step 2',
+    salaryGradeLevel: 'CONUASS 5 Step 2',
     employmentDate: '2017-06-15',
     maritalStatus: 'SINGLE',
     numberOfDependents: 0,

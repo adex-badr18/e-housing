@@ -1,9 +1,10 @@
 import { redirect } from 'next/navigation';
 
-export default function LegacyStaffApplicationHistoryDetailPage({
+export default async function LegacyStaffApplicationHistoryDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  redirect(`/staff/applications/${params.id}`);
+  const { id } = await params;
+  redirect(`/staff/applications/${id}`);
 }

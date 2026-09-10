@@ -10,13 +10,14 @@ export const metadata = { title: 'Exit Notice Details | OAU E-Housing' };
 export default async function StaffExitHistoryDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const session = await auth();
   if (!session?.user) redirect('/login');
   if (session.user.role !== 'STAFF') redirect('/staff');
 
-  const notice = mockDB.exitNotices.find(e => e.id === params.id && e.userId === session.user.id);
+  const notice = mockDB.exitNotices.find(e => e.id === id && e.userId === session.user.id);
   if (!notice) notFound();
 
   const unit = mockDB.findUnitById(notice.housingUnitId);

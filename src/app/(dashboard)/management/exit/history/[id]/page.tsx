@@ -13,8 +13,9 @@ export const metadata = { title: 'Exit Notice Detail | Management' };
 export default async function ManagementExitHistoryDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const session = await auth();
   if (!session?.user) redirect('/login');
   
@@ -23,7 +24,7 @@ export default async function ManagementExitHistoryDetailPage({
     redirect('/staff');
   }
 
-  const res = await getExitNoticeWithProfileAction(params.id);
+  const res = await getExitNoticeWithProfileAction(id);
   if (!res.success || !res.data) notFound();
 
   const { notice, applicantUser, applicantProfile, unit } = res.data;

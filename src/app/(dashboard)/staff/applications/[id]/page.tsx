@@ -11,13 +11,14 @@ export const metadata = { title: 'Application Details | OAU E-Housing' };
 export default async function StaffApplicationDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const session = await auth();
   if (!session?.user) redirect('/login');
   if (session.user.role !== 'STAFF') redirect('/staff');
 
-  const application = mockDB.housingApplications.find(a => a.id === params.id && a.userId === session.user.id);
+  const application = mockDB.housingApplications.find(a => a.id === id && a.userId === session.user.id);
   if (!application) notFound();
 
   const reviews = mockDB.getReviewsForApplication(application.id);

@@ -69,6 +69,20 @@ export interface ChildDependant {
   age: number;
 }
 
+export interface StaffDocument {
+  name: string;
+  size: number;
+  type: string;
+  dataUrl: string;
+  uploadedAt: string;
+}
+
+export interface PreviousExperience {
+  employer: string;
+  responsibility?: string;
+  period?: string;
+}
+
 export interface StaffProfile {
   id: string;
   userId: string;
@@ -94,17 +108,19 @@ export interface StaffProfile {
   assumptionDate?: string;
   expectedRetirementDate?: string;
   onLeaveWithoutPay?: boolean;
-  previousExperience?: {
-    employer?: string;
-    seniorStaffDate?: string;
-    responsibility?: string;
-    period?: string;
-  };
+  previousSeniorStaffDate?: string;
+  previousExperiences?: PreviousExperience[];
   children?: ChildDependant[];
   spouseName?: string;
   spouseEmployedInOAU?: boolean;
   spouseDepartment?: string;
   spouseEmploymentAddress?: string;
+
+  documents?: {
+    appointmentLetter?: StaffDocument;
+    assumptionLetter?: StaffDocument;
+    promotionLetter?: StaffDocument;
+  };
 
   /** System-managed — never set directly via user-facing forms */
   currentHousingStatus: CurrentHousingStatus;

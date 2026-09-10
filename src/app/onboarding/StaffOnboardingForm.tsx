@@ -47,6 +47,11 @@ import {
   GraduationCap,
   Calendar,
   Sparkles,
+  FileText,
+  UploadCloud,
+  X,
+  FileCheck2,
+  AlertCircle,
 } from 'lucide-react';
 
 interface StaffOnboardingFormProps {
@@ -59,7 +64,8 @@ interface StaffOnboardingFormProps {
 const STEPS = [
   { id: 1, name: 'Personal Info', icon: UserCheck, description: 'Basic identification & residence' },
   { id: 2, name: 'Appointment Info', icon: Briefcase, description: 'Staff credentials & faculty placement' },
-  { id: 3, name: 'Dependants Info', icon: Users, description: 'Spouse & family details' },
+  { id: 3, name: 'Documents', icon: FileText, description: 'Upload appointment & duty letters' },
+  { id: 4, name: 'Dependants Info', icon: Users, description: 'Spouse & family details' },
 ];
 
 const TITLES = ['Prof.', 'Dr.', 'Mr.', 'Mrs.', 'Miss', 'Rev.', 'Engr.', 'Arc.', 'Barr.'];
@@ -199,6 +205,42 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
   const { update: updateSession } = useSession();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [docFiles, setDocFiles] = useState<{
+    appointmentLetter: File | null;
+    assumptionLetter: File | null;
+    promotionLetter: File | null;
+  }>({
+    appointmentLetter: null,
+    assumptionLetter: null,
+    promotionLetter: null,
+  });
+
+  const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+
+  const handleFileChange = (
+    key: 'appointmentLetter' | 'assumptionLetter' | 'promotionLetter',
+    file: File | null
+  ) => {
+    if (file && file.size > MAX_FILE_SIZE) {
+      toast.error(`"${file.name}" exceeds the 2MB limit. Please choose a smaller file.`);
+      return;
+    }
+    setDocFiles((prev) => ({ ...prev, [key]: file }));
+  };
+
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+  const formatBytes = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
 
   const form = useForm<StaffProfileFormValues>({
     resolver: zodResolver(staffProfileSchema) as any,
@@ -223,10 +265,8 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
       assumptionDate: '',
       expectedRetirementDate: '',
       onLeaveWithoutPay: false,
-      previousEmployer: '',
       previousSeniorStaffDate: '',
-      previousResponsibility: '',
-      previousPeriod: '',
+      previousExperiences: [],
       children: [],
       numberOfDependents: 0,
       spouseName: '',
@@ -239,6 +279,11 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
   const { fields: childFields, append: appendChild, remove: removeChild } = useFieldArray({
     control: form.control,
     name: 'children',
+  });
+
+  const { fields: experienceFields, append: appendExperience, remove: removeExperience } = useFieldArray({
+    control: form.control,
+    name: 'previousExperiences',
   });
 
   const validateStep = (step: number): boolean => {
@@ -269,13 +314,22 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
         toast.error('Please fill in all required fields in Appointment Info.');
         return false;
       }
+    } else if (step === 3) {
+      if (!docFiles.appointmentLetter) {
+        toast.error('Please upload your Appointment Letter.');
+        return false;
+      }
+      if (!docFiles.assumptionLetter) {
+        toast.error('Please upload your Assumption of Duty Letter.');
+        return false;
+      }
     }
     return true;
   };
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep((prev) => Math.min(prev + 1, 3));
+      setCurrentStep((prev) => Math.min(prev + 1, 4));
     }
   };
 
@@ -287,9 +341,24 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
     setIsSubmitting(true);
     try {
       // Ensure numberOfDependents matches children count
+      const uploadedAt = new Date().toISOString();
+      const toDoc = async (file: File) => ({
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        dataUrl: await fileToBase64(file),
+        uploadedAt,
+      });
+
+      const documents: Record<string, unknown> = {};
+      if (docFiles.appointmentLetter) documents.appointmentLetter = await toDoc(docFiles.appointmentLetter);
+      if (docFiles.assumptionLetter) documents.assumptionLetter = await toDoc(docFiles.assumptionLetter);
+      if (docFiles.promotionLetter) documents.promotionLetter = await toDoc(docFiles.promotionLetter);
+
       const payload = {
         ...data,
         numberOfDependents: data.children ? data.children.length : data.numberOfDependents,
+        documents,
       };
 
       const result = await completeStaffOnboarding(payload);
@@ -322,7 +391,7 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
             </p>
           </div>
           <span className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 bg-amber-50 text-amber-800 rounded-full border border-amber-200">
-            <Sparkles className="size-3 text-amber-600" /> Step {currentStep} of 3
+            <Sparkles className="size-3 text-amber-600" />           Step {currentStep} of 4
           </span>
         </div>
 
@@ -330,12 +399,12 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
         <div className="relative w-full bg-gray-100 h-2 rounded-full overflow-hidden mb-6">
           <div
             className="h-full bg-gradient-to-r from-[rgb(27,34,50)] to-amber-500 transition-all duration-500 ease-out"
-            style={{ width: `${(currentStep / 3) * 100}%` }}
+            style={{ width: `${(currentStep / 4) * 100}%` }}
           />
         </div>
 
         {/* Step Indicator Badges */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-4 gap-2">
           {STEPS.map((step) => {
             const Icon = step.icon;
             const isActive = currentStep === step.id;
@@ -777,46 +846,227 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
 
                 {/* Previous Teaching Experience */}
                 <div className="border border-gray-200 rounded-xl p-4 space-y-4">
-                  <p className="text-xs font-bold text-[rgb(27,34,50)] flex items-center gap-1.5">
-                    <GraduationCap className="size-4 text-amber-600" />
-                    Previous Teaching (Optional)
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <Label htmlFor="previousEmployer" className="text-xs">Previous Employer</Label>
-                      <Input
-                        id="previousEmployer"
-                        placeholder="e.g. University of Lagos"
-                        className="w-full mt-1 text-xs"
-                        {...form.register('previousEmployer')}
-                      />
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-bold text-[rgb(27,34,50)] flex items-center gap-1.5">
+                      <GraduationCap className="size-4 text-amber-600" />
+                      Previous Teaching Experience (Optional)
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="text-xs h-7 px-2.5 border-amber-300 text-amber-700 hover:bg-amber-50"
+                      onClick={() => appendExperience({ employer: '', responsibility: '', period: '' })}
+                    >
+                      <Plus className="size-3 mr-1" />
+                      Add Entry
+                    </Button>
+                  </div>
+
+                  {experienceFields.length === 0 && (
+                    <div className="text-center py-5 border border-dashed border-gray-200 rounded-lg">
+                      <GraduationCap className="size-7 text-gray-300 mx-auto mb-1.5" />
+                      <p className="text-xs text-muted-foreground">No previous teaching experience added.</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">Click &quot;Add Entry&quot; to record a previous position.</p>
                     </div>
-                    <div>
-                      <Label htmlFor="previousResponsibility" className="text-xs">Job Nature / Responsibility</Label>
-                      <Input
-                        id="previousResponsibility"
-                        placeholder="e.g. Lecturer II / Researcher"
-                        className="w-full mt-1 text-xs"
-                        {...form.register('previousResponsibility')}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="previousPeriod" className="text-xs">Period (Duration)</Label>
-                      <Input
-                        id="previousPeriod"
-                        placeholder="e.g. 2018 - 2021 (3 years)"
-                        className="w-full mt-1 text-xs"
-                        {...form.register('previousPeriod')}
-                      />
-                    </div>
+                  )}
+
+                  <div className="space-y-3">
+                    {experienceFields.map((field, index) => (
+                      <div
+                        key={field.id}
+                        className="relative grid grid-cols-1 md:grid-cols-3 gap-3 p-3 bg-amber-50/40 border border-amber-100 rounded-lg"
+                      >
+                        <div className="absolute top-2.5 right-2.5">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="size-6 text-red-400 hover:text-red-600 hover:bg-red-50"
+                            onClick={() => removeExperience(index)}
+                          >
+                            <Trash2 className="size-3.5" />
+                          </Button>
+                        </div>
+                        <div>
+                          <Label className="text-xs font-medium">Previous Employer *</Label>
+                          <Input
+                            placeholder="e.g. University of Lagos"
+                            className="w-full mt-1 text-xs"
+                            {...form.register(`previousExperiences.${index}.employer`)}
+                          />
+                          {form.formState.errors.previousExperiences?.[index]?.employer && (
+                            <p className="text-[11px] text-destructive mt-0.5">
+                              {form.formState.errors.previousExperiences[index].employer?.message}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <Label className="text-xs font-medium">Job Nature / Responsibility</Label>
+                          <Input
+                            placeholder="e.g. Lecturer II / Researcher"
+                            className="w-full mt-1 text-xs"
+                            {...form.register(`previousExperiences.${index}.responsibility`)}
+                          />
+                        </div>
+                        <div className="md:pr-8">
+                          <Label className="text-xs font-medium">Period (Duration)</Label>
+                          <Input
+                            placeholder="e.g. 2018 – 2021 (3 yrs)"
+                            className="w-full mt-1 text-xs"
+                            {...form.register(`previousExperiences.${index}.period`)}
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </CardContent>
             </>
           )}
 
-          {/* STEP 3: DEPENDANTS INFO */}
+          {/* STEP 3: DOCUMENTS */}
           {currentStep === 3 && (
+            <>
+              <CardHeader className="border-b bg-gray-50/50">
+                <CardTitle className="text-lg font-bold text-[rgb(27,34,50)] flex items-center gap-2">
+                  <FileText className="size-5 text-amber-600" />
+                  Document Upload
+                </CardTitle>
+                <CardDescription>
+                  Upload your official appointment and assumption letters. All files must be PDF or image format and under 2 MB.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6 space-y-5">
+
+                {([
+                  {
+                    key: 'appointmentLetter' as const,
+                    label: 'Appointment Letter',
+                    required: true,
+                    hint: 'Your original institutional appointment letter',
+                  },
+                  {
+                    key: 'assumptionLetter' as const,
+                    label: 'Assumption of Duty Letter',
+                    required: true,
+                    hint: 'Signed letter confirming your assumption of duty',
+                  },
+                  {
+                    key: 'promotionLetter' as const,
+                    label: 'Promotion Letter',
+                    required: false,
+                    hint: 'Most recent promotion letter (if applicable)',
+                  },
+                ]).map(({ key, label, required, hint }) => {
+                  const file = docFiles[key];
+                  const inputId = `doc-upload-${key}`;
+                  return (
+                    <div
+                      key={key}
+                      className={`rounded-xl border p-4 transition-colors ${
+                        file
+                          ? 'border-emerald-200 bg-emerald-50/40'
+                          : 'border-gray-200 bg-gray-50/50'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`size-10 rounded-lg flex items-center justify-center shrink-0 ${
+                            file ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-50 text-amber-600'
+                          }`}>
+                            {file ? <FileCheck2 className="size-5" /> : <FileText className="size-5" />}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="text-sm font-semibold text-[rgb(27,34,50)]">{label}</p>
+                              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                                required
+                                  ? 'bg-red-100 text-red-700'
+                                  : 'bg-gray-100 text-gray-500'
+                              }`}>
+                                {required ? 'Required' : 'Optional'}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground mt-0.5">{hint}</p>
+                            {file && (
+                              <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-emerald-700 font-medium">
+                                <FileCheck2 className="size-3 shrink-0" />
+                                <span className="truncate max-w-[220px]">{file.name}</span>
+                                <span className="text-emerald-500 shrink-0">({formatBytes(file.size)})</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          {file ? (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="size-8 text-red-400 hover:text-red-600 hover:bg-red-50"
+                              onClick={() => handleFileChange(key, null)}
+                            >
+                              <X className="size-4" />
+                            </Button>
+                          ) : (
+                            <label
+                              htmlFor={inputId}
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 cursor-pointer transition-colors"
+                            >
+                              <UploadCloud className="size-3.5" />
+                              Upload
+                            </label>
+                          )}
+                          <input
+                            id={inputId}
+                            type="file"
+                            accept="application/pdf,image/*"
+                            className="sr-only"
+                            onChange={(e) => {
+                              const f = e.target.files?.[0] ?? null;
+                              handleFileChange(key, f);
+                              e.target.value = '';
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Size warning bar */}
+                      {file && (
+                        <div className="mt-3 flex items-center gap-2">
+                          <div className="flex-1 h-1 bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${
+                                file.size / MAX_FILE_SIZE > 0.85 ? 'bg-amber-400' : 'bg-emerald-400'
+                              }`}
+                              style={{ width: `${Math.min((file.size / MAX_FILE_SIZE) * 100, 100)}%` }}
+                            />
+                          </div>
+                          <span className="text-[10px] text-muted-foreground shrink-0">
+                            {formatBytes(file.size)} / 2 MB
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* Info note */}
+                <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                  <AlertCircle className="size-4 text-blue-500 shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-blue-700 leading-relaxed">
+                    Accepted formats: <strong>PDF, JPG, PNG, WEBP</strong>. Maximum file size: <strong>2 MB</strong> per document.
+                    Uploaded documents are stored securely and used solely for housing allocation verification.
+                  </p>
+                </div>
+              </CardContent>
+            </>
+          )}
+
+          {/* STEP 4: DEPENDANTS INFO */}
+          {currentStep === 4 && (
             <>
               <CardHeader className="border-b bg-gray-50/50">
                 <CardTitle className="text-lg font-bold text-[rgb(27,34,50)] flex items-center gap-2">
@@ -914,7 +1164,14 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
                       </Button>
                     </div>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-2">
+                      {/* Column headers */}
+                      <div className="flex items-center gap-3 px-3">
+                        <span className="w-6" />
+                        <p className="flex-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Full Name</p>
+                        <p className="w-24 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Age</p>
+                        <span className="size-8" />
+                      </div>
                       {childFields.map((field, index) => (
                         <div key={field.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
                           <span className="text-xs font-bold text-gray-500 w-6">#{index + 1}</span>
@@ -962,7 +1219,7 @@ export function StaffOnboardingForm({ initialUser }: StaffOnboardingFormProps) {
               <div />
             )}
 
-            {currentStep < 3 ? (
+            {currentStep < 4 ? (
               <Button
                 key="next-btn"
                 type="button"

@@ -27,6 +27,14 @@ export async function completeStaffOnboarding(data: unknown) {
     };
   }
 
+  // Extract document uploads (not part of Zod schema — passed as pre-serialized base64 objects)
+  const rawData = data as Record<string, unknown>;
+  const documents = rawData.documents as {
+    appointmentLetter?: { name: string; size: number; type: string; dataUrl: string; uploadedAt: string };
+    assumptionLetter?: { name: string; size: number; type: string; dataUrl: string; uploadedAt: string };
+    promotionLetter?: { name: string; size: number; type: string; dataUrl: string; uploadedAt: string };
+  } | undefined;
+
   try {
     const val = parsed.data;
 
@@ -50,14 +58,9 @@ export async function completeStaffOnboarding(data: unknown) {
       assumptionDate: val.assumptionDate,
       expectedRetirementDate: val.expectedRetirementDate,
       onLeaveWithoutPay: val.onLeaveWithoutPay,
-      previousExperience: val.previousEmployer
-        ? {
-            employer: val.previousEmployer,
-            seniorStaffDate: val.previousSeniorStaffDate,
-            responsibility: val.previousResponsibility,
-            period: val.previousPeriod,
-          }
-        : undefined,
+      previousSeniorStaffDate: val.previousSeniorStaffDate,
+      previousExperiences: val.previousExperiences ?? [],
+      documents: documents ?? undefined,
       children: val.children,
       numberOfDependents: val.children ? val.children.length : val.numberOfDependents,
       spouseName: val.spouseName,

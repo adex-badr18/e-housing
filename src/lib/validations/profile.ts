@@ -18,6 +18,13 @@ export const personalInfoSchema = z.object({
   presentAddress: z.string().min(5, 'Address of present place of abode is required'),
 });
 
+// Previous Teaching Experience Entry Schema
+export const previousExperienceSchema = z.object({
+  employer: z.string().min(1, 'Employer name is required'),
+  responsibility: z.string().optional(),
+  period: z.string().optional(),
+});
+
 // Step 2: Appointment Info Schema
 export const appointmentInfoSchema = z.object({
   staffId: z.string().min(3, 'Staff ID / P-Number is required'),
@@ -31,11 +38,9 @@ export const appointmentInfoSchema = z.object({
   employmentDate: z.string().min(1, 'Date of employment is required'),
   assumptionDate: z.string().min(1, 'Date of assumption of duty is required'),
   expectedRetirementDate: z.string().min(1, 'Expected date of retirement is required'),
-  onLeaveWithoutPay: z.boolean().default(false),
-  previousEmployer: z.string().optional(),
   previousSeniorStaffDate: z.string().optional(),
-  previousResponsibility: z.string().optional(),
-  previousPeriod: z.string().optional(),
+  onLeaveWithoutPay: z.boolean().default(false),
+  previousExperiences: z.array(previousExperienceSchema).optional().default([]),
 });
 
 // Child Dependant Schema
@@ -65,3 +70,4 @@ export type PersonalInfoValues = z.infer<typeof personalInfoSchema>;
 export type AppointmentInfoValues = z.infer<typeof appointmentInfoSchema>;
 export type DependantsInfoValues = z.infer<typeof dependantsInfoSchema>;
 export type StaffProfileFormValues = z.infer<typeof staffProfileSchema>;
+export type PreviousExperienceValues = z.infer<typeof previousExperienceSchema>;

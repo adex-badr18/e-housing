@@ -13,6 +13,7 @@ import type {
   User,
   StaffProfile,
 } from '@/lib/mock-api/db';
+import { mockDB } from '@/lib/mock-api/db';
 import { StageStepper }       from './StageStepper';
 import { CompletedStageCard } from './CompletedStageCard';
 import { HousingSecretaryPanel } from './HousingSecretaryPanel';
@@ -20,6 +21,7 @@ import { EstateOfficerPanel }    from './EstateOfficerPanel';
 import { DVCAdminPanel }         from './DVCAdminPanel';
 import { AdminTerminateButton }  from './AdminTerminateButton';
 import { QuitRequestButton }     from './QuitRequestButton';
+import { ApplicationDetailsCard } from './ApplicationDetailsCard';
 import { Lock, Eye, Clock, AlertTriangle, XCircle, FileX2 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -78,6 +80,15 @@ export function ReviewPipeline({
   const { currentStage, status } = application;
   const expectedStage = ROLE_STAGE_MAP[sessionRole];
 
+  // Resolve housing type and allocated unit data for the details card
+  const preferredTypes = application.preferredHousingTypeIds
+    .map(id => mockDB.housingTypes.find(ht => ht.id === id))
+    .filter((ht): ht is NonNullable<typeof ht> => ht != null);
+
+  const allocatedUnit = application.allocatedUnitId
+    ? mockDB.housingUnits.find(u => u.id === application.allocatedUnitId) ?? null
+    : null;
+
   // ── Build completed-stage review list ──
   const completedReviews = (
     ['HOUSING', 'ESTATE', 'DVC'] as Exclude<ApplicationStage, 'COMPLETED'>[]
@@ -118,6 +129,15 @@ export function ReviewPipeline({
       <div className="px-4 py-6 rounded-2xl border bg-card shadow-sm">
         <StageStepper currentStage={isApproved || isCompleted ? 'COMPLETED' : currentStage} />
       </div>
+
+      {/* Full application details */}
+      <ApplicationDetailsCard
+        application={application}
+        applicantUser={applicantUser}
+        applicantProfile={applicantProfile}
+        preferredTypes={preferredTypes}
+        allocatedUnit={allocatedUnit}
+      />
 
       {/* Terminal state banners */}
       {isRejected && (

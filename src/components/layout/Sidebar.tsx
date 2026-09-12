@@ -101,7 +101,7 @@ export function Sidebar({ role }: SidebarProps) {
               <DialogClose render={<Button variant="outline" />}>
                 Cancel
               </DialogClose>
-              <Button variant="destructive" onClick={() => signOut({ callbackUrl: '/' })}>
+              <Button variant="destructive" onClick={() => signOut({ callbackUrl: '/auth/login' })}>
                 Log Out
               </Button>
             </DialogFooter>

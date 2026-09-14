@@ -29,6 +29,7 @@ import {
   DoorOpen,
   MessageSquareDot,
   Activity,
+  Users2,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -136,6 +137,7 @@ function getNavItemsForRole(role: Role) {
     return [
       { href: '/dashboard', label: 'Dashboard', icon: Home },
       { href: '/management/applications', label: 'All Applications', icon: FileText },
+      { href: '/management/occupancies', label: 'Housing Occupancies', icon: Users2 },
       { href: '/admin/inventory', label: 'Housing Inventory', icon: Building },
       { href: '/management/exit', label: 'Exit Pipeline', icon: DoorOpen },
       { href: '/admin/audit', label: 'Audit Logs', icon: Activity },
@@ -147,6 +149,7 @@ function getNavItemsForRole(role: Role) {
     return [
       { href: '/dashboard', label: 'Dashboard', icon: Home },
       { href: '/management/applications', label: 'Review Queue', icon: CheckSquare },
+      { href: '/management/occupancies', label: 'Housing Occupancies', icon: Users2 },
       { href: '/management/exit', label: 'Exit Pipeline', icon: DoorOpen },
       { href: '/admin/inventory', label: 'Housing Inventory', icon: Building },
     ];
@@ -156,6 +159,7 @@ function getNavItemsForRole(role: Role) {
     return [
       { href: '/dashboard', label: 'Dashboard', icon: Home },
       { href: '/management/applications', label: 'Review Queue', icon: CheckSquare },
+      { href: '/management/occupancies', label: 'Housing Occupancies', icon: Users2 },
       { href: '/management/exit', label: 'Exit Pipeline', icon: DoorOpen },
       { href: '/admin/inventory', label: 'Housing Inventory', icon: Building },
     ];
@@ -172,6 +176,7 @@ function getNavItemsForRole(role: Role) {
     return [
       { href: '/dashboard', label: 'Dashboard', icon: Home },
       { href: '/management/applications', label: 'Review Queue', icon: CheckSquare },
+      { href: '/management/occupancies', label: 'Housing Occupancies', icon: Users2 },
     ];
   }
 

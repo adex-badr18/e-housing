@@ -373,3 +373,57 @@ export const claimAllocationSchema = z.object({
 
 export type ClaimAllocationFormValues = z.infer<typeof claimAllocationSchema>;
 
+// ---------------------------------------------------------------------------
+// 13. Revoke Occupancy — management action
+// ---------------------------------------------------------------------------
+
+export const revokeOccupancySchema = z.object({
+  occupancyId: z.string().min(1, 'Occupancy ID is required'),
+  reason: z
+    .string()
+    .min(10, 'Please provide a reason (min 10 characters)')
+    .max(500, 'Reason must be under 500 characters'),
+});
+
+export type RevokeOccupancyValues = z.infer<typeof revokeOccupancySchema>;
+
+// ---------------------------------------------------------------------------
+// 14. Trigger Occupant Exit — Estate Officer / Super Admin action
+// ---------------------------------------------------------------------------
+
+export const triggerOccupantExitSchema = z
+  .object({
+    occupancyId: z.string().min(1, 'Occupancy ID is required'),
+    reason: exitReasonSchema,
+    customReason: z
+      .string()
+      .max(300, 'Custom reason must be under 300 characters')
+      .optional(),
+    additionalNotes: z
+      .string()
+      .max(500, 'Additional notes must be under 500 characters')
+      .optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.reason === 'OTHER' && !data.customReason?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Please provide a reason when selecting "Other"',
+        path: ['customReason'],
+      });
+    }
+  });
+
+export type TriggerOccupantExitValues = z.infer<typeof triggerOccupantExitSchema>;
+
+// ---------------------------------------------------------------------------
+// 15. Update Occupancy — management action
+// ---------------------------------------------------------------------------
+
+export const updateOccupancySchema = z.object({
+  occupancyId: z.string().min(1, 'Occupancy ID is required'),
+  checkInDate: z.string().optional(),
+  checkOutDate: z.string().nullable().optional(),
+});
+
+export type UpdateOccupancyValues = z.infer<typeof updateOccupancySchema>;

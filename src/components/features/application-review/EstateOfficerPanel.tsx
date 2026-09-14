@@ -78,7 +78,7 @@ export type VacantUnitData = {
 // Inspection metric definition
 // ---------------------------------------------------------------------------
 
-type InspectionRating = 'PASS' | 'FAIL' | 'NA' | null;
+type InspectionRating = 'GOOD' | 'FAIR' | 'BAD' | null;
 
 interface InspectionMetric {
   id:          string;
@@ -129,9 +129,9 @@ function MetricRow({
   return (
     <div className={cn(
       'flex items-start gap-3 p-3 rounded-lg border transition-all',
-      value === 'PASS' && 'bg-emerald-50 border-emerald-200',
-      value === 'FAIL' && 'bg-red-50 border-red-200',
-      value === 'NA'   && 'bg-muted/30 border-muted',
+      value === 'GOOD' && 'bg-emerald-50 border-emerald-200',
+      value === 'FAIR' && 'bg-amber-50 border-amber-200',
+      value === 'BAD'  && 'bg-red-50 border-red-200',
       value === null   && 'bg-background border-border'
     )}>
       <div className="flex-1 min-w-0">
@@ -139,22 +139,22 @@ function MetricRow({
         <p className="text-xs text-muted-foreground mt-0.5">{metric.description}</p>
       </div>
       <div className="flex gap-1.5 shrink-0">
-        {(['PASS', 'FAIL', 'NA'] as const).map(opt => (
+        {(['GOOD', 'FAIR', 'BAD'] as const).map(opt => (
           <button
             key={opt}
             type="button"
             onClick={() => onChange(value === opt ? null : opt)}
             className={cn(
               'text-xs font-semibold px-2.5 py-1 rounded-md border transition-all',
-              opt === 'PASS' && value === 'PASS' && 'bg-emerald-500 text-white border-emerald-500',
-              opt === 'PASS' && value !== 'PASS' && 'border-emerald-300 text-emerald-700 hover:bg-emerald-50',
-              opt === 'FAIL' && value === 'FAIL' && 'bg-red-500 text-white border-red-500',
-              opt === 'FAIL' && value !== 'FAIL' && 'border-red-300 text-red-700 hover:bg-red-50',
-              opt === 'NA'   && value === 'NA'   && 'bg-muted text-foreground border-muted-foreground/40',
-              opt === 'NA'   && value !== 'NA'   && 'border-muted-foreground/30 text-muted-foreground hover:bg-muted/40',
+              opt === 'GOOD' && value === 'GOOD' && 'bg-emerald-500 text-white border-emerald-500',
+              opt === 'GOOD' && value !== 'GOOD' && 'border-emerald-300 text-emerald-700 hover:bg-emerald-50',
+              opt === 'FAIR' && value === 'FAIR' && 'bg-amber-500 text-white border-amber-500',
+              opt === 'FAIR' && value !== 'FAIR' && 'border-amber-300 text-amber-700 hover:bg-amber-50',
+              opt === 'BAD'  && value === 'BAD'  && 'bg-red-500 text-white border-red-500',
+              opt === 'BAD'  && value !== 'BAD'  && 'border-red-300 text-red-700 hover:bg-red-50',
             )}
           >
-            {opt}
+            {opt === 'GOOD' ? 'Good' : opt === 'FAIR' ? 'Fair' : 'Bad'}
           </button>
         ))}
       </div>
@@ -452,8 +452,9 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
 
   const categories = [...new Set(INSPECTION_METRICS.map(m => m.category))];
   const rated     = Object.values(ratings).filter(v => v !== null).length;
-  const failCount = Object.values(ratings).filter(v => v === 'FAIL').length;
-  const passCount = Object.values(ratings).filter(v => v === 'PASS').length;
+  const goodCount = Object.values(ratings).filter(v => v === 'GOOD').length;
+  const fairCount = Object.values(ratings).filter(v => v === 'FAIR').length;
+  const badCount  = Object.values(ratings).filter(v => v === 'BAD').length;
   const allRated  = rated === INSPECTION_METRICS.length;
 
   function onSubmit(values: FormValues) {
@@ -543,12 +544,16 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
       {/* Progress summary */}
       <div className="flex gap-3 text-sm">
         <div className="flex-1 rounded-lg border bg-emerald-50 border-emerald-200 px-3 py-2 text-center">
-          <p className="text-2xl font-bold text-emerald-600">{passCount}</p>
-          <p className="text-xs text-emerald-700">Passed</p>
+          <p className="text-2xl font-bold text-emerald-600">{goodCount}</p>
+          <p className="text-xs text-emerald-700">Good</p>
+        </div>
+        <div className="flex-1 rounded-lg border bg-amber-50 border-amber-200 px-3 py-2 text-center">
+          <p className="text-2xl font-bold text-amber-600">{fairCount}</p>
+          <p className="text-xs text-amber-700">Fair</p>
         </div>
         <div className="flex-1 rounded-lg border bg-red-50 border-red-200 px-3 py-2 text-center">
-          <p className="text-2xl font-bold text-red-500">{failCount}</p>
-          <p className="text-xs text-red-700">Failed</p>
+          <p className="text-2xl font-bold text-red-500">{badCount}</p>
+          <p className="text-xs text-red-700">Bad</p>
         </div>
         <div className="flex-1 rounded-lg border bg-muted px-3 py-2 text-center">
           <p className="text-2xl font-bold text-muted-foreground">{INSPECTION_METRICS.length - rated}</p>
@@ -576,11 +581,11 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
           </div>
         ))}
 
-        {/* Warning if failures */}
-        {failCount > 0 && watched.decision === 'FORWARDED' && (
+        {/* Warning if bad ratings */}
+        {badCount > 0 && watched.decision === 'FORWARDED' && (
           <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm">
             <XCircle className="h-4 w-4 shrink-0 mt-0.5" />
-            <p>{failCount} metric(s) marked as FAIL. Consider rejecting or explain in field notes before forwarding.</p>
+            <p>{badCount} metric(s) marked as BAD. Consider rejecting or explain in field notes before forwarding.</p>
           </div>
         )}
 

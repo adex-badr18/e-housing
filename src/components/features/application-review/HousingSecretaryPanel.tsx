@@ -14,7 +14,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import {
-  Sparkles, Loader2, ChevronRight, XCircle, Info, CheckCircle2,
+  Sparkles, Loader2, ChevronRight, XCircle,
   User, GraduationCap, Calendar, Users, Heart, Save, Home, AlertCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -50,22 +50,7 @@ type FormValues = {
   decision:           'FORWARDED' | 'REJECTED' | 'SAVE_DRAFT';
 };
 
-// ---------------------------------------------------------------------------
-// Verification Checklist item
-// ---------------------------------------------------------------------------
 
-interface CheckItem {
-  id: string;
-  label: string;
-  description: string;
-}
-
-const VERIFICATION_CHECKS: CheckItem[] = [
-  { id: 'staff-id',      label: 'Staff ID verified',              description: 'Confirm applicant appears in the staff registry' },
-  { id: 'profile-compl', label: 'Profile complete',               description: 'All mandatory profile fields are filled in correctly' },
-  { id: 'eligibility',   label: 'Eligibility criteria met',       description: 'Rank and grade level qualify for requested housing category' },
-  { id: 'no-duplicate',  label: 'No duplicate application',       description: 'Only one active application is permitted at a time' },
-];
 
 // ---------------------------------------------------------------------------
 // Props
@@ -131,7 +116,6 @@ export function HousingSecretaryPanel({
   applicantProfile,
 }: HousingSecretaryPanelProps) {
   const router = useRouter();
-  const [checks, setChecks]       = useState<Record<string, boolean>>({});
   const [autoScoring, startAutoScore] = useTransition();
   const [scoringDetails, setScoringDetails] = useState<ScoringBreakdown | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -197,11 +181,7 @@ export function HousingSecretaryPanel({
     });
   }
 
-  function toggleCheck(id: string) {
-    setChecks(prev => ({ ...prev, [id]: !prev[id] }));
-  }
 
-  const allChecked = VERIFICATION_CHECKS.every(c => checks[c.id]);
 
   function onSubmit(values: FormValues) {
     startTransition(async () => {
@@ -298,43 +278,7 @@ export function HousingSecretaryPanel({
         </div>
       )}
 
-      {/* Verification checklist */}
-      <div className="rounded-xl border bg-card p-5 space-y-3">
-        <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
-          <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-          Verification Checklist
-        </h3>
-        <div className="space-y-2">
-          {VERIFICATION_CHECKS.map(item => (
-            <label
-              key={item.id}
-              className={cn(
-                'flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all',
-                checks[item.id]
-                  ? 'bg-emerald-50 border-emerald-200'
-                  : 'bg-background border-border hover:bg-muted/30'
-              )}
-            >
-              <input
-                type="checkbox"
-                checked={checks[item.id] ?? false}
-                onChange={() => toggleCheck(item.id)}
-                className="mt-0.5 accent-emerald-600 h-4 w-4 cursor-pointer"
-              />
-              <div>
-                <p className="text-sm font-medium">{item.label}</p>
-                <p className="text-xs text-muted-foreground">{item.description}</p>
-              </div>
-            </label>
-          ))}
-        </div>
-        {!allChecked && (
-          <p className="text-xs text-amber-600 flex items-center gap-1.5">
-            <Info className="h-3.5 w-3.5" />
-            Complete all checks before forwarding the application
-          </p>
-        )}
-      </div>
+
 
       {/* Scoring panel */}
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
@@ -517,7 +461,7 @@ export function HousingSecretaryPanel({
         {/* Submit button */}
         <button
           type="submit"
-          disabled={isPending || (watched.decision === 'FORWARDED' && !allChecked)}
+          disabled={isPending}
           className={cn(
             'w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all',
             watched.decision === 'REJECTED'
@@ -535,12 +479,6 @@ export function HousingSecretaryPanel({
             ? 'Save Draft Review'
             : 'Submit Rejection'}
         </button>
-
-        {watched.decision === 'FORWARDED' && !allChecked && (
-          <p className="text-xs text-center text-amber-600">
-            Complete all verification checks to enable forwarding
-          </p>
-        )}
       </form>
     </div>
   );

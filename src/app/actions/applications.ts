@@ -12,6 +12,7 @@ import {
   createAllocation,
   respondToAllocation,
   getApplicationsForRole,
+  getPaginatedApplicationsForManagement,
   getApplicationsForUser,
   getApplicationDetail,
   getApplicationWithProfile,
@@ -165,7 +166,7 @@ export async function getMyApplicationsAction() {
 // Management: List applications filtered by caller's role
 // ---------------------------------------------------------------------------
 
-export async function getApplicationsForRoleAction() {
+export async function getApplicationsForRoleAction(queueMode: 'MY_QUEUE' | 'ALL_APPLICATIONS' = 'MY_QUEUE') {
   const session = await auth();
   if (!session?.user) return { success: false, error: 'Unauthorized' };
 
@@ -175,10 +176,37 @@ export async function getApplicationsForRoleAction() {
   }
 
   try {
-    const applications = await getApplicationsForRole(session.user.role);
+    const applications = await getApplicationsForRole(session.user.role, queueMode);
     return { success: true, data: applications };
   } catch {
     return { success: false, error: 'Failed to fetch applications' };
+  }
+}
+
+export async function getPaginatedApplicationsAction(params: {
+  queueMode?: 'MY_QUEUE' | 'ALL_APPLICATIONS';
+  stageFilter?: string;
+  statusFilter?: string;
+  searchQuery?: string;
+  page?: number;
+  limit?: number;
+}) {
+  const session = await auth();
+  if (!session?.user) return { success: false, error: 'Unauthorized' };
+
+  const allowedRoles = ['SUPER_ADMIN', 'HOUSING_SECRETARY', 'ESTATE_OFFICER', 'DVC_ADMIN'] as const;
+  if (!allowedRoles.includes(session.user.role as typeof allowedRoles[number])) {
+    return { success: false, error: 'Access denied' };
+  }
+
+  try {
+    const result = await getPaginatedApplicationsForManagement({
+      role: session.user.role,
+      ...params,
+    });
+    return { success: true, ...result };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Failed to fetch paginated applications' };
   }
 }
 
@@ -246,10 +274,11 @@ export async function reviewApplicationAction(data: unknown) {
       reviewerRole: session.user.role,
       stage: parsed.data.stage,
       decision: parsed.data.decision,
-      comments: parsed.data.comments,
+      comments: parsed.data.comments ?? '',
       score: parsed.data.score ?? null,
       pointsBreakdown,
       allocatedUnitId: parsed.data.allocatedUnitId ?? null,
+      isDraft: parsed.data.isDraft,
     });
 
     await writeAuditEntry({

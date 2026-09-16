@@ -37,20 +37,32 @@ export async function getAllApplications(): Promise<HousingApplication[]> {
 }
 
 /**
- * Role-filtered application list.
- * - HOUSING_SECRETARY: sees PENDING (awaiting Stage 1)
- * - ESTATE_OFFICER: sees applications at ESTATE stage + QUEUED applications
- * - DVC_ADMIN: sees applications at DVC stage
+ * Role-filtered application list with optional queue mode.
+ * - MY_QUEUE:
+ *   - HOUSING_SECRETARY: HOUSING stage apps + RETURNED status apps
+ *   - ESTATE_OFFICER: ESTATE stage apps + QUEUED status + RETURNED status apps
+ *   - DVC_ADMIN: DVC stage apps
+ * - ALL_APPLICATIONS: all applications in system
  */
-export async function getApplicationsForRole(role: Role): Promise<HousingApplication[]> {
+export async function getApplicationsForRole(
+  role: Role,
+  queueMode: 'MY_QUEUE' | 'ALL_APPLICATIONS' = 'MY_QUEUE'
+): Promise<HousingApplication[]> {
   await delay(300);
+  if (queueMode === 'ALL_APPLICATIONS') {
+    return [...mockDB.housingApplications].sort(
+      (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+    );
+  }
+
   switch (role) {
     case 'HOUSING_SECRETARY':
-      return mockDB.housingApplications.filter(a => a.currentStage === 'HOUSING');
-    case 'ESTATE_OFFICER':
-      // Estate Officer sees both active ESTATE-stage apps AND queued apps
       return mockDB.housingApplications.filter(
-        a => a.currentStage === 'ESTATE' || a.status === 'QUEUED'
+        a => a.currentStage === 'HOUSING' || a.status === 'RETURNED'
+      );
+    case 'ESTATE_OFFICER':
+      return mockDB.housingApplications.filter(
+        a => a.currentStage === 'ESTATE' || a.status === 'QUEUED' || a.status === 'RETURNED'
       );
     case 'DVC_ADMIN':
       return mockDB.housingApplications.filter(a => a.currentStage === 'DVC');
@@ -59,6 +71,120 @@ export async function getApplicationsForRole(role: Role): Promise<HousingApplica
     default:
       return [];
   }
+}
+
+/**
+ * Server-side paginated, searchable, and filterable applications query for management roles.
+ */
+export async function getPaginatedApplicationsForManagement(params: {
+  role: Role;
+  queueMode?: 'MY_QUEUE' | 'ALL_APPLICATIONS';
+  stageFilter?: string;
+  statusFilter?: string;
+  searchQuery?: string;
+  page?: number;
+  limit?: number;
+}): Promise<{
+  data: Array<
+    HousingApplication & {
+      applicantUser: import('../db').User | null;
+      applicantProfile: import('../db').StaffProfile | null;
+      allocatedUnit: HousingUnit | null;
+    }
+  >;
+  total: number;
+  page: number;
+  totalPages: number;
+}> {
+  await delay(300);
+  const queueMode = params.queueMode || 'MY_QUEUE';
+  let apps = [...mockDB.housingApplications];
+
+  if (queueMode === 'MY_QUEUE') {
+    switch (params.role) {
+      case 'HOUSING_SECRETARY':
+        apps = apps.filter(a => a.currentStage === 'HOUSING' || a.status === 'RETURNED');
+        break;
+      case 'ESTATE_OFFICER':
+        apps = apps.filter(
+          a => a.currentStage === 'ESTATE' || a.status === 'QUEUED' || a.status === 'RETURNED'
+        );
+        break;
+      case 'DVC_ADMIN':
+        apps = apps.filter(a => a.currentStage === 'DVC');
+        break;
+      case 'SUPER_ADMIN':
+        // Super Admin sees all in queue
+        break;
+      default:
+        apps = [];
+    }
+  }
+
+  // Stage filter
+  if (params.stageFilter && params.stageFilter !== 'ALL') {
+    apps = apps.filter(a => a.currentStage === params.stageFilter);
+  }
+
+  // Status filter
+  if (params.statusFilter && params.statusFilter !== 'ALL') {
+    apps = apps.filter(a => a.status === params.statusFilter);
+  }
+
+  // Search query
+  if (params.searchQuery && params.searchQuery.trim() !== '') {
+    const q = params.searchQuery.trim().toLowerCase();
+    apps = apps.filter(a => {
+      const user = mockDB.findUserById(a.userId);
+      const profile = user ? mockDB.staffProfiles.find(p => p.userId === user.id) : null;
+      const userName = user ? `${user.firstName} ${user.lastName}`.toLowerCase() : '';
+      const email = user?.email.toLowerCase() || '';
+      const staffId = profile?.staffId.toLowerCase() || '';
+      const dept = profile?.department.toLowerCase() || '';
+      const appId = a.id.toLowerCase();
+      return (
+        userName.includes(q) ||
+        email.includes(q) ||
+        staffId.includes(q) ||
+        dept.includes(q) ||
+        appId.includes(q)
+      );
+    });
+  }
+
+  // Sort by updatedAt descending
+  apps.sort((a, b) => new Date(b.updatedAt || b.submittedAt).getTime() - new Date(a.updatedAt || a.submittedAt).getTime());
+
+  const total = apps.length;
+  const page = Math.max(1, params.page || 1);
+  const limit = params.limit || 10;
+  const totalPages = Math.ceil(total / limit) || 1;
+  const startIndex = (page - 1) * limit;
+  const paginatedApps = apps.slice(startIndex, startIndex + limit);
+
+  const enrichedData = paginatedApps.map(app => {
+    const applicantUser = mockDB.findUserById(app.userId) ?? null;
+    const applicantProfile = applicantUser
+      ? (mockDB.staffProfiles.find(p => p.userId === applicantUser.id) ?? null)
+      : null;
+    const allocatedUnit = app.allocatedUnitId
+      ? (mockDB.findUnitById(app.allocatedUnitId) ?? null)
+      : null;
+
+    return {
+      ...app,
+      applicantUser: applicantUser ? { ...applicantUser } : null,
+      applicantProfile: applicantProfile ? { ...applicantProfile } : null,
+      allocatedUnit: allocatedUnit ? { ...allocatedUnit } : null,
+    };
+  });
+
+  return {
+    data: enrichedData,
+    total,
+    page,
+    totalPages,
+  };
 }
 
 /** Application with its review history and linked allocation (if any) */
@@ -177,29 +303,37 @@ export async function reviewApplication(params: {
   reviewerId: string;
   reviewerRole: Role;
   stage: Exclude<ApplicationStage, 'COMPLETED'>;
-  decision: ReviewDecision | 'QUEUED';
-  comments: string;
+  decision: ReviewDecision | 'QUEUED' | 'SAVE_DRAFT' | 'RETURNED';
+  comments?: string;
   score?: number | null;
   pointsBreakdown?: PointsBreakdown | null;
   allocatedUnitId?: string | null;
+  isDraft?: boolean;
 }): Promise<{ application: HousingApplication; review: ApplicationReview }> {
   await delay(700);
 
   const application = mockDB.findApplicationById(params.applicationId);
   if (!application) throw new Error('Application not found');
 
-  // ---- For QUEUED re-activation: allow ESTATE_OFFICER to act when status is QUEUED ----
-  if (params.decision !== 'QUEUED' && application.status === 'QUEUED') {
-    // Re-activating a queued application — allowed at ESTATE stage only
-    if (params.stage !== 'ESTATE' || params.reviewerRole !== 'ESTATE_OFFICER') {
-      throw new Error('Only the Estate Officer can re-activate a queued application');
-    }
-  } else if (application.status !== 'QUEUED') {
-    // Normal stage gate: ensure the application is at the expected stage
-    if (application.currentStage !== params.stage) {
-      throw new Error(
-        `Application is at stage "${application.currentStage}", not "${params.stage}". Reviews must be sequential.`
-      );
+  // ---- Stage & Status Checks ----
+  if (params.decision !== 'SAVE_DRAFT') {
+    if (params.decision !== 'QUEUED' && application.status === 'QUEUED') {
+      // Re-activating a queued application — allowed at ESTATE stage only
+      if (params.stage !== 'ESTATE' || params.reviewerRole !== 'ESTATE_OFFICER') {
+        throw new Error('Only the Estate Officer can re-activate a queued application');
+      }
+    } else if (application.status === 'RETURNED') {
+      // Returned application: both HOUSING and ESTATE reviewers can work on it
+      if (params.reviewerRole !== 'HOUSING_SECRETARY' && params.reviewerRole !== 'ESTATE_OFFICER') {
+        throw new Error('Only the Housing Secretary or Estate Officer can resubmit a returned application');
+      }
+    } else {
+      // Normal stage gate: ensure the application is at the expected stage
+      if (application.currentStage !== params.stage) {
+        throw new Error(
+          `Application is at stage "${application.currentStage}", not "${params.stage}". Reviews must be sequential.`
+        );
+      }
     }
   }
 
@@ -209,30 +343,63 @@ export async function reviewApplication(params: {
     ESTATE: 'ESTATE_OFFICER',
     DVC: 'DVC_ADMIN',
   };
-  if (stageRoleMap[params.stage] !== params.reviewerRole) {
+  if (params.decision !== 'SAVE_DRAFT' && application.status !== 'RETURNED' && stageRoleMap[params.stage] !== params.reviewerRole) {
     throw new Error(`Only ${stageRoleMap[params.stage]} can review at the ${params.stage} stage`);
   }
 
   // ---- DVC cannot FORWARD ----
   if (params.stage === 'DVC' && params.decision === 'FORWARDED') {
-    throw new Error('DVC Admin must make a final APPROVED or REJECTED decision');
+    throw new Error('DVC Admin must make a final APPROVED, REJECTED, or RETURNED decision');
   }
 
-  // ---- Estate Officer: FORWARDED requires a unit selection ----
-  if (params.stage === 'ESTATE' && params.decision === 'FORWARDED' && !params.allocatedUnitId) {
+  // ---- Estate Officer: FORWARDED requires a unit selection (unless saving draft) ----
+  if (params.decision === 'FORWARDED' && params.stage === 'ESTATE' && !params.allocatedUnitId && !application.allocatedUnitId) {
     throw new Error('Please select a housing unit before forwarding to DVC Admin');
   }
 
-  // ---- Validate the pre-selected unit is still vacant ----
-  if (params.allocatedUnitId) {
+  // ---- Validate the pre-selected unit is still vacant if provided ----
+  if (params.allocatedUnitId && params.decision !== 'SAVE_DRAFT') {
     const unit = mockDB.findUnitById(params.allocatedUnitId);
     if (!unit || unit.status !== 'VACANT') {
       throw new Error('The selected housing unit is no longer available. Please choose another.');
     }
   }
 
-  // ---- Record the review ----
   const now = new Date().toISOString();
+
+  // ---- Handle SAVE_DRAFT ----
+  if (params.decision === 'SAVE_DRAFT') {
+    const draftReview: ApplicationReview = {
+      id: mockDB.generateId('rev'),
+      applicationId: params.applicationId,
+      reviewerId: params.reviewerId,
+      reviewerRole: params.reviewerRole,
+      stage: params.stage,
+      score: params.score ?? null,
+      decision: 'SAVE_DRAFT',
+      comments: params.comments || 'Draft review saved',
+      suggestedUnitId: params.allocatedUnitId ?? null,
+      isDraft: true,
+      reviewedAt: now,
+    };
+    mockDB.applicationReviews.push(draftReview);
+
+    const appIdx = mockDB.housingApplications.findIndex(a => a.id === params.applicationId);
+    mockDB.housingApplications[appIdx] = {
+      ...application,
+      status: 'UNDER_REVIEW',
+      allocatedUnitId: params.allocatedUnitId ?? application.allocatedUnitId,
+      pointsBreakdown: params.pointsBreakdown ?? application.pointsBreakdown,
+      updatedAt: now,
+    };
+
+    return {
+      application: { ...mockDB.housingApplications[appIdx] },
+      review: draftReview,
+    };
+  }
+
+  // ---- Record the non-draft review ----
   const review: ApplicationReview = {
     id: mockDB.generateId('rev'),
     applicationId: params.applicationId,
@@ -240,8 +407,10 @@ export async function reviewApplication(params: {
     reviewerRole: params.reviewerRole,
     stage: params.stage,
     score: params.score ?? null,
-    decision: params.decision === 'QUEUED' ? 'FORWARDED' : params.decision, // store as FORWARDED internally
-    comments: params.comments,
+    decision: (params.decision === 'QUEUED' ? 'FORWARDED' : params.decision) as ReviewDecision,
+    comments: params.comments ?? '',
+    suggestedUnitId: params.allocatedUnitId ?? null,
+    isDraft: false,
     reviewedAt: now,
   };
   mockDB.applicationReviews.push(review);
@@ -256,6 +425,16 @@ export async function reviewApplication(params: {
       currentStage: params.stage,
       updatedAt: now,
     };
+  } else if (params.decision === 'RETURNED') {
+    // DVC sends back to Estate & Housing stage for modification
+    mockDB.housingApplications[appIdx] = {
+      ...application,
+      status: 'RETURNED',
+      currentStage: 'ESTATE',
+      dvcReturnNote: params.comments,
+      dvcSuggestedUnitId: params.allocatedUnitId ?? null,
+      updatedAt: now,
+    };
   } else if (params.decision === 'QUEUED') {
     // Hold application at ESTATE stage with QUEUED status
     mockDB.housingApplications[appIdx] = {
@@ -266,11 +445,15 @@ export async function reviewApplication(params: {
       updatedAt: now,
     };
   } else if (params.decision === 'FORWARDED') {
-    const nextStageMap: Partial<Record<ApplicationStage, ApplicationStage>> = {
-      HOUSING: 'ESTATE',
-      ESTATE: 'DVC',
-    };
-    const nextStage = nextStageMap[params.stage]!;
+    let nextStage: ApplicationStage = 'ESTATE';
+    if (params.stage === 'HOUSING') {
+      nextStage = 'ESTATE';
+    } else if (params.stage === 'ESTATE') {
+      nextStage = 'DVC';
+    } else if (application.status === 'RETURNED') {
+      nextStage = 'DVC';
+    }
+
     mockDB.housingApplications[appIdx] = {
       ...application,
       status: 'UNDER_REVIEW',
@@ -285,9 +468,9 @@ export async function reviewApplication(params: {
       ...application,
       status: 'APPROVED',
       currentStage: 'COMPLETED',
+      allocatedUnitId: params.allocatedUnitId ?? application.allocatedUnitId,
       updatedAt: now,
     };
-    // In a real system we'd trigger allocation creation and email here
   }
 
   // Update points breakdown if provided (set during Housing stage)

@@ -52,6 +52,10 @@ const appStatusConfig: Record<ApplicationStatus, { label: string; className: str
     label: 'Queued',
     className: 'bg-orange-100 text-orange-800 border-orange-200',
   },
+  RETURNED: {
+    label: 'Returned',
+    className: 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300',
+  },
   QUIT_REQUESTED: {
     label: 'Quit Requested',
     className: 'bg-orange-100 text-orange-800 border-orange-200',

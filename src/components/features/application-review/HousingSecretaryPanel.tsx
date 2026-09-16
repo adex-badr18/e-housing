@@ -7,7 +7,7 @@
 // Housing Secretary can adjust any component, add remarks, then Forward or Reject.
 // =============================================================================
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,27 +15,29 @@ import { z } from 'zod';
 import { toast } from 'sonner';
 import {
   Sparkles, Loader2, ChevronRight, XCircle, Info, CheckCircle2,
-  User, GraduationCap, Calendar, Users, Heart,
+  User, GraduationCap, Calendar, Users, Heart, Save, Home, AlertCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { autoScoreApplicationAction, reviewApplicationAction } from '@/app/actions/applications';
-import type { HousingApplication, StaffProfile, User as UserType } from '@/lib/mock-api/db';
+import {
+  autoScoreApplicationAction,
+  reviewApplicationAction,
+  getVacantUnitsForApplicationAction
+} from '@/app/actions/applications';
+import type { HousingApplication, StaffProfile, User as UserType, HousingUnit, HousingType } from '@/lib/mock-api/db';
 import type { ScoringBreakdown } from '@/lib/scoring';
-
-// ---------------------------------------------------------------------------
-// Validation schema
-// ---------------------------------------------------------------------------
 
 const formSchema = z.object({
   baseTypePoints:     z.coerce.number().int().min(0).max(70),
   seniorityBonus:     z.coerce.number().int().min(0).max(25),
   dependentsBonus:    z.coerce.number().int().min(0).max(15),
   maritalStatusBonus: z.coerce.number().int().min(0).max(10),
+  allocatedUnitId:    z.string().nullable().optional(),
   comments: z
     .string()
-    .min(10, 'Remarks must be at least 10 characters')
-    .max(1000, 'Remarks must be under 1000 characters'),
-  decision: z.enum(['FORWARDED', 'REJECTED']),
+    .max(1000, 'Remarks must be under 1000 characters')
+    .optional()
+    .or(z.literal('')),
+  decision: z.enum(['FORWARDED', 'REJECTED', 'SAVE_DRAFT']),
 });
 
 type FormValues = {
@@ -43,8 +45,9 @@ type FormValues = {
   seniorityBonus:     number;
   dependentsBonus:    number;
   maritalStatusBonus: number;
+  allocatedUnitId?:   string | null;
   comments:           string;
-  decision:           'FORWARDED' | 'REJECTED';
+  decision:           'FORWARDED' | 'REJECTED' | 'SAVE_DRAFT';
 };
 
 // ---------------------------------------------------------------------------
@@ -133,6 +136,26 @@ export function HousingSecretaryPanel({
   const [scoringDetails, setScoringDetails] = useState<ScoringBreakdown | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  const [vacantUnits, setVacantUnits] = useState<{
+    unit: HousingUnit;
+    housingType: HousingType | null;
+    isEligible: boolean;
+    matchesPreference: boolean;
+  }[]>([]);
+  const [loadingUnits, setLoadingUnits] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    setLoadingUnits(true);
+    getVacantUnitsForApplicationAction(application.id).then(res => {
+      if (mounted && res.success && res.data) {
+        setVacantUnits(res.data);
+      }
+      if (mounted) setLoadingUnits(false);
+    });
+    return () => { mounted = false; };
+  }, [application.id]);
+
   const existingBreakdown = application.pointsBreakdown;
 
   const form = useForm<FormValues>({
@@ -143,6 +166,7 @@ export function HousingSecretaryPanel({
       seniorityBonus:     existingBreakdown?.seniorityBonus     ?? 0,
       dependentsBonus:    existingBreakdown?.dependentsBonus    ?? 0,
       maritalStatusBonus: existingBreakdown?.maritalStatusBonus ?? 0,
+      allocatedUnitId:    application.allocatedUnitId           ?? null,
       comments:           '',
       decision:           'FORWARDED',
     },
@@ -191,15 +215,19 @@ export function HousingSecretaryPanel({
         seniorityBonus:     values.seniorityBonus,
         dependentsBonus:    values.dependentsBonus,
         maritalStatusBonus: values.maritalStatusBonus,
+        allocatedUnitId:    values.allocatedUnitId || null,
+        isDraft:            values.decision === 'SAVE_DRAFT',
       };
 
       const res = await reviewApplicationAction(payload);
       if (res.success) {
-        toast.success(
-          values.decision === 'FORWARDED'
-            ? 'Application scored and forwarded to Estate Officer'
-            : 'Application rejected'
-        );
+        if (values.decision === 'SAVE_DRAFT') {
+          toast.success('Draft review and unit proposal saved');
+        } else if (values.decision === 'FORWARDED') {
+          toast.success('Application scored and forwarded to Estate Officer');
+        } else {
+          toast.success('Application rejected');
+        }
         router.refresh();
       } else {
         toast.error(res.error ?? 'Failed to submit review');
@@ -209,6 +237,24 @@ export function HousingSecretaryPanel({
 
   return (
     <div className="space-y-6">
+      {/* DVC Return Banner */}
+      {application.status === 'RETURNED' && (
+        <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-4 dark:bg-amber-950/40 dark:border-amber-800 space-y-2">
+          <div className="flex items-center gap-2 text-amber-900 dark:text-amber-300 font-bold text-sm">
+            <AlertCircle className="h-5 w-5 text-amber-600" />
+            Application Returned by DVC Admin for Modification
+          </div>
+          {application.dvcReturnNote && (
+            <p className="text-xs text-amber-800 dark:text-amber-400 bg-white/70 dark:bg-amber-900/40 p-2.5 rounded-lg font-mono">
+              &quot;{application.dvcReturnNote}&quot;
+            </p>
+          )}
+          <p className="text-xs text-amber-700 dark:text-amber-400">
+            You and the Estate Officer can review this application together, adjust the score or select a different vacant housing unit as instructed by the DVC Admin, then resubmit it for final approval.
+          </p>
+        </div>
+      )}
+
       {/* Applicant info strip */}
       {applicantUser && applicantProfile && (
         <div className="rounded-xl border bg-secondary/40 p-4 grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
@@ -350,13 +396,51 @@ export function HousingSecretaryPanel({
           </div>
         </div>
 
+        {/* Optional Housing Unit Proposal (Collaborative with Estate Officer) */}
+        <div className="rounded-xl border bg-card p-5 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-sm flex items-center gap-2">
+              <Home className="h-4 w-4 text-primary" />
+              Propose Housing Unit (Optional at Stage 1)
+            </h3>
+            <span className="text-xs text-muted-foreground">
+              Housing Secretary & Estate Officer can collaborate on unit proposal
+            </span>
+          </div>
+
+          {loadingUnits ? (
+            <p className="text-xs text-muted-foreground py-2 flex items-center gap-2">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading vacant units...
+            </p>
+          ) : vacantUnits.length === 0 ? (
+            <p className="text-xs text-muted-foreground py-2 italic">
+              No vacant units currently available in system.
+            </p>
+          ) : (
+            <select
+              value={watched.allocatedUnitId || ''}
+              onChange={e => form.setValue('allocatedUnitId', e.target.value || null)}
+              className="w-full text-sm px-3 py-2 rounded-xl border bg-background"
+            >
+              <option value="">-- No unit proposed yet (Estate Officer will assign) --</option>
+              {vacantUnits.map(u => (
+                <option key={u.unit.id} value={u.unit.id}>
+                  {u.unit.name} ({u.unit.houseNumber}, {u.unit.roadNumber}) {u.matchesPreference ? '★ Matches Preference' : ''}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
         {/* Remarks */}
         <div className="space-y-2">
-          <label className="text-sm font-semibold">Reviewer Remarks</label>
+          <label className="text-sm font-semibold">
+            Reviewer Remarks <span className="text-xs font-normal text-muted-foreground">(Optional)</span>
+          </label>
           <textarea
             {...form.register('comments')}
             rows={4}
-            placeholder="Provide a detailed remark justifying your decision..."
+            placeholder="Provide any remarks justifying your decision or instructions for Estate Officer (optional)..."
             className={cn(
               'w-full text-sm px-3 py-2 rounded-xl border bg-background resize-none',
               'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition'
@@ -367,10 +451,10 @@ export function HousingSecretaryPanel({
           )}
         </div>
 
-        {/* Decision */}
-        <div className="flex gap-3">
+        {/* Decision options: FORWARD, SAVE DRAFT, REJECT */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <label className={cn(
-            'flex-1 flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
+            'flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
             watched.decision === 'FORWARDED'
               ? 'border-primary bg-primary/5'
               : 'border-border hover:border-muted-foreground/40'
@@ -383,14 +467,34 @@ export function HousingSecretaryPanel({
             />
             <div>
               <p className="text-sm font-semibold flex items-center gap-1.5">
-                <ChevronRight className="h-4 w-4 text-primary" /> Forward to Estate Officer
+                <ChevronRight className="h-4 w-4 text-primary" /> Forward
               </p>
-              <p className="text-xs text-muted-foreground mt-0.5">Score accepted — advance to Stage 2</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Advance to Estate Officer</p>
             </div>
           </label>
 
           <label className={cn(
-            'flex-1 flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
+            'flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
+            watched.decision === 'SAVE_DRAFT'
+              ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40'
+              : 'border-border hover:border-muted-foreground/40'
+          )}>
+            <input
+              type="radio"
+              value="SAVE_DRAFT"
+              {...form.register('decision')}
+              className="accent-blue-500"
+            />
+            <div>
+              <p className="text-sm font-semibold flex items-center gap-1.5 text-blue-700 dark:text-blue-300">
+                <Save className="h-4 w-4 text-blue-500" /> Save Draft
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">Save progress without advancing</p>
+            </div>
+          </label>
+
+          <label className={cn(
+            'flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
             watched.decision === 'REJECTED'
               ? 'border-destructive bg-red-50'
               : 'border-border hover:border-muted-foreground/40'
@@ -405,25 +509,31 @@ export function HousingSecretaryPanel({
               <p className="text-sm font-semibold flex items-center gap-1.5">
                 <XCircle className="h-4 w-4 text-destructive" /> Reject Application
               </p>
-              <p className="text-xs text-muted-foreground mt-0.5">Application does not meet criteria</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Criteria not met</p>
             </div>
           </label>
         </div>
 
-        {/* Submit */}
+        {/* Submit button */}
         <button
           type="submit"
-          disabled={isPending || (!allChecked && watched.decision === 'FORWARDED')}
+          disabled={isPending || (watched.decision === 'FORWARDED' && !allChecked)}
           className={cn(
             'w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all',
             watched.decision === 'REJECTED'
               ? 'bg-destructive text-white hover:bg-destructive/90'
+              : watched.decision === 'SAVE_DRAFT'
+              ? 'bg-blue-600 text-white hover:bg-blue-700'
               : 'bg-primary text-primary-foreground hover:bg-primary/90',
             'disabled:opacity-50 disabled:cursor-not-allowed shadow-sm'
           )}
         >
           {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-          {watched.decision === 'FORWARDED' ? 'Submit & Forward to Estate Officer' : 'Submit Rejection'}
+          {watched.decision === 'FORWARDED'
+            ? 'Submit & Forward to Estate Officer'
+            : watched.decision === 'SAVE_DRAFT'
+            ? 'Save Draft Review'
+            : 'Submit Rejection'}
         </button>
 
         {watched.decision === 'FORWARDED' && !allChecked && (

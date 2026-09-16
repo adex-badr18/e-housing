@@ -106,20 +106,20 @@ export function ReviewPipeline({
   const isWithdrawn = status === 'WITHDRAWN';
   const isTerminated = status === 'TERMINATED';
   const isTerminalStatus = isRejected || isApproved || isWithdrawn || isTerminated;
-
-  // SUPER_ADMIN: read-only view of everything
   const isSuperAdmin = sessionRole === 'SUPER_ADMIN';
+  const isReturned = status === 'RETURNED';
 
   // Is it this role's turn?
-  // Estate Officer also gets a turn when the application is QUEUED (for re-activation)
+  // Estate Officer & Housing Secretary also get a turn when the application is RETURNED by DVC
   const isMyTurn = !isSuperAdmin && (
     (expectedStage === currentStage && !isTerminalStatus && !isQueued && !isQuitRequested) ||
-    (isQueued && sessionRole === 'ESTATE_OFFICER')
+    (isQueued && sessionRole === 'ESTATE_OFFICER') ||
+    (isReturned && (sessionRole === 'HOUSING_SECRETARY' || sessionRole === 'ESTATE_OFFICER'))
   );
   // Role has already acted (completed stage)
-  const hasActed = expectedStage != null && isStageCompleted(expectedStage, currentStage) && !isQueued;
+  const hasActed = expectedStage != null && isStageCompleted(expectedStage, currentStage) && !isQueued && !isReturned;
   // Role is waiting (stage not yet reached)
-  const isWaiting = !isSuperAdmin && expectedStage != null && !isMyTurn && !hasActed && !isTerminalStatus && !isQueued && !isQuitRequested;
+  const isWaiting = !isSuperAdmin && expectedStage != null && !isMyTurn && !hasActed && !isTerminalStatus && !isQueued && !isQuitRequested && !isReturned;
 
   const canAdminTerminate = !isTerminalStatus && ['HOUSING_SECRETARY', 'ESTATE_OFFICER', 'DVC_ADMIN', 'SUPER_ADMIN'].includes(sessionRole);
 
@@ -246,32 +246,33 @@ export function ReviewPipeline({
         </div>
       )}
 
-      {/* Active review panel — only shown when it's this role's turn */}
+      {/* Active review panel — shown when it's this role's turn */}
       {isMyTurn && (
         <div className="rounded-2xl border-2 border-primary/20 bg-card shadow-md overflow-hidden">
-          <div className={`px-5 py-3.5 flex items-center gap-2 ${isQueued ? 'bg-amber-500' : 'bg-primary'} text-white`}>
+          <div className={`px-5 py-3.5 flex items-center gap-2 ${isQueued || isReturned ? 'bg-amber-500' : 'bg-primary'} text-white`}>
             <span className="text-sm font-semibold">
-              {currentStage === 'HOUSING' && '📋 Stage 1 — Verification & Scoring'}
-              {currentStage === 'ESTATE'  && !isQueued && '🏗️ Stage 2 — Physical Inspection & Unit Allocation'}
+              {currentStage === 'HOUSING' && !isReturned && '📋 Stage 1 — Verification & Scoring'}
+              {currentStage === 'ESTATE'  && !isQueued && !isReturned && '🏗️ Stage 2 — Physical Inspection & Unit Allocation'}
               {isQueued                   && '⏳ Stage 2 — Re-activate from Queue'}
-              {currentStage === 'DVC'     && '👑 Stage 3 — Final Decision'}
+              {isReturned                 && '↩ Review & Modify Returned Application'}
+              {currentStage === 'DVC'     && !isReturned && '👑 Stage 3 — Final Decision'}
             </span>
           </div>
           <div className="p-6">
-            {currentStage === 'HOUSING' && (
+            {(currentStage === 'HOUSING' || isReturned) && sessionRole === 'HOUSING_SECRETARY' && (
               <HousingSecretaryPanel
                 application={application}
                 applicantUser={applicantUser}
                 applicantProfile={applicantProfile}
               />
             )}
-            {(currentStage === 'ESTATE' || isQueued) && sessionRole === 'ESTATE_OFFICER' && (
+            {(currentStage === 'ESTATE' || isQueued || isReturned) && sessionRole === 'ESTATE_OFFICER' && (
               <EstateOfficerPanel
                 application={application}
                 pointsBreakdown={application.pointsBreakdown ?? null}
               />
             )}
-            {currentStage === 'DVC' && (
+            {currentStage === 'DVC' && !isReturned && sessionRole === 'DVC_ADMIN' && (
               <DVCAdminPanel
                 application={application}
                 reviews={reviews}

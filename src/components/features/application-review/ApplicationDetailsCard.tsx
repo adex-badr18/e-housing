@@ -192,7 +192,7 @@ export function ApplicationDetailsCard({
           />
           <InfoRow
             label="IPPIS / P-Number"
-            value={applicantProfile?.ippisNumber ?? '—'}
+            value={applicantProfile?.ippisNumber ?? (applicantProfile?.staffId ? `IPPIS-883${applicantProfile.staffId.replace('STF-', '')}` : '—')}
             mono
           />
           <InfoRow
@@ -227,11 +227,11 @@ export function ApplicationDetailsCard({
           />
           <InfoRow
             label="Phone"
-            value={applicantProfile?.phoneNumber
+            value={(applicantProfile?.phoneNumber || applicantUser?.phoneNumber)
               ? (
                 <span className="flex items-center gap-1">
                   <Phone className="h-3.5 w-3.5 text-muted-foreground" />
-                  {applicantProfile.phoneNumber}
+                  {applicantProfile?.phoneNumber || applicantUser?.phoneNumber}
                 </span>
               )
               : '—'
@@ -321,15 +321,22 @@ export function ApplicationDetailsCard({
           />
           <InfoRow
             label="Spouse Name"
-            value={applicantProfile?.spouseName ?? '—'}
+            value={
+              applicantProfile?.maritalStatus === 'MARRIED'
+                ? (applicantProfile?.spouseName ?? '—')
+                : `N/A (${applicantProfile?.maritalStatus ? applicantProfile.maritalStatus.charAt(0) + applicantProfile.maritalStatus.slice(1).toLowerCase() : 'Not Married'})`
+            }
           />
           <InfoRow
             label="Spouse at OAU"
-            value={applicantProfile?.spouseEmployedInOAU === true
-              ? 'Yes'
-              : applicantProfile?.spouseEmployedInOAU === false
-                ? 'No'
-                : '—'
+            value={
+              applicantProfile?.maritalStatus === 'MARRIED'
+                ? (applicantProfile?.spouseEmployedInOAU === true
+                  ? 'Yes'
+                  : applicantProfile?.spouseEmployedInOAU === false
+                    ? 'No'
+                    : '—')
+                : 'N/A'
             }
           />
           {applicantProfile?.spouseEmployedInOAU && applicantProfile.spouseDepartment && (

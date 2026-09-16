@@ -27,9 +27,9 @@ export const parkingSpaceSchema = z.enum(['Garage', 'Car Park', 'Nil']);
 export const unitStatusSchema = z.enum(['VACANT', 'OCCUPIED', 'UNDER_MAINTENANCE']);
 export const bqStatusSchema = z.enum(['VACANT', 'OCCUPIED']);
 export const inspectionStatusSchema = z.enum(['PENDING', 'PASSED', 'FAILED']);
-export const applicationStatusSchema = z.enum(['PENDING', 'UNDER_REVIEW', 'APPROVED', 'REJECTED', 'QUEUED', 'QUIT_REQUESTED', 'WITHDRAWN', 'TERMINATED']);
+export const applicationStatusSchema = z.enum(['PENDING', 'UNDER_REVIEW', 'APPROVED', 'REJECTED', 'QUEUED', 'RETURNED', 'QUIT_REQUESTED', 'WITHDRAWN', 'TERMINATED']);
 export const applicationStageSchema = z.enum(['HOUSING', 'ESTATE', 'DVC', 'COMPLETED']);
-export const reviewDecisionSchema = z.enum(['APPROVED', 'REJECTED', 'FORWARDED', 'QUEUED']);
+export const reviewDecisionSchema = z.enum(['APPROVED', 'REJECTED', 'FORWARDED', 'QUEUED', 'RETURNED', 'SAVE_DRAFT']);
 export const allocationStatusSchema = z.enum(['PENDING', 'ACCEPTED', 'REJECTED', 'EXPIRED']);
 export const exitReasonSchema = z.enum([
   'RETIREMENT',
@@ -172,8 +172,9 @@ export const applicationReviewSchema = z
     decision: reviewDecisionSchema,
     comments: z
       .string()
-      .min(10, 'Comments must be at least 10 characters')
-      .max(1000, 'Comments must be under 1000 characters'),
+      .max(1000, 'Comments must be under 1000 characters')
+      .optional()
+      .or(z.literal('')),
     // Only HOUSING stage sets a score
     score: z.coerce.number().int().min(0).max(100).optional().nullable(),
     // Points breakdown provided by Housing Secretary
@@ -181,10 +182,16 @@ export const applicationReviewSchema = z
     seniorityBonus: z.coerce.number().int().min(0).optional(),
     dependentsBonus: z.coerce.number().int().min(0).optional(),
     maritalStatusBonus: z.coerce.number().int().min(0).optional(),
-    // Pre-selected unit by Estate Officer (Stage 2 forward)
+    // Pre-selected unit by Housing Secretary or Estate Officer
     allocatedUnitId: z.string().optional().nullable(),
+    isDraft: z.boolean().optional(),
   })
   .superRefine((data, ctx) => {
+    // If saving draft, skip strict field requirements
+    if (data.decision === 'SAVE_DRAFT') {
+      return;
+    }
+
     if (data.stage === 'HOUSING' && data.decision === 'FORWARDED' && (data.score == null)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -195,7 +202,7 @@ export const applicationReviewSchema = z
     if (data.stage === 'DVC' && data.decision === 'FORWARDED') {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'DVC Admin must make a final APPROVED or REJECTED decision — not FORWARDED',
+        message: 'DVC Admin must make a final APPROVED, REJECTED, or RETURNED decision — not FORWARDED',
         path: ['decision'],
       });
     }

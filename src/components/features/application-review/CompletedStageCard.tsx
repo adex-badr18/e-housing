@@ -2,7 +2,7 @@
 // CompletedStageCard — read-only summary of a finished review stage
 // =============================================================================
 
-import { CheckCircle2, XCircle, ChevronRight } from 'lucide-react';
+import { CheckCircle2, XCircle, ChevronRight, RotateCcw, Save } from 'lucide-react';
 import { format } from 'date-fns';
 import type { ApplicationReview, ApplicationStage } from '@/lib/mock-api/db';
 
@@ -16,22 +16,34 @@ const DECISION_CONFIG = {
   FORWARDED: {
     icon:  ChevronRight,
     label: 'Forwarded',
-    cls:   'text-blue-600 bg-blue-50 border-blue-200',
+    cls:   'text-blue-600 bg-blue-50 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800',
     iconCls: 'text-blue-500',
   },
   APPROVED: {
     icon:  CheckCircle2,
     label: 'Approved',
-    cls:   'text-emerald-700 bg-emerald-50 border-emerald-200',
+    cls:   'text-emerald-700 bg-emerald-50 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800',
     iconCls: 'text-emerald-500',
   },
   REJECTED: {
     icon:  XCircle,
     label: 'Rejected',
-    cls:   'text-red-700 bg-red-50 border-red-200',
+    cls:   'text-red-700 bg-red-50 border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800',
     iconCls: 'text-red-500',
   },
-} as const;
+  RETURNED: {
+    icon:  RotateCcw,
+    label: 'Returned for Modification',
+    cls:   'text-amber-700 bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800',
+    iconCls: 'text-amber-500',
+  },
+  SAVE_DRAFT: {
+    icon:  Save,
+    label: 'Draft Review',
+    cls:   'text-blue-600 bg-blue-50 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800',
+    iconCls: 'text-blue-500',
+  },
+};
 
 interface CompletedStageCardProps {
   review: ApplicationReview;
@@ -69,9 +81,15 @@ export function CompletedStageCard({ review, reviewerName }: CompletedStageCardP
       </div>
 
       {/* Comments */}
-      <p className="text-sm text-foreground/80 border-l-2 border-muted pl-3 italic">
-        {review.comments}
-      </p>
+      {review.comments && review.comments.trim() ? (
+        <p className="text-sm text-foreground/80 border-l-2 border-muted pl-3 italic">
+          {review.comments}
+        </p>
+      ) : (
+        <p className="text-xs text-muted-foreground italic pl-3">
+          No remarks provided.
+        </p>
+      )}
     </div>
   );
 }

@@ -40,9 +40,10 @@ import type { HousingApplication, PointsBreakdown, HousingUnit, HousingType } fr
 const formSchema = z.object({
   comments: z
     .string()
-    .min(10, 'Field notes must be at least 10 characters')
-    .max(1000, 'Field notes must be under 1000 characters'),
-  decision: z.enum(['FORWARDED', 'QUEUED', 'REJECTED']),
+    .max(1000, 'Field notes must be under 1000 characters')
+    .optional()
+    .or(z.literal('')),
+  decision: z.enum(['FORWARDED', 'QUEUED', 'REJECTED', 'SAVE_DRAFT']),
   allocatedUnitId: z.string().nullable().optional(),
 }).superRefine((data, ctx) => {
   if (data.decision === 'FORWARDED' && !data.allocatedUnitId) {
@@ -59,7 +60,7 @@ type FormValues = z.infer<typeof formSchema>;
 // Re-queue form schema (for already-queued applications)
 const requeueFormSchema = z.object({
   allocatedUnitId: z.string().min(1, 'Please select a housing unit to re-activate'),
-  notes: z.string().min(10, 'Please add a note explaining the re-activation').max(500),
+  notes: z.string().max(500, 'Notes must be under 500 characters').optional().or(z.literal('')),
 });
 type RequeueFormValues = z.infer<typeof requeueFormSchema>;
 
@@ -370,11 +371,13 @@ function RequeuePanel({
 
       {/* Notes */}
       <div className="space-y-2">
-        <label className="text-sm font-semibold">Re-activation Notes</label>
+        <label className="text-sm font-semibold">
+          Re-activation Notes <span className="text-xs font-normal text-muted-foreground">(Optional)</span>
+        </label>
         <textarea
           {...form.register('notes')}
           rows={3}
-          placeholder="Explain why the application is being re-activated now..."
+          placeholder="Explain why the application is being re-activated now (optional)..."
           className={cn(
             'w-full text-sm px-3 py-2 rounded-xl border bg-background resize-none',
             'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition'
@@ -464,11 +467,14 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
         stage:         'ESTATE' as const,
         decision:      values.decision,
         comments:      values.comments,
-        allocatedUnitId: values.decision === 'FORWARDED' ? values.allocatedUnitId : null,
+        allocatedUnitId: values.allocatedUnitId || null,
+        isDraft:       values.decision === 'SAVE_DRAFT',
       });
 
       if (res.success) {
-        if (values.decision === 'FORWARDED') {
+        if (values.decision === 'SAVE_DRAFT') {
+          toast.success('Draft review and inspection notes saved');
+        } else if (values.decision === 'FORWARDED') {
           toast.success('Unit allocated — application forwarded to DVC Admin');
         } else if (values.decision === 'QUEUED') {
           toast.success('Application placed in queue — awaiting a suitable unit');
@@ -525,6 +531,23 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
 
   return (
     <div className="space-y-6">
+      {/* DVC Return Banner */}
+      {application.status === 'RETURNED' && (
+        <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-4 dark:bg-amber-950/40 dark:border-amber-800 space-y-2">
+          <div className="flex items-center gap-2 text-amber-900 dark:text-amber-300 font-bold text-sm">
+            <AlertCircle className="h-5 w-5 text-amber-600" />
+            Application Returned by DVC Admin for Modification
+          </div>
+          {application.dvcReturnNote && (
+            <p className="text-xs text-amber-800 dark:text-amber-400 bg-white/70 dark:bg-amber-900/40 p-2.5 rounded-lg font-mono">
+              &quot;{application.dvcReturnNote}&quot;
+            </p>
+          )}
+          <p className="text-xs text-amber-700 dark:text-amber-400">
+            Please re-verify the housing unit allocation or inspect an alternative vacant unit based on the DVC Admin&apos;s feedback before resubmitting.
+          </p>
+        </div>
+      )}
       {/* Score from Stage 1 */}
       {pointsBreakdown && (
         <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/5 border border-primary/20">
@@ -661,11 +684,13 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
 
         {/* Field notes */}
         <div className="space-y-2">
-          <label className="text-sm font-semibold">Field Notes & Observations</label>
+          <label className="text-sm font-semibold">
+            Field Notes & Observations <span className="text-xs font-normal text-muted-foreground">(Optional)</span>
+          </label>
           <textarea
             {...form.register('comments')}
             rows={4}
-            placeholder="Describe your on-site findings, conditions observed, and recommendations..."
+            placeholder="Describe your on-site findings, conditions observed, and recommendations (optional)..."
             className={cn(
               'w-full text-sm px-3 py-2 rounded-xl border bg-background resize-none',
               'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition'
@@ -697,6 +722,20 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
                     : <span className="text-amber-600"> (requires unit selection above)</span>
                   }
                 </p>
+              </div>
+            </label>
+
+            {/* Save Draft */}
+            <label className={cn(
+              'flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
+              watched.decision === 'SAVE_DRAFT' ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40' : 'border-border hover:border-muted-foreground/40'
+            )}>
+              <input type="radio" value="SAVE_DRAFT" {...form.register('decision')} className="accent-blue-500 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold flex items-center gap-1.5 text-blue-700 dark:text-blue-300">
+                  <Star className="h-4 w-4 text-blue-500" /> Save Draft
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">Save current inspection notes & unit selection without advancing</p>
               </div>
             </label>
 
@@ -741,12 +780,15 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
               ? 'bg-destructive text-white hover:bg-destructive/90'
               : watched.decision === 'QUEUED'
               ? 'bg-amber-500 text-white hover:bg-amber-600'
+              : watched.decision === 'SAVE_DRAFT'
+              ? 'bg-blue-600 text-white hover:bg-blue-700'
               : 'bg-primary text-primary-foreground hover:bg-primary/90',
             'disabled:opacity-50 disabled:cursor-not-allowed'
           )}
         >
           {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
           {watched.decision === 'FORWARDED' && 'Submit & Forward to DVC Admin'}
+          {watched.decision === 'SAVE_DRAFT' && 'Save Draft Inspection'}
           {watched.decision === 'QUEUED'    && 'Place in Queue'}
           {watched.decision === 'REJECTED'  && 'Submit Rejection'}
         </button>

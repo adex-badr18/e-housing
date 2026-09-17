@@ -110,14 +110,33 @@ export function ReviewPipeline({
   const isReturned = status === 'RETURNED';
 
   // Is it this role's turn?
-  // Estate Officer & Housing Secretary also get a turn when the application is RETURNED by DVC
+  // - Housing Secretary: active at HOUSING and ESTATE stages (extended edit window)
+  // - Estate Officer & Housing Secretary also get a turn when application is RETURNED by DVC
+  const isHousingSecretaryActive =
+    sessionRole === 'HOUSING_SECRETARY' &&
+    (currentStage === 'HOUSING' || currentStage === 'ESTATE') &&
+    !isTerminalStatus && !isQueued && !isQuitRequested;
+
   const isMyTurn = !isSuperAdmin && (
-    (expectedStage === currentStage && !isTerminalStatus && !isQueued && !isQuitRequested) ||
+    isHousingSecretaryActive ||
+    (expectedStage === currentStage && sessionRole !== 'HOUSING_SECRETARY' && !isTerminalStatus && !isQueued && !isQuitRequested) ||
     (isQueued && sessionRole === 'ESTATE_OFFICER') ||
     (isReturned && (sessionRole === 'HOUSING_SECRETARY' || sessionRole === 'ESTATE_OFFICER'))
   );
-  // Role has already acted (completed stage)
-  const hasActed = expectedStage != null && isStageCompleted(expectedStage, currentStage) && !isQueued && !isReturned;
+
+  // Role has already acted (completed stage):
+  // - Housing Secretary: only "done" once at DVC or COMPLETED (extended edit window)
+  // - Other roles: done once their stage is surpassed
+  const hasActed = (() => {
+    if (expectedStage == null) return false;
+    if (isQueued || isReturned) return false;
+    if (sessionRole === 'HOUSING_SECRETARY') {
+      // HS is locked out only at DVC or COMPLETED
+      return currentStage === 'DVC' || currentStage === 'COMPLETED';
+    }
+    return isStageCompleted(expectedStage, currentStage);
+  })();
+
   // Role is waiting (stage not yet reached)
   const isWaiting = !isSuperAdmin && expectedStage != null && !isMyTurn && !hasActed && !isTerminalStatus && !isQueued && !isQuitRequested && !isReturned;
 
@@ -251,15 +270,19 @@ export function ReviewPipeline({
         <div className="rounded-2xl border-2 border-primary/20 bg-card shadow-md overflow-hidden">
           <div className={`px-5 py-3.5 flex items-center gap-2 ${isQueued || isReturned ? 'bg-amber-500' : 'bg-primary'} text-white`}>
             <span className="text-sm font-semibold">
-              {currentStage === 'HOUSING' && !isReturned && '📋 Stage 1 — Verification & Scoring'}
-              {currentStage === 'ESTATE'  && !isQueued && !isReturned && '🏗️ Stage 2 — Physical Inspection & Unit Allocation'}
+              {/* Housing Secretary at HOUSING stage (initial review) */}
+              {sessionRole === 'HOUSING_SECRETARY' && currentStage === 'HOUSING' && !isReturned && '📋 Stage 1 — Verification & Scoring'}
+              {/* Housing Secretary at ESTATE stage (extended edit window) */}
+              {sessionRole === 'HOUSING_SECRETARY' && currentStage === 'ESTATE' && !isReturned && '📋 Stage 1 — Verification & Scoring (Application with Estate Officer)'}
+              {/* Estate Officer at ESTATE stage */}
+              {sessionRole !== 'HOUSING_SECRETARY' && currentStage === 'ESTATE' && !isQueued && !isReturned && '🏗️ Stage 2 — Physical Inspection & Unit Allocation'}
               {isQueued                   && '⏳ Stage 2 — Re-activate from Queue'}
               {isReturned                 && '↩ Review & Modify Returned Application'}
               {currentStage === 'DVC'     && !isReturned && '👑 Stage 3 — Final Decision'}
             </span>
           </div>
           <div className="p-6">
-            {(currentStage === 'HOUSING' || isReturned) && sessionRole === 'HOUSING_SECRETARY' && (
+            {(currentStage === 'HOUSING' || currentStage === 'ESTATE' || isReturned) && sessionRole === 'HOUSING_SECRETARY' && (
               <HousingSecretaryPanel
                 application={application}
                 applicantUser={applicantUser}

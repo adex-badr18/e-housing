@@ -59,7 +59,7 @@ export async function getApplicationsForRole(
   switch (role) {
     case 'HOUSING_SECRETARY':
       return mockDB.housingApplications.filter(
-        a => a.currentStage === 'HOUSING' || a.status === 'RETURNED'
+        a => a.currentStage === 'HOUSING' || a.currentStage === 'ESTATE' || a.status === 'RETURNED'
       );
     case 'ESTATE_OFFICER':
       return mockDB.housingApplications.filter(
@@ -104,7 +104,7 @@ export async function getPaginatedApplicationsForManagement(params: {
   if (queueMode === 'MY_QUEUE') {
     switch (params.role) {
       case 'HOUSING_SECRETARY':
-        apps = apps.filter(a => a.currentStage === 'HOUSING' || a.status === 'RETURNED');
+        apps = apps.filter(a => a.currentStage === 'HOUSING' || a.currentStage === 'ESTATE' || a.status === 'RETURNED');
         break;
       case 'ESTATE_OFFICER':
         apps = apps.filter(
@@ -352,6 +352,23 @@ export async function reviewApplication(params: {
         );
       }
     }
+  } else {
+    // SAVE_DRAFT: allow Housing Secretary to save edits when application is at ESTATE stage
+    // (they retain edit access until the Estate Officer forwards to DVC Admin)
+    if (
+      params.reviewerRole === 'HOUSING_SECRETARY' &&
+      params.stage === 'HOUSING' &&
+      application.currentStage === 'ESTATE' &&
+      application.status !== 'RETURNED'
+    ) {
+      // Allowed: HS editing their Stage 1 fields while app is with Estate Officer
+      // No stage gate needed — we will preserve currentStage as ESTATE below
+    } else if (
+      params.reviewerRole === 'HOUSING_SECRETARY' &&
+      (application.currentStage === 'DVC' || application.currentStage === 'COMPLETED')
+    ) {
+      throw new Error('Application has been forwarded to DVC Admin. Housing Secretary edits are now locked.');
+    }
   }
 
   // ---- Role gate ----
@@ -408,9 +425,20 @@ export async function reviewApplication(params: {
     mockDB.applicationReviews.push(draftReview);
 
     const appIdx = mockDB.housingApplications.findIndex(a => a.id === params.applicationId);
+
+    // When the Housing Secretary saves a draft while the application is already at ESTATE stage,
+    // preserve the current stage and status — do NOT regress back to HOUSING.
+    const isHSEditingAtEstateStage =
+      params.reviewerRole === 'HOUSING_SECRETARY' &&
+      params.stage === 'HOUSING' &&
+      application.currentStage === 'ESTATE' &&
+      application.status !== 'RETURNED';
+
     mockDB.housingApplications[appIdx] = {
       ...application,
-      status: 'UNDER_REVIEW',
+      // Only set UNDER_REVIEW status if not already past HOUSING (preserve ESTATE stage/status)
+      status: isHSEditingAtEstateStage ? application.status : 'UNDER_REVIEW',
+      currentStage: isHSEditingAtEstateStage ? application.currentStage : application.currentStage,
       // Persist whichever role is saving the draft
       ...(params.stage === 'HOUSING' && {
         secretarySuggestedUnitId: params.secretarySuggestedUnitId ?? params.allocatedUnitId ?? application.secretarySuggestedUnitId,

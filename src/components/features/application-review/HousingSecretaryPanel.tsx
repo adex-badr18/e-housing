@@ -134,6 +134,8 @@ export function HousingSecretaryPanel({
 
   const existingBreakdown = application.pointsBreakdown;
 
+  const isAtEstateStage = application.currentStage === 'ESTATE' && application.status !== 'RETURNED';
+
   const form = useForm<FormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(formSchema) as any,
@@ -144,7 +146,8 @@ export function HousingSecretaryPanel({
       maritalStatusBonus: existingBreakdown?.maritalStatusBonus ?? 0,
       secretarySuggestedUnitId: application.secretarySuggestedUnitId ?? null,
       comments:           '',
-      decision:           'FORWARDED',
+      // At ESTATE stage HS can only save updates, not re-forward or reject
+      decision:           isAtEstateStage ? 'SAVE_DRAFT' : 'FORWARDED',
     },
   });
 
@@ -180,7 +183,7 @@ export function HousingSecretaryPanel({
       const payload = {
         applicationId:             application.id,
         stage:                     'HOUSING' as const,
-        decision:                  values.decision,
+        decision:                  isAtEstateStage ? 'SAVE_DRAFT' as const : values.decision,
         comments:                  values.comments,
         score:                     totalPoints,
         baseTypePoints:            values.baseTypePoints,
@@ -188,12 +191,14 @@ export function HousingSecretaryPanel({
         dependentsBonus:           values.dependentsBonus,
         maritalStatusBonus:        values.maritalStatusBonus,
         secretarySuggestedUnitId:  values.secretarySuggestedUnitId || null,
-        isDraft:                   values.decision === 'SAVE_DRAFT',
+        isDraft:                   isAtEstateStage || values.decision === 'SAVE_DRAFT',
       };
 
       const res = await reviewApplicationAction(payload);
       if (res.success) {
-        if (values.decision === 'SAVE_DRAFT') {
+        if (isAtEstateStage) {
+          toast.success('Verification details updated successfully');
+        } else if (values.decision === 'SAVE_DRAFT') {
           toast.success('Draft review and unit suggestion saved');
         } else if (values.decision === 'FORWARDED') {
           toast.success('Application scored and forwarded to Estate Officer');
@@ -223,6 +228,22 @@ export function HousingSecretaryPanel({
           )}
           <p className="text-xs text-amber-700 dark:text-amber-400">
             You and the Estate Officer can review this application together, adjust the score or select a different vacant housing unit as instructed by the DVC Admin, then resubmit it for final approval.
+          </p>
+        </div>
+      )}
+
+      {/* Estate Stage Edit Banner — shown when application is with Estate Officer */}
+      {isAtEstateStage && (
+        <div className="rounded-xl border-2 border-blue-300 bg-blue-50 p-4 dark:bg-blue-950/40 dark:border-blue-800 space-y-1.5">
+          <div className="flex items-center gap-2 text-blue-900 dark:text-blue-300 font-bold text-sm">
+            <AlertCircle className="h-5 w-5 text-blue-600" />
+            Application Forwarded to Estate Officer
+          </div>
+          <p className="text-xs text-blue-800 dark:text-blue-400">
+            This application is currently with the Estate Officer for physical inspection and unit allocation.
+            You can still update your verification score, scoring breakdown, unit suggestion, and remarks below.
+            Your edits will be saved without changing the application&apos;s progress.
+            Editing will be locked once the Estate Officer forwards the application to the DVC Admin.
           </p>
         </div>
       )}
@@ -390,68 +411,70 @@ export function HousingSecretaryPanel({
           )}
         </div>
 
-        {/* Decision options: FORWARD, SAVE DRAFT, REJECT */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <label className={cn(
-            'flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
-            watched.decision === 'FORWARDED'
-              ? 'border-primary bg-primary/5'
-              : 'border-border hover:border-muted-foreground/40'
-          )}>
-            <input
-              type="radio"
-              value="FORWARDED"
-              {...form.register('decision')}
-              className="accent-primary"
-            />
-            <div>
-              <p className="text-sm font-semibold flex items-center gap-1.5">
-                <ChevronRight className="h-4 w-4 text-primary" /> Forward
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">Advance to Estate Officer</p>
-            </div>
-          </label>
+        {/* Decision options: hidden at ESTATE stage (only Save Updates allowed) */}
+        {!isAtEstateStage && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <label className={cn(
+              'flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
+              watched.decision === 'FORWARDED'
+                ? 'border-primary bg-primary/5'
+                : 'border-border hover:border-muted-foreground/40'
+            )}>
+              <input
+                type="radio"
+                value="FORWARDED"
+                {...form.register('decision')}
+                className="accent-primary"
+              />
+              <div>
+                <p className="text-sm font-semibold flex items-center gap-1.5">
+                  <ChevronRight className="h-4 w-4 text-primary" /> Forward
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">Advance to Estate Officer</p>
+              </div>
+            </label>
 
-          <label className={cn(
-            'flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
-            watched.decision === 'SAVE_DRAFT'
-              ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40'
-              : 'border-border hover:border-muted-foreground/40'
-          )}>
-            <input
-              type="radio"
-              value="SAVE_DRAFT"
-              {...form.register('decision')}
-              className="accent-blue-500"
-            />
-            <div>
-              <p className="text-sm font-semibold flex items-center gap-1.5 text-blue-700 dark:text-blue-300">
-                <Save className="h-4 w-4 text-blue-500" /> Save Draft
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">Save progress without advancing</p>
-            </div>
-          </label>
+            <label className={cn(
+              'flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
+              watched.decision === 'SAVE_DRAFT'
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40'
+                : 'border-border hover:border-muted-foreground/40'
+            )}>
+              <input
+                type="radio"
+                value="SAVE_DRAFT"
+                {...form.register('decision')}
+                className="accent-blue-500"
+              />
+              <div>
+                <p className="text-sm font-semibold flex items-center gap-1.5 text-blue-700 dark:text-blue-300">
+                  <Save className="h-4 w-4 text-blue-500" /> Save Draft
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">Save progress without advancing</p>
+              </div>
+            </label>
 
-          <label className={cn(
-            'flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
-            watched.decision === 'REJECTED'
-              ? 'border-destructive bg-red-50'
-              : 'border-border hover:border-muted-foreground/40'
-          )}>
-            <input
-              type="radio"
-              value="REJECTED"
-              {...form.register('decision')}
-              className="accent-red-500"
-            />
-            <div>
-              <p className="text-sm font-semibold flex items-center gap-1.5">
-                <XCircle className="h-4 w-4 text-destructive" /> Reject Application
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">Criteria not met</p>
-            </div>
-          </label>
-        </div>
+            <label className={cn(
+              'flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
+              watched.decision === 'REJECTED'
+                ? 'border-destructive bg-red-50'
+                : 'border-border hover:border-muted-foreground/40'
+            )}>
+              <input
+                type="radio"
+                value="REJECTED"
+                {...form.register('decision')}
+                className="accent-red-500"
+              />
+              <div>
+                <p className="text-sm font-semibold flex items-center gap-1.5">
+                  <XCircle className="h-4 w-4 text-destructive" /> Reject Application
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">Criteria not met</p>
+              </div>
+            </label>
+          </div>
+        )}
 
         {/* Submit button */}
         <button
@@ -459,7 +482,9 @@ export function HousingSecretaryPanel({
           disabled={isPending}
           className={cn(
             'w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all',
-            watched.decision === 'REJECTED'
+            isAtEstateStage
+              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              : watched.decision === 'REJECTED'
               ? 'bg-destructive text-white hover:bg-destructive/90'
               : watched.decision === 'SAVE_DRAFT'
               ? 'bg-blue-600 text-white hover:bg-blue-700'
@@ -468,7 +493,9 @@ export function HousingSecretaryPanel({
           )}
         >
           {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-          {watched.decision === 'FORWARDED'
+          {isAtEstateStage
+            ? 'Save Verification Updates'
+            : watched.decision === 'FORWARDED'
             ? 'Submit & Forward to Estate Officer'
             : watched.decision === 'SAVE_DRAFT'
             ? 'Save Draft Review'

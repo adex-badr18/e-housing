@@ -111,7 +111,9 @@ export async function getAdminMetrics() {
 export async function getHousingSecretaryDashboardData() {
   await delay(200);
 
-  const myQueueApps = mockDB.housingApplications.filter(a => a.currentStage === 'HOUSING');
+  const myQueueApps = mockDB.housingApplications.filter(
+    a => a.currentStage === 'HOUSING' || a.currentStage === 'ESTATE' || a.status === 'RETURNED'
+  );
   const forwardedCount = mockDB.housingApplications.filter(a => a.currentStage === 'ESTATE' || a.currentStage === 'DVC').length;
   const activeExits = mockDB.exitNotices.filter(e => !e.isCleared);
   const pendingHousingInspections = activeExits.filter(e => e.housingInspectionStatus === 'PENDING').length;

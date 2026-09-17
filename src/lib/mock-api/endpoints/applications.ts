@@ -932,9 +932,43 @@ export async function adminTerminateApplication(params: {
   return mockDB.housingApplications[appIdx];
 }
 
-export async function getQuitRequests(): Promise<QuitRequest[]> {
+export type EnrichedQuitRequest = QuitRequest & {
+  applicantUser: import('../db').User | null;
+  applicantProfile: import('../db').StaffProfile | null;
+  application: HousingApplication | null;
+  preferredHousingTypeNames: string[];
+};
+
+export async function getQuitRequests(): Promise<EnrichedQuitRequest[]> {
   await delay(300);
-  return [...mockDB.quitRequests].sort(
+  const sorted = [...mockDB.quitRequests].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
+
+  return sorted.map(req => {
+    const applicantUser = mockDB.findUserById(req.requestedById) ?? null;
+    const applicantProfile = applicantUser
+      ? (mockDB.staffProfiles.find(p => p.userId === applicantUser.id) ?? null)
+      : null;
+
+    let application: HousingApplication | null = null;
+    let preferredHousingTypeNames: string[] = [];
+
+    if (req.entityType === 'HousingApplication') {
+      application = mockDB.findApplicationById(req.entityId) ?? null;
+      if (application) {
+        preferredHousingTypeNames = application.preferredHousingTypeIds
+          .map(id => mockDB.housingTypes.find(ht => ht.id === id)?.name ?? null)
+          .filter((n): n is string => n !== null);
+      }
+    }
+
+    return {
+      ...req,
+      applicantUser,
+      applicantProfile,
+      application,
+      preferredHousingTypeNames,
+    };
+  });
 }

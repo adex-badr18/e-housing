@@ -46,8 +46,9 @@ export default async function ManagementApplicationsPage() {
     );
   }
 
-  let quitRequests: import('@/lib/mock-api/db').QuitRequest[] = [];
-  if (session.user.role === 'HOUSING_SECRETARY' || session.user.role === 'SUPER_ADMIN') {
+  let quitRequests: import('@/lib/mock-api/endpoints/applications').EnrichedQuitRequest[] = [];
+  const managementRoles = ['HOUSING_SECRETARY', 'ESTATE_OFFICER', 'DVC_ADMIN', 'SUPER_ADMIN'] as const;
+  if (managementRoles.includes(session.user.role as typeof managementRoles[number])) {
     const qResult = await getQuitRequestsAction();
     if (qResult.success && qResult.data) {
       quitRequests = qResult.data;

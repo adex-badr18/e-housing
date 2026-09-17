@@ -23,6 +23,7 @@ import { AdminTerminateButton }  from './AdminTerminateButton';
 import { QuitRequestButton }     from './QuitRequestButton';
 import { ApplicationDetailsCard } from './ApplicationDetailsCard';
 import { Lock, Eye, Clock, AlertTriangle, XCircle, FileX2 } from 'lucide-react';
+import { WithdrawalActionButtons } from './WithdrawalActionButtons';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -108,6 +109,14 @@ export function ReviewPipeline({
   const isTerminalStatus = isRejected || isApproved || isWithdrawn || isTerminated;
   const isSuperAdmin = sessionRole === 'SUPER_ADMIN';
   const isReturned = status === 'RETURNED';
+
+  // Look up the active pending quit request for this application
+  const pendingQuitRequest = mockDB.quitRequests.find(
+    q => q.entityId === application.id && q.entityType === 'HousingApplication' && q.status === 'PENDING'
+  ) ?? null;
+
+  // Management roles that can approve/reject withdrawal requests inline
+  const isManagementRole = ['HOUSING_SECRETARY', 'ESTATE_OFFICER', 'DVC_ADMIN', 'SUPER_ADMIN'].includes(sessionRole);
 
   // Is it this role's turn?
   // - Housing Secretary: active at HOUSING and ESTATE stages (extended edit window)
@@ -202,14 +211,24 @@ export function ReviewPipeline({
       )}
 
       {isQuitRequested && (
-        <div className="flex items-center gap-3 p-4 rounded-xl bg-orange-50 border border-orange-200 text-orange-800">
-          <AlertTriangle className="h-5 w-5 shrink-0" />
-          <div>
-            <p className="font-semibold text-sm">Withdrawal Requested</p>
-            <p className="text-xs mt-0.5">
-              The applicant has requested to withdraw this application. Pending Housing Secretary review.
-            </p>
+        <div className="p-4 rounded-xl bg-orange-50 border border-orange-200 text-orange-800">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="h-5 w-5 shrink-0" />
+            <div>
+              <p className="font-semibold text-sm">Withdrawal Requested</p>
+              <p className="text-xs mt-0.5">
+                The applicant has requested to withdraw this application. Pending review.
+              </p>
+            </div>
           </div>
+          {isManagementRole && pendingQuitRequest && (
+            <div className="mt-3 ml-8">
+              <p className="text-xs text-orange-700 mb-1">
+                <span className="font-semibold">Reason: </span>{pendingQuitRequest.reason}
+              </p>
+              <WithdrawalActionButtons quitRequestId={pendingQuitRequest.id} />
+            </div>
+          )}
         </div>
       )}
 

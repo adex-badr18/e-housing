@@ -20,6 +20,7 @@ import {
   requeueApplication,
   submitQuitRequest,
   reviewQuitRequest,
+  type EnrichedQuitRequest,
   adminTerminateApplication,
   getQuitRequests,
   getAllApplications,
@@ -499,8 +500,9 @@ export async function submitQuitRequestAction(data: unknown) {
 export async function reviewQuitRequestAction(data: unknown) {
   const session = await auth();
   if (!session?.user) return { success: false, error: 'Unauthorized' };
-  if (session.user.role !== 'HOUSING_SECRETARY' && session.user.role !== 'SUPER_ADMIN') {
-    return { success: false, error: 'Only Housing Secretary can review quit requests' };
+  const managementRoles = ['HOUSING_SECRETARY', 'ESTATE_OFFICER', 'DVC_ADMIN', 'SUPER_ADMIN'] as const;
+  if (!managementRoles.includes(session.user.role as typeof managementRoles[number])) {
+    return { success: false, error: 'Only management roles can review quit requests' };
   }
 
   const parsed = reviewQuitRequestSchema.safeParse(data);
@@ -577,12 +579,15 @@ export async function adminTerminateApplicationAction(data: unknown) {
   }
 }
 
-export async function getQuitRequestsAction() {
+export async function getQuitRequestsAction(): Promise<
+  { success: true; data: EnrichedQuitRequest[] } | { success: false; error: string }
+> {
   const session = await auth();
   if (!session?.user) return { success: false, error: 'Unauthorized' };
 
-  if (session.user.role !== 'HOUSING_SECRETARY' && session.user.role !== 'SUPER_ADMIN') {
-    return { success: false, error: 'Only Housing Secretary can view quit requests' };
+  const managementRoles = ['HOUSING_SECRETARY', 'ESTATE_OFFICER', 'DVC_ADMIN', 'SUPER_ADMIN'] as const;
+  if (!managementRoles.includes(session.user.role as typeof managementRoles[number])) {
+    return { success: false, error: 'Only management roles can view quit requests' };
   }
 
   try {

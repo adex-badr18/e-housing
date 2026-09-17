@@ -20,6 +20,7 @@ import {
   HousingUnit,
   HousingType,
   QuitRequest,
+  InspectionData,
 } from '../db';
 
 const delay = (ms = 400) => new Promise(r => setTimeout(r, ms));
@@ -294,9 +295,19 @@ export async function submitApplication(
  * Enforces sequential stage rules from the PRD:
  *   HOUSING → ESTATE → DVC → COMPLETED
  *
- * Estate Officer extensions:
- *   - FORWARDED: may include an `allocatedUnitId` (pre-selected unit)
- *   - QUEUED: application is held at ESTATE stage awaiting a vacant unit
+ * New workflow:
+ *   Stage 1 (HOUSING_SECRETARY):
+ *     - Optionally sets secretarySuggestedUnitId
+ *     - FORWARDED advances to ESTATE
+ *   Stage 2 (ESTATE_OFFICER):
+ *     - Sees HS suggestion; may accept or pick a different estateSuggestedUnitId
+ *     - Records inspectionData for every suggested unit
+ *     - FORWARDED advances to DVC
+ *     - QUEUED holds at ESTATE; clears estateSuggestedUnitId
+ *   Stage 3 (DVC_ADMIN):
+ *     - Sees both suggestions + inspection scores
+ *     - APPROVED requires finalAllocatedUnitId — stored as allocatedUnitId
+ *     - RETURNED sends back with dvcReturnNote + dvcSuggestedUnitId
  */
 export async function reviewApplication(params: {
   applicationId: string;
@@ -307,6 +318,12 @@ export async function reviewApplication(params: {
   comments?: string;
   score?: number | null;
   pointsBreakdown?: PointsBreakdown | null;
+  // ── New workflow fields ────────────────────────────────────────────────────
+  secretarySuggestedUnitId?: string | null;
+  estateSuggestedUnitId?: string | null;
+  inspectionData?: InspectionData | null;
+  finalAllocatedUnitId?: string | null;
+  // ── Legacy compat ──────────────────────────────────────────────────────────
   allocatedUnitId?: string | null;
   isDraft?: boolean;
 }): Promise<{ application: HousingApplication; review: ApplicationReview }> {
@@ -352,14 +369,16 @@ export async function reviewApplication(params: {
     throw new Error('DVC Admin must make a final APPROVED, REJECTED, or RETURNED decision');
   }
 
-  // ---- Estate Officer: FORWARDED requires a unit selection (unless saving draft) ----
-  if (params.decision === 'FORWARDED' && params.stage === 'ESTATE' && !params.allocatedUnitId && !application.allocatedUnitId) {
+  // ---- Estate Officer: FORWARDED requires a unit selection ----
+  const estateUnit = params.estateSuggestedUnitId || params.allocatedUnitId;
+  if (params.decision === 'FORWARDED' && params.stage === 'ESTATE' && !estateUnit && !application.estateSuggestedUnitId && !application.allocatedUnitId) {
     throw new Error('Please select a housing unit before forwarding to DVC Admin');
   }
 
-  // ---- Validate the pre-selected unit is still vacant if provided ----
-  if (params.allocatedUnitId && params.decision !== 'SAVE_DRAFT') {
-    const unit = mockDB.findUnitById(params.allocatedUnitId);
+  // ---- Validate the estate-selected unit is still vacant (if provided & not draft) ----
+  const unitToValidate = params.estateSuggestedUnitId || params.allocatedUnitId;
+  if (unitToValidate && params.decision !== 'SAVE_DRAFT') {
+    const unit = mockDB.findUnitById(unitToValidate);
     if (!unit || unit.status !== 'VACANT') {
       throw new Error('The selected housing unit is no longer available. Please choose another.');
     }
@@ -369,6 +388,10 @@ export async function reviewApplication(params: {
 
   // ---- Handle SAVE_DRAFT ----
   if (params.decision === 'SAVE_DRAFT') {
+    const suggestedUnit = params.stage === 'ESTATE'
+      ? (params.estateSuggestedUnitId ?? params.allocatedUnitId ?? null)
+      : (params.secretarySuggestedUnitId ?? params.allocatedUnitId ?? null);
+
     const draftReview: ApplicationReview = {
       id: mockDB.generateId('rev'),
       applicationId: params.applicationId,
@@ -378,7 +401,7 @@ export async function reviewApplication(params: {
       score: params.score ?? null,
       decision: 'SAVE_DRAFT',
       comments: params.comments || 'Draft review saved',
-      suggestedUnitId: params.allocatedUnitId ?? null,
+      suggestedUnitId: suggestedUnit,
       isDraft: true,
       reviewedAt: now,
     };
@@ -388,7 +411,14 @@ export async function reviewApplication(params: {
     mockDB.housingApplications[appIdx] = {
       ...application,
       status: 'UNDER_REVIEW',
-      allocatedUnitId: params.allocatedUnitId ?? application.allocatedUnitId,
+      // Persist whichever role is saving the draft
+      ...(params.stage === 'HOUSING' && {
+        secretarySuggestedUnitId: params.secretarySuggestedUnitId ?? params.allocatedUnitId ?? application.secretarySuggestedUnitId,
+      }),
+      ...(params.stage === 'ESTATE' && {
+        estateSuggestedUnitId: params.estateSuggestedUnitId ?? params.allocatedUnitId ?? application.estateSuggestedUnitId,
+        inspectionData: params.inspectionData ?? application.inspectionData,
+      }),
       pointsBreakdown: params.pointsBreakdown ?? application.pointsBreakdown,
       updatedAt: now,
     };
@@ -400,6 +430,16 @@ export async function reviewApplication(params: {
   }
 
   // ---- Record the non-draft review ----
+  // Determine which unit to store in the review's suggestedUnitId
+  let reviewSuggestedUnitId: string | null = null;
+  if (params.stage === 'HOUSING') {
+    reviewSuggestedUnitId = params.secretarySuggestedUnitId ?? params.allocatedUnitId ?? null;
+  } else if (params.stage === 'ESTATE') {
+    reviewSuggestedUnitId = params.estateSuggestedUnitId ?? params.allocatedUnitId ?? null;
+  } else if (params.stage === 'DVC') {
+    reviewSuggestedUnitId = params.finalAllocatedUnitId ?? params.allocatedUnitId ?? null;
+  }
+
   const review: ApplicationReview = {
     id: mockDB.generateId('rev'),
     applicationId: params.applicationId,
@@ -409,7 +449,7 @@ export async function reviewApplication(params: {
     score: params.score ?? null,
     decision: (params.decision === 'QUEUED' ? 'FORWARDED' : params.decision) as ReviewDecision,
     comments: params.comments ?? '',
-    suggestedUnitId: params.allocatedUnitId ?? null,
+    suggestedUnitId: reviewSuggestedUnitId,
     isDraft: false,
     reviewedAt: now,
   };
@@ -426,22 +466,23 @@ export async function reviewApplication(params: {
       updatedAt: now,
     };
   } else if (params.decision === 'RETURNED') {
-    // DVC sends back to Estate & Housing stage for modification
+    // DVC sends back; can optionally suggest a unit
     mockDB.housingApplications[appIdx] = {
       ...application,
       status: 'RETURNED',
       currentStage: 'ESTATE',
       dvcReturnNote: params.comments,
-      dvcSuggestedUnitId: params.allocatedUnitId ?? null,
+      dvcSuggestedUnitId: params.finalAllocatedUnitId ?? params.allocatedUnitId ?? null,
       updatedAt: now,
     };
   } else if (params.decision === 'QUEUED') {
-    // Hold application at ESTATE stage with QUEUED status
+    // Hold at ESTATE stage; clear EO selection (there is no confirmed unit)
     mockDB.housingApplications[appIdx] = {
       ...application,
       status: 'QUEUED',
       currentStage: 'ESTATE',
-      allocatedUnitId: null, // Clear any prior selection
+      estateSuggestedUnitId: null,
+      inspectionData: null,
       updatedAt: now,
     };
   } else if (params.decision === 'FORWARDED') {
@@ -454,21 +495,32 @@ export async function reviewApplication(params: {
       nextStage = 'DVC';
     }
 
+    const resolvedEstateUnit = params.estateSuggestedUnitId ?? params.allocatedUnitId ?? application.estateSuggestedUnitId;
+    const resolvedInspection = params.inspectionData ?? application.inspectionData;
+
     mockDB.housingApplications[appIdx] = {
       ...application,
       status: 'UNDER_REVIEW',
       currentStage: nextStage,
       pointsBreakdown: params.pointsBreakdown ?? application.pointsBreakdown,
-      allocatedUnitId: params.allocatedUnitId ?? application.allocatedUnitId,
+      // Stage-specific field updates
+      ...(params.stage === 'HOUSING' && {
+        secretarySuggestedUnitId: params.secretarySuggestedUnitId ?? params.allocatedUnitId ?? application.secretarySuggestedUnitId,
+      }),
+      ...(params.stage === 'ESTATE' && {
+        estateSuggestedUnitId: resolvedEstateUnit,
+        inspectionData: resolvedInspection,
+      }),
       updatedAt: now,
     };
   } else if (params.decision === 'APPROVED' && params.stage === 'DVC') {
-    // Final approval — mark COMPLETED
+    // Final approval — DVC picks the unit; stored as the canonical allocatedUnitId
+    const finalUnit = params.finalAllocatedUnitId ?? params.allocatedUnitId ?? application.estateSuggestedUnitId ?? null;
     mockDB.housingApplications[appIdx] = {
       ...application,
       status: 'APPROVED',
       currentStage: 'COMPLETED',
-      allocatedUnitId: params.allocatedUnitId ?? application.allocatedUnitId,
+      allocatedUnitId: finalUnit,
       updatedAt: now,
     };
   }

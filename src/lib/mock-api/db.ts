@@ -31,6 +31,13 @@ export type ApplicationStage = 'HOUSING' | 'ESTATE' | 'DVC' | 'COMPLETED';
 export type ReviewDecision = 'APPROVED' | 'REJECTED' | 'FORWARDED' | 'RETURNED' | 'SAVE_DRAFT';
 export type AllocationStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED';
 export type InspectionStatus = 'PENDING' | 'PASSED' | 'FAILED';
+
+// Physical inspection scoring types
+export type InspectionRating = 'GOOD' | 'FAIR' | 'BAD' | 'NA';
+/** metricId → rating. One entry per metric per unit. */
+export type UnitInspectionScores = Record<string, InspectionRating>;
+/** unitId → { metricId → rating } */
+export type InspectionData = Record<string, UnitInspectionScores>;
 export type ExitReason =
   | 'RETIREMENT'
   | 'DEATH'
@@ -244,8 +251,8 @@ export interface HousingApplication {
   pointsBreakdown?: PointsBreakdown | null;
   additionalNotes?: string;
   /**
-   * Proposed unit — can be set by Housing Secretary (Stage 1) or Estate Officer (Stage 2).
-   * The formal Allocation record is only created after DVC approval.
+   * The final unit confirmed by DVC Admin on approval.
+   * For historical applications, this was also set by EO at stage 2.
    */
   allocatedUnitId?: string | null;
   /**
@@ -254,6 +261,21 @@ export interface HousingApplication {
    */
   dvcReturnNote?: string | null;
   dvcSuggestedUnitId?: string | null;
+  /**
+   * Optional unit suggested by Housing Secretary at Stage 1.
+   * The Estate Officer sees this and can either accept it or suggest a different one.
+   */
+  secretarySuggestedUnitId?: string | null;
+  /**
+   * Unit selected by the Estate Officer after physical inspection.
+   * Required before FORWARDING to DVC. May match secretarySuggestedUnitId (same) or differ.
+   */
+  estateSuggestedUnitId?: string | null;
+  /**
+   * Physical inspection scores, keyed by unitId → metricId → rating.
+   * If HS and EO suggested different units, both are scored here.
+   */
+  inspectionData?: InspectionData | null;
   submittedAt: string;
   updatedAt?: string;
 }
@@ -1331,9 +1353,114 @@ const initialOccupancies: Occupancy[] = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// Helper: canonical inspection data for seed applications
+// ---------------------------------------------------------------------------
+
+const sampleInspectionData_hu2: InspectionData = {
+  'hu-2': {
+    'str-walls':     'GOOD',
+    'str-roof':      'FAIR',
+    'str-floors':    'GOOD',
+    'str-windows':   'GOOD',
+    'util-water':    'GOOD',
+    'util-drainage': 'GOOD',
+    'util-sanitary': 'FAIR',
+    'env-compound':  'GOOD',
+    'env-waste':     'GOOD',
+    'bq-cond':       'NA',
+  },
+};
+
+const sampleInspectionData_hu8: InspectionData = {
+  'hu-8': {
+    'str-walls':     'GOOD',
+    'str-roof':      'GOOD',
+    'str-floors':    'GOOD',
+    'str-windows':   'FAIR',
+    'util-water':    'FAIR',
+    'util-drainage': 'GOOD',
+    'util-sanitary': 'GOOD',
+    'env-compound':  'FAIR',
+    'env-waste':     'GOOD',
+    'bq-cond':       'GOOD',
+  },
+};
+
+const sampleInspectionData_hu10: InspectionData = {
+  'hu-10': {
+    'str-walls':     'GOOD',
+    'str-roof':      'GOOD',
+    'str-floors':    'FAIR',
+    'str-windows':   'GOOD',
+    'util-water':    'GOOD',
+    'util-drainage': 'FAIR',
+    'util-sanitary': 'GOOD',
+    'env-compound':  'GOOD',
+    'env-waste':     'GOOD',
+    'bq-cond':       'NA',
+  },
+};
+
+// Dual-unit inspection: HS suggested hu-5, EO selected hu-8 (different)
+const sampleInspectionData_dual_hu5_hu8: InspectionData = {
+  'hu-5': {
+    'str-walls':     'GOOD',
+    'str-roof':      'FAIR',
+    'str-floors':    'GOOD',
+    'str-windows':   'GOOD',
+    'util-water':    'FAIR',
+    'util-drainage': 'GOOD',
+    'util-sanitary': 'GOOD',
+    'env-compound':  'GOOD',
+    'env-waste':     'FAIR',
+    'bq-cond':       'GOOD',
+  },
+  'hu-8': {
+    'str-walls':     'GOOD',
+    'str-roof':      'GOOD',
+    'str-floors':    'FAIR',
+    'str-windows':   'GOOD',
+    'util-water':    'GOOD',
+    'util-drainage': 'GOOD',
+    'util-sanitary': 'FAIR',
+    'env-compound':  'GOOD',
+    'env-waste':     'GOOD',
+    'bq-cond':       'GOOD',
+  },
+};
+
+// Dual-unit inspection: HS suggested hu-2, EO selected hu-10 (different)
+const sampleInspectionData_dual_hu2_hu10: InspectionData = {
+  'hu-2': {
+    'str-walls':     'GOOD',
+    'str-roof':      'FAIR',
+    'str-floors':    'GOOD',
+    'str-windows':   'GOOD',
+    'util-water':    'GOOD',
+    'util-drainage': 'FAIR',
+    'util-sanitary': 'GOOD',
+    'env-compound':  'GOOD',
+    'env-waste':     'GOOD',
+    'bq-cond':       'NA',
+  },
+  'hu-10': {
+    'str-walls':     'GOOD',
+    'str-roof':      'GOOD',
+    'str-floors':    'GOOD',
+    'str-windows':   'FAIR',
+    'util-water':    'GOOD',
+    'util-drainage': 'GOOD',
+    'util-sanitary': 'GOOD',
+    'env-compound':  'FAIR',
+    'env-waste':     'GOOD',
+    'bq-cond':       'NA',
+  },
+};
+
 const initialHousingApplications: HousingApplication[] = [
   {
-    // app-1 has been fully approved by DVC — allocation now pending with u-7
+    // app-1: APPROVED — HS suggested hu-3, EO accepted same, DVC approved
     id: 'app-1',
     userId: 'u-7',
     preferredHousingTypeIds: ['ht-2', 'ht-1'],
@@ -1346,24 +1473,43 @@ const initialHousingApplications: HousingApplication[] = [
       maritalStatusBonus: 0,
       totalPoints: 25,
     },
+    allocatedUnitId: 'hu-3',
+    secretarySuggestedUnitId: 'hu-3',
+    estateSuggestedUnitId: 'hu-3',
+    inspectionData: {
+      'hu-3': {
+        'str-walls':     'GOOD',
+        'str-roof':      'GOOD',
+        'str-floors':    'GOOD',
+        'str-windows':   'GOOD',
+        'util-water':    'GOOD',
+        'util-drainage': 'GOOD',
+        'util-sanitary': 'GOOD',
+        'env-compound':  'FAIR',
+        'env-waste':     'GOOD',
+        'bq-cond':       'GOOD',
+      },
+    },
     additionalNotes: 'Requesting junior housing close to Science faculty.',
     submittedAt: '2026-05-10T09:00:00.000Z',
     updatedAt: '2026-06-27T08:00:00.000Z',
   },
   {
-    // Freshly submitted application — waiting for Housing Secretary
+    // app-2: PENDING — freshly submitted, HS has not reviewed yet
     id: 'app-2',
     userId: 'u-6',
     preferredHousingTypeIds: ['ht-1'],
     status: 'PENDING',
     currentStage: 'HOUSING',
     pointsBreakdown: null,
+    secretarySuggestedUnitId: null,
     additionalNotes: 'Requesting upgrade from current allocation.',
     submittedAt: '2026-06-20T11:00:00.000Z',
     updatedAt: '2026-06-20T11:00:00.000Z',
   },
   {
-    // Application scored and forwarded to Estate Officer
+    // app-3: ESTATE stage — HS suggested hu-8, EO has not yet acted
+    // EO will decide whether to accept or suggest a different unit
     id: 'app-3',
     userId: 'u-9',
     preferredHousingTypeIds: ['ht-2'],
@@ -1376,12 +1522,15 @@ const initialHousingApplications: HousingApplication[] = [
       maritalStatusBonus: 10,
       totalPoints: 37,
     },
+    secretarySuggestedUnitId: 'hu-8',
+    estateSuggestedUnitId: null,
+    inspectionData: null,
     additionalNotes: 'Needs accommodation close to Social Sciences.',
     submittedAt: '2026-06-01T08:30:00.000Z',
     updatedAt: '2026-06-10T14:00:00.000Z',
   },
   {
-    // Application at DVC stage awaiting final decision
+    // app-4: DVC stage — HS suggested hu-2, EO selected hu-10 (DIFFERENT → dual inspection)
     id: 'app-4',
     userId: 'u-11',
     preferredHousingTypeIds: ['ht-2', 'ht-1'],
@@ -1394,41 +1543,46 @@ const initialHousingApplications: HousingApplication[] = [
       maritalStatusBonus: 0,
       totalPoints: 28,
     },
+    secretarySuggestedUnitId: 'hu-2',
+    estateSuggestedUnitId: 'hu-10',
+    inspectionData: sampleInspectionData_dual_hu2_hu10,
     additionalNotes: undefined,
     submittedAt: '2026-04-15T10:00:00.000Z',
     updatedAt: '2026-06-18T09:00:00.000Z',
   },
   {
-    // Rejected application
+    // app-5: REJECTED at Stage 1
     id: 'app-5',
     userId: 'u-8',
     preferredHousingTypeIds: ['ht-3'],
     status: 'REJECTED',
     currentStage: 'HOUSING',
     pointsBreakdown: null,
+    secretarySuggestedUnitId: null,
     additionalNotes: 'Already has an active allocation (Prof Qtrs 02).',
     submittedAt: '2026-03-01T07:00:00.000Z',
     updatedAt: '2026-03-05T11:00:00.000Z',
   },
   {
-    // Another housing-stage application
+    // app-6: PENDING at Stage 1 — freshly submitted
     id: 'app-6',
     userId: 'u-10',
     preferredHousingTypeIds: ['ht-1', 'ht-3'],
     status: 'PENDING',
     currentStage: 'HOUSING',
     pointsBreakdown: null,
+    secretarySuggestedUnitId: null,
     additionalNotes: 'Requesting transfer to larger unit.',
     submittedAt: '2026-06-28T09:15:00.000Z',
     updatedAt: '2026-06-28T09:15:00.000Z',
   },
   {
-    // Queued application (Approved by DVC, waiting for vacant unit)
+    // app-7: QUEUED at ESTATE — HS suggested hu-2; EO placed in queue (no unit available)
     id: 'app-7',
     userId: 'u-7',
     preferredHousingTypeIds: ['ht-1'],
     status: 'QUEUED',
-    currentStage: 'COMPLETED',
+    currentStage: 'ESTATE',
     pointsBreakdown: {
       baseTypePoints: 50,
       seniorityBonus: 10,
@@ -1436,43 +1590,51 @@ const initialHousingApplications: HousingApplication[] = [
       maritalStatusBonus: 0,
       totalPoints: 60,
     },
-    additionalNotes: 'Approved by DVC, placed on queue for senior bungalow.',
+    secretarySuggestedUnitId: 'hu-2',
+    estateSuggestedUnitId: null,
+    inspectionData: null,
+    additionalNotes: 'Preferred senior bungalow still occupied. Placed in queue.',
     submittedAt: '2026-05-01T10:00:00.000Z',
     updatedAt: '2026-06-25T16:00:00.000Z',
   },
   {
-    // Quit Requested application
+    // app-8: QUIT_REQUESTED at Stage 1
     id: 'app-8',
     userId: 'u-9',
     preferredHousingTypeIds: ['ht-2'],
     status: 'QUIT_REQUESTED',
     currentStage: 'HOUSING',
     pointsBreakdown: null,
+    secretarySuggestedUnitId: null,
     additionalNotes: 'Requested withdrawal after job transfer.',
     submittedAt: '2026-06-22T14:30:00.000Z',
     updatedAt: '2026-06-26T09:00:00.000Z',
   },
   {
-    // Withdrawn application
+    // app-9: WITHDRAWN
     id: 'app-9',
     userId: 'u-11',
     preferredHousingTypeIds: ['ht-1'],
     status: 'WITHDRAWN',
     currentStage: 'HOUSING',
     allocatedUnitId: null,
+    secretarySuggestedUnitId: null,
     pointsBreakdown: null,
     additionalNotes: 'Application voluntarily withdrawn.',
     submittedAt: '2026-04-10T11:00:00.000Z',
     updatedAt: '2026-04-15T15:00:00.000Z',
   },
   {
-    // Terminated application
+    // app-10: TERMINATED
     id: 'app-10',
     userId: 'u-8',
     preferredHousingTypeIds: ['ht-2', 'ht-3'],
     status: 'TERMINATED',
     currentStage: 'ESTATE',
     allocatedUnitId: null,
+    secretarySuggestedUnitId: null,
+    estateSuggestedUnitId: null,
+    inspectionData: null,
     pointsBreakdown: {
       baseTypePoints: 20,
       seniorityBonus: 15,
@@ -1494,12 +1656,13 @@ const initialHousingApplications: HousingApplication[] = [
     status: 'PENDING',
     currentStage: 'HOUSING',
     pointsBreakdown: null,
+    secretarySuggestedUnitId: null,
     additionalNotes: 'Requesting accommodation near the Physics laboratory.',
     submittedAt: '2026-07-01T08:00:00.000Z',
     updatedAt: '2026-07-01T08:00:00.000Z',
   },
   {
-    // app-12: UNDER_REVIEW at Stage 1 — Housing Secretary saved a draft review
+    // app-12: UNDER_REVIEW at Stage 1 — HS saved a draft, suggested hu-8
     id: 'app-12',
     userId: 'u-13',
     preferredHousingTypeIds: ['ht-2', 'ht-5'],
@@ -1512,13 +1675,15 @@ const initialHousingApplications: HousingApplication[] = [
       maritalStatusBonus: 5,
       totalPoints: 48,
     },
-    allocatedUnitId: 'hu-8',
+    secretarySuggestedUnitId: 'hu-8',
+    estateSuggestedUnitId: null,
+    inspectionData: null,
     additionalNotes: 'Widowed with 3 dependants — priority case.',
     submittedAt: '2026-06-28T10:30:00.000Z',
     updatedAt: '2026-07-02T09:00:00.000Z',
   },
   {
-    // app-13: UNDER_REVIEW at Stage 2 — Estate Officer performing inspection
+    // app-13: ESTATE stage — HS suggested hu-5, EO has not yet acted
     id: 'app-13',
     userId: 'u-14',
     preferredHousingTypeIds: ['ht-1', 'ht-3'],
@@ -1531,13 +1696,15 @@ const initialHousingApplications: HousingApplication[] = [
       maritalStatusBonus: 10,
       totalPoints: 66,
     },
-    allocatedUnitId: 'hu-5',
+    secretarySuggestedUnitId: 'hu-5',
+    estateSuggestedUnitId: null,
+    inspectionData: null,
     additionalNotes: 'Senior engineering staff. Requesting accommodation on main campus.',
     submittedAt: '2026-06-15T09:00:00.000Z',
     updatedAt: '2026-07-05T14:00:00.000Z',
   },
   {
-    // app-14: QUEUED at Stage 2 — no suitable unit available for Adaeze
+    // app-14: QUEUED at Stage 2 — no suitable unit; HS did not suggest one
     id: 'app-14',
     userId: 'u-15',
     preferredHousingTypeIds: ['ht-2'],
@@ -1550,13 +1717,15 @@ const initialHousingApplications: HousingApplication[] = [
       maritalStatusBonus: 10,
       totalPoints: 41,
     },
-    allocatedUnitId: null,
+    secretarySuggestedUnitId: null,
+    estateSuggestedUnitId: null,
+    inspectionData: null,
     additionalNotes: 'Preferred unit still under maintenance.',
     submittedAt: '2026-06-10T11:00:00.000Z',
     updatedAt: '2026-07-03T16:00:00.000Z',
   },
   {
-    // app-15: UNDER_REVIEW at Stage 3 — awaiting DVC Admin final decision
+    // app-15: DVC stage — HS suggested hu-2, EO accepted same (SAME → single inspection card)
     id: 'app-15',
     userId: 'u-16',
     preferredHousingTypeIds: ['ht-1'],
@@ -1569,14 +1738,15 @@ const initialHousingApplications: HousingApplication[] = [
       maritalStatusBonus: 10,
       totalPoints: 78,
     },
-    allocatedUnitId: 'hu-2',
+    secretarySuggestedUnitId: 'hu-2',
+    estateSuggestedUnitId: 'hu-2',
+    inspectionData: sampleInspectionData_hu2,
     additionalNotes: 'Professor with 5 dependants. Highest priority score this cycle.',
     submittedAt: '2026-05-20T08:00:00.000Z',
     updatedAt: '2026-07-01T10:00:00.000Z',
   },
   {
-    // app-16: RETURNED by DVC Admin — sent back to Estate/Housing for modification
-    // DVC Admin wants a different unit proposed
+    // app-16: RETURNED — HS suggested hu-5, EO selected hu-8 (different); DVC returned
     id: 'app-16',
     userId: 'u-17',
     preferredHousingTypeIds: ['ht-3', 'ht-2'],
@@ -1589,15 +1759,17 @@ const initialHousingApplications: HousingApplication[] = [
       maritalStatusBonus: 0,
       totalPoints: 25,
     },
-    allocatedUnitId: null,
-    dvcReturnNote: 'The proposed unit (hu-5) was allocated to another staff offline. Please select an alternative vacant unit and resubmit.',
-    dvcSuggestedUnitId: 'hu-8',
+    secretarySuggestedUnitId: 'hu-5',
+    estateSuggestedUnitId: 'hu-8',
+    inspectionData: sampleInspectionData_dual_hu5_hu8,
+    dvcReturnNote: 'The proposed unit (hu-8) is unsuitable — please inspect hu-10 as an alternative and resubmit.',
+    dvcSuggestedUnitId: 'hu-10',
     additionalNotes: 'Requesting accommodation near the Pharmacy faculty.',
     submittedAt: '2026-05-28T09:00:00.000Z',
     updatedAt: '2026-07-06T11:00:00.000Z',
   },
   {
-    // app-17: APPROVED — DVC approved, no allocation yet created
+    // app-17: APPROVED — HS suggested hu-10, EO accepted same, DVC approved
     id: 'app-17',
     userId: 'u-18',
     preferredHousingTypeIds: ['ht-1', 'ht-3'],
@@ -1611,24 +1783,28 @@ const initialHousingApplications: HousingApplication[] = [
       totalPoints: 65,
     },
     allocatedUnitId: 'hu-10',
+    secretarySuggestedUnitId: 'hu-10',
+    estateSuggestedUnitId: 'hu-10',
+    inspectionData: sampleInspectionData_hu10,
     additionalNotes: 'Architecture dept. senior staff.',
     submittedAt: '2026-04-30T10:00:00.000Z',
     updatedAt: '2026-06-20T14:00:00.000Z',
   },
   {
-    // app-18: REJECTED — rejected at Stage 1 by Housing Secretary
+    // app-18: REJECTED — rejected at Stage 1
     id: 'app-18',
     userId: 'u-19',
     preferredHousingTypeIds: ['ht-2'],
     status: 'REJECTED',
     currentStage: 'HOUSING',
     pointsBreakdown: null,
+    secretarySuggestedUnitId: null,
     additionalNotes: 'Requesting accommodation near the farm institute.',
     submittedAt: '2026-06-01T12:00:00.000Z',
     updatedAt: '2026-06-05T10:00:00.000Z',
   },
   {
-    // app-19: UNDER_REVIEW at Stage 2 — Estate Officer has proposed unit, draft saved
+    // app-19: ESTATE stage — HS did not suggest; EO has not yet selected
     id: 'app-19',
     userId: 'u-12',
     preferredHousingTypeIds: ['ht-4'],
@@ -1641,13 +1817,15 @@ const initialHousingApplications: HousingApplication[] = [
       maritalStatusBonus: 10,
       totalPoints: 39,
     },
-    allocatedUnitId: 'hu-3',
+    secretarySuggestedUnitId: null,
+    estateSuggestedUnitId: null,
+    inspectionData: null,
     additionalNotes: 'Second application after initial withdrawal.',
     submittedAt: '2026-06-25T09:30:00.000Z',
     updatedAt: '2026-07-07T15:00:00.000Z',
   },
   {
-    // app-20: RETURNED at Stage 1 — DVC sent back even to Housing stage
+    // app-20: RETURNED at Stage 1 (HOUSING) — DVC returned all the way back
     id: 'app-20',
     userId: 'u-14',
     preferredHousingTypeIds: ['ht-3', 'ht-2'],
@@ -1660,7 +1838,9 @@ const initialHousingApplications: HousingApplication[] = [
       maritalStatusBonus: 10,
       totalPoints: 66,
     },
-    allocatedUnitId: null,
+    secretarySuggestedUnitId: null,
+    estateSuggestedUnitId: null,
+    inspectionData: null,
     dvcReturnNote: 'Please re-verify the seniority bonus and confirm the applicant\'s current grade level before resubmitting. Also select a confirmed vacant unit.',
     dvcSuggestedUnitId: 'hu-10',
     additionalNotes: 'Associate Professor in Engineering.',

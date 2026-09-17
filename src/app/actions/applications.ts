@@ -277,6 +277,12 @@ export async function reviewApplicationAction(data: unknown) {
       comments: parsed.data.comments ?? '',
       score: parsed.data.score ?? null,
       pointsBreakdown,
+      // New workflow fields
+      secretarySuggestedUnitId: parsed.data.secretarySuggestedUnitId ?? null,
+      estateSuggestedUnitId: parsed.data.estateSuggestedUnitId ?? null,
+      inspectionData: parsed.data.inspectionData ?? null,
+      finalAllocatedUnitId: parsed.data.finalAllocatedUnitId ?? null,
+      // Legacy compat
       allocatedUnitId: parsed.data.allocatedUnitId ?? null,
       isDraft: parsed.data.isDraft,
     });
@@ -291,7 +297,9 @@ export async function reviewApplicationAction(data: unknown) {
         stage: parsed.data.stage,
         decision: parsed.data.decision,
         reviewId: review.id,
-        allocatedUnitId: parsed.data.allocatedUnitId ?? null,
+        secretarySuggestedUnitId: parsed.data.secretarySuggestedUnitId ?? null,
+        estateSuggestedUnitId: parsed.data.estateSuggestedUnitId ?? null,
+        finalAllocatedUnitId: parsed.data.finalAllocatedUnitId ?? null,
       },
     });
 
@@ -318,8 +326,9 @@ export async function reviewApplicationAction(data: unknown) {
 export async function getVacantUnitsForApplicationAction(applicationId: string) {
   const session = await auth();
   if (!session?.user) return { success: false as const, error: 'Unauthorized' };
-  if (session.user.role !== 'ESTATE_OFFICER' && session.user.role !== 'SUPER_ADMIN') {
-    return { success: false as const, error: 'Only Estate Officer can fetch vacant units' };
+  const allowedRoles = ['ESTATE_OFFICER', 'HOUSING_SECRETARY', 'SUPER_ADMIN'] as const;
+  if (!allowedRoles.includes(session.user.role as typeof allowedRoles[number])) {
+    return { success: false as const, error: 'Access denied' };
   }
 
   try {
@@ -329,6 +338,7 @@ export async function getVacantUnitsForApplicationAction(applicationId: string) 
     return { success: false as const, error: err instanceof Error ? err.message : 'Failed to fetch vacant units' };
   }
 }
+
 
 // ---------------------------------------------------------------------------
 // Estate Officer: Re-activate a queued application with a selected unit

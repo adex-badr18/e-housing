@@ -44,13 +44,13 @@ const formSchema = z.object({
     .optional()
     .or(z.literal('')),
   decision: z.enum(['FORWARDED', 'QUEUED', 'REJECTED', 'SAVE_DRAFT']),
-  allocatedUnitId: z.string().nullable().optional(),
+  estateSuggestedUnitId: z.string().nullable().optional(),
 }).superRefine((data, ctx) => {
-  if (data.decision === 'FORWARDED' && !data.allocatedUnitId) {
+  if (data.decision === 'FORWARDED' && !data.estateSuggestedUnitId) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: 'Please select a housing unit before forwarding to DVC Admin',
-      path: ['allocatedUnitId'],
+      path: ['estateSuggestedUnitId'],
     });
   }
 });
@@ -79,7 +79,7 @@ export type VacantUnitData = {
 // Inspection metric definition
 // ---------------------------------------------------------------------------
 
-type InspectionRating = 'GOOD' | 'FAIR' | 'BAD' | null;
+type InspectionRating = 'GOOD' | 'FAIR' | 'BAD' | 'NA' | null;
 
 interface InspectionMetric {
   id:          string;
@@ -140,7 +140,7 @@ function MetricRow({
         <p className="text-xs text-muted-foreground mt-0.5">{metric.description}</p>
       </div>
       <div className="flex gap-1.5 shrink-0">
-        {(['GOOD', 'FAIR', 'BAD'] as const).map(opt => (
+        {(['GOOD', 'FAIR', 'BAD', 'NA'] as const).map(opt => (
           <button
             key={opt}
             type="button"
@@ -153,9 +153,11 @@ function MetricRow({
               opt === 'FAIR' && value !== 'FAIR' && 'border-amber-300 text-amber-700 hover:bg-amber-50',
               opt === 'BAD'  && value === 'BAD'  && 'bg-red-500 text-white border-red-500',
               opt === 'BAD'  && value !== 'BAD'  && 'border-red-300 text-red-700 hover:bg-red-50',
+              opt === 'NA'   && value === 'NA'   && 'bg-slate-500 text-white border-slate-500',
+              opt === 'NA'   && value !== 'NA'   && 'border-slate-300 text-slate-600 hover:bg-slate-50',
             )}
           >
-            {opt === 'GOOD' ? 'Good' : opt === 'FAIR' ? 'Fair' : 'Bad'}
+            {opt === 'GOOD' ? 'Good' : opt === 'FAIR' ? 'Fair' : opt === 'BAD' ? 'Bad' : 'N/A'}
           </button>
         ))}
       </div>
@@ -365,7 +367,7 @@ function RequeuePanel({
           />
         )}
         {form.formState.errors.allocatedUnitId && (
-          <p className="text-xs text-destructive">{form.formState.errors.allocatedUnitId.message}</p>
+          <p className="text-xs text-destructive">{form.formState.errors.allocatedUnitId?.message}</p>
         )}
       </div>
 
@@ -417,7 +419,7 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
   const [vacantUnits, setVacantUnits] = useState<VacantUnitData[]>([]);
   const [loadingUnits, setLoadingUnits] = useState(true);
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(
-    application.allocatedUnitId ?? null
+    application.estateSuggestedUnitId ?? null
   );
 
   const isQueued = application.status === 'QUEUED';
@@ -427,7 +429,7 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
     defaultValues: {
       comments: '',
       decision: 'FORWARDED',
-      allocatedUnitId: application.allocatedUnitId ?? null,
+      estateSuggestedUnitId: application.estateSuggestedUnitId ?? null,
     },
   });
 
@@ -462,13 +464,23 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
 
   function onSubmit(values: FormValues) {
     startTransition(async () => {
+      // Build inspectionData keyed by unitId
+      const inspectionDataPayload: Record<string, Record<string, string>> = {};
+      const unitId = values.estateSuggestedUnitId || null;
+      if (unitId) {
+        inspectionDataPayload[unitId] = Object.fromEntries(
+          Object.entries(ratings).filter(([, v]) => v !== null)
+        ) as Record<string, string>;
+      }
+
       const res = await reviewApplicationAction({
-        applicationId: application.id,
-        stage:         'ESTATE' as const,
-        decision:      values.decision,
-        comments:      values.comments,
-        allocatedUnitId: values.allocatedUnitId || null,
-        isDraft:       values.decision === 'SAVE_DRAFT',
+        applicationId:    application.id,
+        stage:            'ESTATE' as const,
+        decision:         values.decision,
+        comments:         values.comments,
+        estateSuggestedUnitId: values.estateSuggestedUnitId || null,
+        inspectionData:   unitId && Object.keys(inspectionDataPayload).length > 0 ? inspectionDataPayload : null,
+        isDraft:          values.decision === 'SAVE_DRAFT',
       });
 
       if (res.success) {
@@ -548,6 +560,38 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
           </p>
         </div>
       )}
+      {/* Housing Secretary Suggestion Banner */}
+      {application.secretarySuggestedUnitId && (
+        <div className="flex items-start gap-3 p-4 rounded-xl border border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800">
+          <Home className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">
+              Housing Secretary&apos;s Unit Suggestion
+            </p>
+            <p className="text-xs text-blue-700 dark:text-blue-400 mt-0.5">
+              The Housing Secretary suggested <strong>{application.secretarySuggestedUnitId}</strong> for this applicant.
+              You may accept this suggestion by selecting the same unit below, or pick a different one.
+              If you choose a different unit, both will be inspected and the DVC will make the final decision.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                const suggested = vacantUnits.find(v => v.unit.id === application.secretarySuggestedUnitId);
+                if (suggested) {
+                  setSelectedUnitId(application.secretarySuggestedUnitId!);
+                  form.setValue('estateSuggestedUnitId', application.secretarySuggestedUnitId!, { shouldValidate: true });
+                } else {
+                  toast.info('The suggested unit is no longer vacant. Please select an alternative.');
+                }
+              }}
+              className="mt-2 text-xs font-semibold text-blue-700 underline underline-offset-2 hover:text-blue-900 transition"
+            >
+              Accept suggestion
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Score from Stage 1 */}
       {pointsBreakdown && (
         <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/5 border border-primary/20">
@@ -644,7 +688,7 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
                 selectedUnitId={selectedUnitId}
                 onSelectUnit={(id) => {
                   setSelectedUnitId(id);
-                  form.setValue('allocatedUnitId', id, { shouldValidate: true });
+                  form.setValue('estateSuggestedUnitId', id, { shouldValidate: true });
                 }}
               />
             )}
@@ -655,7 +699,7 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
                 type="button"
                 onClick={() => {
                   setSelectedUnitId(null);
-                  form.setValue('allocatedUnitId', null);
+                  form.setValue('estateSuggestedUnitId', null);
                 }}
                 className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground transition"
               >
@@ -663,10 +707,10 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
               </button>
             )}
 
-            {form.formState.errors.allocatedUnitId && (
+            {form.formState.errors.estateSuggestedUnitId && (
               <p className="text-xs text-destructive flex items-center gap-1.5">
                 <AlertCircle className="h-3 w-3" />
-                {form.formState.errors.allocatedUnitId.message}
+                {form.formState.errors.estateSuggestedUnitId?.message}
               </p>
             )}
 
@@ -773,7 +817,7 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
 
         <button
           type="submit"
-          disabled={isPending || !allRated}
+          disabled={isPending || (watched.decision === 'FORWARDED' && !allRated)}
           className={cn(
             'w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all shadow-sm',
             watched.decision === 'REJECTED'

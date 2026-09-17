@@ -31,7 +31,7 @@ const formSchema = z.object({
   seniorityBonus:     z.coerce.number().int().min(0).max(25),
   dependentsBonus:    z.coerce.number().int().min(0).max(15),
   maritalStatusBonus: z.coerce.number().int().min(0).max(10),
-  allocatedUnitId:    z.string().nullable().optional(),
+  secretarySuggestedUnitId: z.string().nullable().optional(),
   comments: z
     .string()
     .max(1000, 'Remarks must be under 1000 characters')
@@ -45,7 +45,7 @@ type FormValues = {
   seniorityBonus:     number;
   dependentsBonus:    number;
   maritalStatusBonus: number;
-  allocatedUnitId?:   string | null;
+  secretarySuggestedUnitId?: string | null;
   comments:           string;
   decision:           'FORWARDED' | 'REJECTED' | 'SAVE_DRAFT';
 };
@@ -150,7 +150,7 @@ export function HousingSecretaryPanel({
       seniorityBonus:     existingBreakdown?.seniorityBonus     ?? 0,
       dependentsBonus:    existingBreakdown?.dependentsBonus    ?? 0,
       maritalStatusBonus: existingBreakdown?.maritalStatusBonus ?? 0,
-      allocatedUnitId:    application.allocatedUnitId           ?? null,
+      secretarySuggestedUnitId: application.secretarySuggestedUnitId ?? null,
       comments:           '',
       decision:           'FORWARDED',
     },
@@ -186,23 +186,23 @@ export function HousingSecretaryPanel({
   function onSubmit(values: FormValues) {
     startTransition(async () => {
       const payload = {
-        applicationId:      application.id,
-        stage:              'HOUSING' as const,
-        decision:           values.decision,
-        comments:           values.comments,
-        score:              totalPoints,
-        baseTypePoints:     values.baseTypePoints,
-        seniorityBonus:     values.seniorityBonus,
-        dependentsBonus:    values.dependentsBonus,
-        maritalStatusBonus: values.maritalStatusBonus,
-        allocatedUnitId:    values.allocatedUnitId || null,
-        isDraft:            values.decision === 'SAVE_DRAFT',
+        applicationId:             application.id,
+        stage:                     'HOUSING' as const,
+        decision:                  values.decision,
+        comments:                  values.comments,
+        score:                     totalPoints,
+        baseTypePoints:            values.baseTypePoints,
+        seniorityBonus:            values.seniorityBonus,
+        dependentsBonus:           values.dependentsBonus,
+        maritalStatusBonus:        values.maritalStatusBonus,
+        secretarySuggestedUnitId:  values.secretarySuggestedUnitId || null,
+        isDraft:                   values.decision === 'SAVE_DRAFT',
       };
 
       const res = await reviewApplicationAction(payload);
       if (res.success) {
         if (values.decision === 'SAVE_DRAFT') {
-          toast.success('Draft review and unit proposal saved');
+          toast.success('Draft review and unit suggestion saved');
         } else if (values.decision === 'FORWARDED') {
           toast.success('Application scored and forwarded to Estate Officer');
         } else {
@@ -340,17 +340,26 @@ export function HousingSecretaryPanel({
           </div>
         </div>
 
-        {/* Optional Housing Unit Proposal (Collaborative with Estate Officer) */}
-        <div className="rounded-xl border bg-card p-5 space-y-3">
-          <div className="flex items-center justify-between">
+        {/* Optional Housing Unit Suggestion */}
+        <div className="rounded-xl border bg-card p-5 space-y-4">
+          <div>
             <h3 className="font-semibold text-sm flex items-center gap-2">
               <Home className="h-4 w-4 text-primary" />
-              Propose Housing Unit (Optional at Stage 1)
+              Suggest a Housing Unit
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 border border-blue-200">Optional</span>
             </h3>
-            <span className="text-xs text-muted-foreground">
-              Housing Secretary & Estate Officer can collaborate on unit proposal
-            </span>
+            <p className="text-xs text-muted-foreground mt-1">
+              Your suggestion is advisory — the Estate Officer can accept it or propose a different unit. Both will be inspected and scored before the DVC decides.
+            </p>
           </div>
+
+          {/* Previously suggested badge */}
+          {application.secretarySuggestedUnitId && (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 text-xs font-medium dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-300">
+              <Home className="h-3.5 w-3.5 shrink-0" />
+              Previously suggested: <span className="font-bold ml-1">{application.secretarySuggestedUnitId}</span>
+            </div>
+          )}
 
           {loadingUnits ? (
             <p className="text-xs text-muted-foreground py-2 flex items-center gap-2">
@@ -358,18 +367,20 @@ export function HousingSecretaryPanel({
             </p>
           ) : vacantUnits.length === 0 ? (
             <p className="text-xs text-muted-foreground py-2 italic">
-              No vacant units currently available in system.
+              No vacant units currently available. You may still forward without a suggestion.
             </p>
           ) : (
             <select
-              value={watched.allocatedUnitId || ''}
-              onChange={e => form.setValue('allocatedUnitId', e.target.value || null)}
+              value={watched.secretarySuggestedUnitId || ''}
+              onChange={e => form.setValue('secretarySuggestedUnitId', e.target.value || null)}
               className="w-full text-sm px-3 py-2 rounded-xl border bg-background"
             >
-              <option value="">-- No unit proposed yet (Estate Officer will assign) --</option>
+              <option value="">-- No suggestion (Estate Officer will decide) --</option>
               {vacantUnits.map(u => (
                 <option key={u.unit.id} value={u.unit.id}>
-                  {u.unit.name} ({u.unit.houseNumber}, {u.unit.roadNumber}) {u.matchesPreference ? '★ Matches Preference' : ''}
+                  {u.unit.name} ({u.unit.houseNumber}, {u.unit.roadNumber})
+                  {u.matchesPreference ? '\u2605 Matches Preference' : ''}
+                  {!u.isEligible ? '\u26a0 Non-eligible type' : ''}
                 </option>
               ))}
             </select>

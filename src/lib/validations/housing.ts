@@ -165,6 +165,11 @@ export type ApplicationWizardValues = z.infer<typeof applicationWizardSchema>;
 // 5. Application Review — stage approval (used by management users)
 // ---------------------------------------------------------------------------
 
+// Valid inspection ratings match the physical inspection scoring UI
+const inspectionRatingSchema = z.enum(['GOOD', 'FAIR', 'BAD', 'NA']);
+const unitInspectionScoresSchema = z.record(z.string(), inspectionRatingSchema);
+const inspectionDataSchema = z.record(z.string(), unitInspectionScoresSchema);
+
 export const applicationReviewSchema = z
   .object({
     applicationId: z.string().min(1),
@@ -182,7 +187,16 @@ export const applicationReviewSchema = z
     seniorityBonus: z.coerce.number().int().min(0).optional(),
     dependentsBonus: z.coerce.number().int().min(0).optional(),
     maritalStatusBonus: z.coerce.number().int().min(0).optional(),
-    // Pre-selected unit by Housing Secretary or Estate Officer
+    // ── New workflow fields ─────────────────────────────────────────────────
+    /** Housing Secretary's optional unit suggestion (Stage 1 only) */
+    secretarySuggestedUnitId: z.string().optional().nullable(),
+    /** Estate Officer's confirmed unit selection (Stage 2 only) */
+    estateSuggestedUnitId: z.string().optional().nullable(),
+    /** Physical inspection scores per unit, keyed by unitId → metricId → rating */
+    inspectionData: inspectionDataSchema.optional().nullable(),
+    /** DVC Admin's final unit pick — the unit that will actually be allocated */
+    finalAllocatedUnitId: z.string().optional().nullable(),
+    // ── Legacy field kept for backward compat with existing action calls ───
     allocatedUnitId: z.string().optional().nullable(),
     isDraft: z.boolean().optional(),
   })
@@ -206,11 +220,23 @@ export const applicationReviewSchema = z
         path: ['decision'],
       });
     }
-    if (data.stage === 'ESTATE' && data.decision === 'FORWARDED' && !data.allocatedUnitId) {
+    // Estate Officer must select a unit (estateSuggestedUnitId) before forwarding
+    if (data.stage === 'ESTATE' && data.decision === 'FORWARDED') {
+      const hasUnit = data.estateSuggestedUnitId || data.allocatedUnitId;
+      if (!hasUnit) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Please select a housing unit before forwarding to DVC Admin',
+          path: ['estateSuggestedUnitId'],
+        });
+      }
+    }
+    // DVC Admin must pick the final unit before approving
+    if (data.stage === 'DVC' && data.decision === 'APPROVED' && !data.finalAllocatedUnitId) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Please select a housing unit before forwarding to DVC Admin',
-        path: ['allocatedUnitId'],
+        message: 'Please select the final housing unit to allocate before approving',
+        path: ['finalAllocatedUnitId'],
       });
     }
   });

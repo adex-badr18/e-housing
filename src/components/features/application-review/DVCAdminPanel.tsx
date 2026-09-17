@@ -3,22 +3,36 @@
 // =============================================================================
 // DVCAdminPanel — Stage 3 Final Decision Form
 // =============================================================================
-// High-level summary card + Approve / Reject controls.
-// DVC Admin cannot FORWARD — must make a terminal decision.
+// Displays:
+//   - Housing Secretary unit suggestion
+//   - Estate Officer unit selection
+//   - Physical inspection scores for each suggested unit (side-by-side if different)
+//   - DVC final unit selection picker
+//   - Approve / Reject / Return / Save Draft controls
 // =============================================================================
 
-import { useState, useTransition, useEffect } from 'react';
+import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { Crown, CheckCircle2, XCircle, Loader2, Award, ClipboardList, User, Home, Building2, RotateCcw, Save, AlertCircle } from 'lucide-react';
+import {
+  Crown, CheckCircle2, XCircle, Loader2, Award, ClipboardList,
+  User, Home, Building2, RotateCcw, Save, AlertCircle,
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { reviewApplicationAction, getVacantUnitsForApplicationAction } from '@/app/actions/applications';
-import type { HousingApplication, ApplicationReview, PointsBreakdown, User as UserType, StaffProfile, HousingUnit, HousingType } from '@/lib/mock-api/db';
+import { reviewApplicationAction } from '@/app/actions/applications';
+import type {
+  HousingApplication, ApplicationReview, PointsBreakdown,
+  User as UserType, StaffProfile, InspectionData,
+} from '@/lib/mock-api/db';
 import { mockDB } from '@/lib/mock-api/db';
+
+// ---------------------------------------------------------------------------
+// Validation
+// ---------------------------------------------------------------------------
 
 const formSchema = z.object({
   comments: z
@@ -26,10 +40,59 @@ const formSchema = z.object({
     .min(5, 'Decision rationale must be at least 5 characters')
     .max(1000, 'Decision rationale must be under 1000 characters'),
   decision: z.enum(['APPROVED', 'RETURNED', 'SAVE_DRAFT', 'REJECTED']),
-  allocatedUnitId: z.string().nullable().optional(),
+  finalAllocatedUnitId: z.string().nullable().optional(),
+}).superRefine((data, ctx) => {
+  if (data.decision === 'APPROVED' && !data.finalAllocatedUnitId) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Please select the final housing unit to allocate before approving',
+      path: ['finalAllocatedUnitId'],
+    });
+  }
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+const RATING_COLORS: Record<string, string> = {
+  GOOD: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+  FAIR: 'bg-amber-100 text-amber-800 border-amber-200',
+  BAD:  'bg-red-100 text-red-800 border-red-200',
+  NA:   'bg-slate-100 text-slate-600 border-slate-200',
+};
+const RATING_LABELS: Record<string, string> = {
+  GOOD: 'Good',
+  FAIR: 'Fair',
+  BAD:  'Bad',
+  NA:   'N/A',
+};
+const METRIC_LABELS: Record<string, string> = {
+  'str-walls':     'Wall Integrity',
+  'str-roof':      'Roof Condition',
+  'str-floors':    'Floor Condition',
+  'str-windows':   'Doors & Windows',
+  'util-water':    'Water Supply',
+  'util-drainage': 'Drainage System',
+  'util-sanitary': 'Sanitary Fixtures',
+  'env-compound':  'Compound Condition',
+  'env-waste':     'Waste Management',
+  'bq-cond':       'BQ Unit Condition',
+};
+const METRIC_CATEGORIES: Record<string, string> = {
+  'str-walls':     'Structural',
+  'str-roof':      'Structural',
+  'str-floors':    'Structural',
+  'str-windows':   'Structural',
+  'util-water':    'Utilities',
+  'util-drainage': 'Utilities',
+  'util-sanitary': 'Utilities',
+  'env-compound':  'Environment',
+  'env-waste':     'Environment',
+  'bq-cond':       'BQ',
+};
 
 // ---------------------------------------------------------------------------
 // Summary stat card
@@ -41,6 +104,99 @@ function StatCard({ label, value, sub }: { label: string; value: React.ReactNode
       <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">{label}</p>
       <p className="text-xl font-bold text-foreground">{value}</p>
       {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Inspection Score Card — shows scores for a single unit
+// ---------------------------------------------------------------------------
+
+function InspectionScoreCard({
+  unitId,
+  label,
+  badge,
+  badgeColor,
+  scores,
+}: {
+  unitId: string;
+  label: string;
+  badge: string;
+  badgeColor: string;
+  scores: Record<string, string>;
+}) {
+  const unit = mockDB.findUnitById(unitId);
+  const housingType = unit ? mockDB.housingTypes.find(ht => ht.id === unit.housingTypeId) : null;
+  const categories = [...new Set(Object.keys(METRIC_LABELS).map(k => METRIC_CATEGORIES[k]))];
+
+  const goodCount = Object.values(scores).filter(v => v === 'GOOD').length;
+  const fairCount = Object.values(scores).filter(v => v === 'FAIR').length;
+  const badCount  = Object.values(scores).filter(v => v === 'BAD').length;
+
+  return (
+    <div className="rounded-xl border bg-card overflow-hidden">
+      {/* Unit header */}
+      <div className="px-4 py-3 bg-muted/40 border-b flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <Home className="h-4 w-4 text-primary shrink-0" />
+          <div className="min-w-0">
+            <p className="text-sm font-semibold truncate">{unit?.name ?? unitId}</p>
+            <p className="text-xs text-muted-foreground truncate">{housingType?.name ?? 'Unknown type'}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full border', badgeColor)}>
+            {badge}
+          </span>
+          <span className="text-[10px] font-semibold text-foreground">{label}</span>
+        </div>
+      </div>
+
+      {/* Score summary bar */}
+      <div className="flex divide-x border-b">
+        {[
+          { label: 'Good', count: goodCount, color: 'text-emerald-600' },
+          { label: 'Fair', count: fairCount, color: 'text-amber-600' },
+          { label: 'Bad',  count: badCount,  color: 'text-red-500' },
+        ].map(s => (
+          <div key={s.label} className="flex-1 text-center py-2">
+            <p className={cn('text-lg font-bold', s.color)}>{s.count}</p>
+            <p className="text-[10px] text-muted-foreground">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Per-category metric scores */}
+      <div className="p-4 space-y-4">
+        {categories.map(cat => {
+          const catMetrics = Object.keys(METRIC_LABELS).filter(k => METRIC_CATEGORIES[k] === cat);
+          return (
+            <div key={cat} className="space-y-2">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{cat}</p>
+              <div className="space-y-1.5">
+                {catMetrics.map(metricId => {
+                  const rating = scores[metricId];
+                  return (
+                    <div key={metricId} className="flex items-center justify-between text-xs">
+                      <span className="text-foreground/80">{METRIC_LABELS[metricId]}</span>
+                      {rating ? (
+                        <span className={cn(
+                          'font-semibold px-2 py-0.5 rounded border text-[10px]',
+                          RATING_COLORS[rating]
+                        )}>
+                          {RATING_LABELS[rating]}
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-muted-foreground italic">Not rated</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -70,58 +226,45 @@ export function DVCAdminPanel({
 }: DVCAdminPanelProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [selectedFinalUnitId, setSelectedFinalUnitId] = useState<string | null>(
+    application.estateSuggestedUnitId ?? application.secretarySuggestedUnitId ?? null
+  );
 
-  const [vacantUnits, setVacantUnits] = useState<{
-    unit: HousingUnit;
-    housingType: HousingType | null;
-    isEligible: boolean;
-    matchesPreference: boolean;
-  }[]>([]);
-  const [loadingUnits, setLoadingUnits] = useState(false);
+  const score = application.pointsBreakdown?.totalPoints ?? 0;
 
-  useEffect(() => {
-    let mounted = true;
-    setLoadingUnits(true);
-    getVacantUnitsForApplicationAction(application.id).then(res => {
-      if (mounted && res.success && res.data) {
-        setVacantUnits(res.data);
-      }
-      if (mounted) setLoadingUnits(false);
-    });
-    return () => { mounted = false; };
-  }, [application.id]);
+  // Determine suggestion scenario
+  const hsUnitId = application.secretarySuggestedUnitId ?? null;
+  const eoUnitId = application.estateSuggestedUnitId ?? null;
+  const isSameUnit = hsUnitId && eoUnitId && hsUnitId === eoUnitId;
+  const inspectionData: InspectionData | null = application.inspectionData ?? null;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       comments: '',
       decision: 'APPROVED',
-      allocatedUnitId: application.allocatedUnitId ?? null,
+      finalAllocatedUnitId: selectedFinalUnitId,
     },
   });
 
   const watched = form.watch();
 
-  const housingReview = reviews.find(r => r.stage === 'HOUSING');
-  const estateReview  = reviews.find(r => r.stage === 'ESTATE');
-  const score         = application.pointsBreakdown?.totalPoints ?? 0;
-
   function onSubmit(values: FormValues) {
     startTransition(async () => {
       const res = await reviewApplicationAction({
-        applicationId:   application.id,
-        stage:           'DVC',
-        decision:        values.decision,
-        comments:        values.comments,
-        allocatedUnitId: values.allocatedUnitId || null,
-        isDraft:         values.decision === 'SAVE_DRAFT',
+        applicationId:      application.id,
+        stage:              'DVC',
+        decision:           values.decision,
+        comments:           values.comments,
+        finalAllocatedUnitId: values.finalAllocatedUnitId || null,
+        isDraft:            values.decision === 'SAVE_DRAFT',
       });
 
       if (res.success) {
         if (values.decision === 'APPROVED') {
           toast.success('🎉 Application approved! Allocation can now be created.');
         } else if (values.decision === 'RETURNED') {
-          toast.success('Application forwarded back to Estate Officer & Housing Secretary with instructions.');
+          toast.success('Application forwarded back with instructions.');
         } else if (values.decision === 'SAVE_DRAFT') {
           toast.success('Draft decision saved.');
         } else {
@@ -142,7 +285,7 @@ export function DVCAdminPanel({
         <div>
           <p className="font-bold text-foreground">Final Authority Review</p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Review the application details and review trail. You can approve, reject, save draft, or forward back to the Estate Officer & Housing Secretary for modification.
+            Review the inspection scores for proposed units and select the final housing unit to allocate. You can approve, reject, save draft, or return for modification.
           </p>
         </div>
       </div>
@@ -194,110 +337,194 @@ export function DVCAdminPanel({
         </div>
       )}
 
-      {/* Pre-allocated Unit (Estate Officer’s selection) */}
-      {(() => {
-        const unitId = watched.allocatedUnitId || application.allocatedUnitId;
-        const unit = unitId ? mockDB.findUnitById(unitId) : null;
-        const housingType = unit ? mockDB.housingTypes.find(ht => ht.id === unit.housingTypeId) : null;
-        if (!unit) return null;
-        return (
-          <div className="rounded-xl border-2 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 dark:border-emerald-800 p-5 space-y-2">
-            <h3 className="text-sm font-semibold flex items-center gap-2 text-emerald-800 dark:text-emerald-300">
-              <Home className="h-4 w-4" />
-              Proposed Housing Unit for Allocation
-            </h3>
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-emerald-100 border border-emerald-200 dark:bg-emerald-900/50">
-                <Building2 className="h-6 w-6 text-emerald-700 dark:text-emerald-300" />
-              </div>
-              <div className="flex-1">
-                <p className="font-bold text-foreground text-base">{unit.name}</p>
-                <p className="text-sm text-muted-foreground">{housingType?.name ?? 'Unknown Type'}</p>
-                {housingType && (
-                  <div className="flex flex-wrap gap-2 mt-1.5">
-                    <span className="text-[10px] font-medium text-emerald-700 bg-emerald-100 border border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 px-2 py-0.5 rounded-full">
-                      {housingType.numberOfBedrooms} bed · {housingType.numberOfBathrooms} bath
-                    </span>
-                    <span className="text-[10px] font-medium text-emerald-700 bg-emerald-100 border border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 px-2 py-0.5 rounded-full capitalize">
-                      {housingType.buildingType.toLowerCase()}
-                    </span>
-                    <span className="text-[10px] font-medium text-emerald-700 bg-emerald-100 border border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 px-2 py-0.5 rounded-full capitalize">
-                      {housingType.parkingSpace}
-                    </span>
-                    {housingType.hasBQ && (
-                      <span className="text-[10px] font-medium text-emerald-700 bg-emerald-100 border border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 px-2 py-0.5 rounded-full">
-                        Has BQ
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-              <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-bold px-3 py-1.5 rounded-full bg-emerald-500 text-white">
-                VACANT
-              </span>
+      {/* ── Suggestions & Inspection Scores ── */}
+      {(hsUnitId || eoUnitId) ? (
+        <div className="space-y-4">
+          {/* Context banner */}
+          <div className={cn(
+            'flex items-start gap-3 p-4 rounded-xl border',
+            isSameUnit
+              ? 'bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800'
+              : 'bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800'
+          )}>
+            <AlertCircle className={cn('h-5 w-5 shrink-0 mt-0.5', isSameUnit ? 'text-emerald-600' : 'text-blue-600')} />
+            <div>
+              <p className={cn('text-sm font-semibold', isSameUnit ? 'text-emerald-800 dark:text-emerald-300' : 'text-blue-800 dark:text-blue-300')}>
+                {isSameUnit
+                  ? 'Both reviewers agreed on the same unit'
+                  : 'Reviewers suggested different units'}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {isSameUnit
+                  ? `Housing Secretary and Estate Officer both proposed ${hsUnitId}. One inspection report is available below.`
+                  : `Housing Secretary suggested ${hsUnitId ?? 'no unit'}, Estate Officer selected ${eoUnitId ?? 'no unit'}. Inspection reports for both units are shown below. Select your preferred unit.`
+                }
+              </p>
             </div>
           </div>
-        );
-      })()}
 
-      {/* View Other Alternative Vacant Units */}
-      <div className="rounded-xl border bg-card p-5 space-y-3">
-        <h3 className="text-sm font-semibold flex items-center gap-2">
-          <Building2 className="h-4 w-4 text-primary" />
-          Alternative Vacant Housing Units ({vacantUnits.length})
-        </h3>
-        {loadingUnits ? (
-          <p className="text-xs text-muted-foreground flex items-center gap-2">
-            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading vacant units...
-          </p>
-        ) : vacantUnits.length === 0 ? (
-          <p className="text-xs text-muted-foreground italic">No other vacant units available.</p>
-        ) : (
-          <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-            {vacantUnits.map(v => {
-              const isCurrent = (watched.allocatedUnitId || application.allocatedUnitId) === v.unit.id;
-              return (
-                <div
-                  key={v.unit.id}
-                  onClick={() => form.setValue('allocatedUnitId', v.unit.id)}
-                  className={cn(
-                    'flex items-center justify-between p-3 rounded-lg border text-xs cursor-pointer transition-all',
-                    isCurrent
-                      ? 'border-primary bg-primary/5 font-semibold'
-                      : 'border-border bg-background hover:bg-muted/40'
-                  )}
-                >
-                  <div>
-                    <p className="font-semibold text-foreground flex items-center gap-1.5">
-                      {v.unit.name} ({v.unit.houseNumber}, {v.unit.roadNumber})
-                      {v.matchesPreference && (
-                        <span className="text-[10px] font-normal text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
-                          Preferred
+          {/* Inspection Score Cards */}
+          {inspectionData && Object.keys(inspectionData).length > 0 ? (
+            <div className={cn(
+              'grid gap-4',
+              !isSameUnit && hsUnitId && eoUnitId ? 'md:grid-cols-2' : 'grid-cols-1'
+            )}>
+              {isSameUnit && eoUnitId && inspectionData[eoUnitId] && (
+                <InspectionScoreCard
+                  unitId={eoUnitId}
+                  label="Agreed Unit"
+                  badge="Both Agreed"
+                  badgeColor="bg-emerald-100 text-emerald-800 border-emerald-300"
+                  scores={inspectionData[eoUnitId]}
+                />
+              )}
+              {!isSameUnit && hsUnitId && inspectionData[hsUnitId] && (
+                <InspectionScoreCard
+                  unitId={hsUnitId}
+                  label="HS Suggestion"
+                  badge="Housing Secretary"
+                  badgeColor="bg-blue-100 text-blue-800 border-blue-300"
+                  scores={inspectionData[hsUnitId]}
+                />
+              )}
+              {!isSameUnit && eoUnitId && inspectionData[eoUnitId] && (
+                <InspectionScoreCard
+                  unitId={eoUnitId}
+                  label="EO Selection"
+                  badge="Estate Officer"
+                  badgeColor="bg-purple-100 text-purple-800 border-purple-300"
+                  scores={inspectionData[eoUnitId]}
+                />
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-800">
+              <AlertCircle className="h-5 w-5 shrink-0" />
+              <p className="text-sm">No physical inspection data recorded yet for this application.</p>
+            </div>
+          )}
+
+          {/* ── Final Unit Selection ── */}
+          <div className="rounded-xl border bg-card p-5 space-y-4">
+            <div>
+              <h3 className="text-sm font-semibold flex items-center gap-2">
+                <Home className="h-4 w-4 text-primary" />
+                Select Final Housing Unit to Allocate
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                Based on the inspection scores above, select which unit should be allocated to the applicant. This is required before approving.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              {/* HS suggestion option */}
+              {hsUnitId && (() => {
+                const unit = mockDB.findUnitById(hsUnitId);
+                const ht = unit ? mockDB.housingTypes.find(h => h.id === unit.housingTypeId) : null;
+                const isSelected = watched.finalAllocatedUnitId === hsUnitId;
+                return (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedFinalUnitId(hsUnitId);
+                      form.setValue('finalAllocatedUnitId', hsUnitId, { shouldValidate: true });
+                    }}
+                    className={cn(
+                      'w-full text-left p-4 rounded-xl border-2 transition-all flex items-center justify-between gap-3',
+                      isSelected
+                        ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30'
+                        : 'border-border hover:border-primary/40 hover:bg-primary/[0.02]'
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={cn('p-2 rounded-lg', isSelected ? 'bg-emerald-100' : 'bg-muted')}>
+                        <Building2 className={cn('h-4 w-4', isSelected ? 'text-emerald-600' : 'text-muted-foreground')} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold">{unit?.name ?? hsUnitId}</p>
+                        <p className="text-xs text-muted-foreground">{ht?.name} · {ht?.numberOfBedrooms} bed</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+                        HS Suggested
+                      </span>
+                      {isSameUnit && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
+                          EO Selected
                         </span>
                       )}
-                    </p>
-                    <p className="text-muted-foreground text-[11px]">
-                      {v.housingType?.name} · {v.housingType?.numberOfBedrooms} bed
-                    </p>
-                  </div>
-                  {isCurrent ? (
-                    <span className="text-primary font-bold text-xs flex items-center gap-1">
-                      <CheckCircle2 className="h-3.5 w-3.5" /> Selected
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      className="text-xs text-primary hover:underline"
-                    >
-                      Suggest / Select
-                    </button>
-                  )}
-                </div>
-              );
-            })}
+                      {isSelected && <CheckCircle2 className="h-5 w-5 text-emerald-600" />}
+                    </div>
+                  </button>
+                );
+              })()}
+
+              {/* EO selection option (only shown if different from HS) */}
+              {!isSameUnit && eoUnitId && (() => {
+                const unit = mockDB.findUnitById(eoUnitId);
+                const ht = unit ? mockDB.housingTypes.find(h => h.id === unit.housingTypeId) : null;
+                const isSelected = watched.finalAllocatedUnitId === eoUnitId;
+                return (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedFinalUnitId(eoUnitId);
+                      form.setValue('finalAllocatedUnitId', eoUnitId, { shouldValidate: true });
+                    }}
+                    className={cn(
+                      'w-full text-left p-4 rounded-xl border-2 transition-all flex items-center justify-between gap-3',
+                      isSelected
+                        ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30'
+                        : 'border-border hover:border-primary/40 hover:bg-primary/[0.02]'
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={cn('p-2 rounded-lg', isSelected ? 'bg-emerald-100' : 'bg-muted')}>
+                        <Building2 className={cn('h-4 w-4', isSelected ? 'text-emerald-600' : 'text-muted-foreground')} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold">{unit?.name ?? eoUnitId}</p>
+                        <p className="text-xs text-muted-foreground">{ht?.name} · {ht?.numberOfBedrooms} bed</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
+                        EO Selected
+                      </span>
+                      {isSelected && <CheckCircle2 className="h-5 w-5 text-emerald-600" />}
+                    </div>
+                  </button>
+                );
+              })()}
+            </div>
+
+            {form.formState.errors.finalAllocatedUnitId && (
+              <p className="text-xs text-destructive flex items-center gap-1.5">
+                <AlertCircle className="h-3.5 w-3.5" />
+                {form.formState.errors.finalAllocatedUnitId.message}
+              </p>
+            )}
+
+            {watched.finalAllocatedUnitId && (
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                <span>
+                  <strong>{mockDB.findUnitById(watched.finalAllocatedUnitId)?.name ?? watched.finalAllocatedUnitId}</strong> will be allocated upon approval.
+                </span>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="flex items-center gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-800">
+          <AlertCircle className="h-5 w-5 shrink-0" />
+          <div>
+            <p className="text-sm font-medium">No housing unit has been proposed yet</p>
+            <p className="text-xs mt-0.5">Neither the Housing Secretary nor the Estate Officer has suggested a unit. Return the application for unit selection.</p>
+          </div>
+        </div>
+      )}
 
       {/* Review history */}
       <div className="rounded-xl border bg-card p-5 space-y-3">
@@ -324,13 +551,18 @@ export function DVCAdminPanel({
                 ) : (
                   <p className="text-xs text-muted-foreground mt-1 italic">No remarks provided</p>
                 )}
+                {review.suggestedUnitId && (
+                  <p className="text-xs text-primary font-medium mt-1">
+                    Unit proposed: {review.suggestedUnitId}
+                  </p>
+                )}
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Preferred housing types */}
+      {/* Applicant notes */}
       {application.additionalNotes && (
         <div className="rounded-xl border bg-card p-4 space-y-1.5">
           <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
@@ -356,7 +588,7 @@ export function DVCAdminPanel({
                 <CheckCircle2 className="h-4 w-4 text-emerald-600" /> Approve
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Grant final approval & trigger allocation
+                Grant final approval &amp; trigger allocation
               </p>
             </div>
           </label>
@@ -373,7 +605,7 @@ export function DVCAdminPanel({
                 <RotateCcw className="h-4 w-4 text-amber-600" /> Return for Review
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Forward back to Estate & Housing with instructions
+                Forward back with instructions
               </p>
             </div>
           </label>
@@ -390,7 +622,7 @@ export function DVCAdminPanel({
                 <Save className="h-4 w-4 text-blue-500" /> Save Draft
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Save decision rationale without completing
+                Save without completing
               </p>
             </div>
           </label>
@@ -413,7 +645,7 @@ export function DVCAdminPanel({
           </label>
         </div>
 
-        {/* Rationale / Instruction message */}
+        {/* Rationale / Instructions */}
         <div className="space-y-2">
           <label className="text-sm font-semibold">
             {watched.decision === 'RETURNED' ? 'Modification Instructions for Reviewers' : 'Decision Rationale'}
@@ -423,7 +655,7 @@ export function DVCAdminPanel({
             rows={4}
             placeholder={
               watched.decision === 'RETURNED'
-                ? 'Specify instructions for the Estate Officer & Housing Secretary (e.g. propose alternative vacant unit hu-8)...'
+                ? 'Specify what needs to change (e.g. inspect an alternative unit, re-verify scoring)...'
                 : 'Provide the official rationale for your decision...'
             }
             className={cn(
@@ -456,7 +688,7 @@ export function DVCAdminPanel({
           {watched.decision === 'APPROVED'
             ? '✓ Approve Application'
             : watched.decision === 'RETURNED'
-            ? '↩ Forward Back to Estate Officer & Housing Secretary'
+            ? '↩ Return to Estate Officer & Housing Secretary'
             : watched.decision === 'SAVE_DRAFT'
             ? 'Save Draft Decision'
             : '✗ Reject Application'}

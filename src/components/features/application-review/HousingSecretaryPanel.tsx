@@ -18,13 +18,10 @@ import {
   User, GraduationCap, Calendar, Users, Heart, Save, Home, AlertCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import {
-  autoScoreApplicationAction,
-  reviewApplicationAction,
-  getVacantUnitsForApplicationAction
-} from '@/app/actions/applications';
-import type { HousingApplication, StaffProfile, User as UserType, HousingUnit, HousingType } from '@/lib/mock-api/db';
+import { autoScoreApplicationAction, reviewApplicationAction, getVacantUnitsForApplicationAction } from '@/app/actions/applications';
+import type { HousingApplication, StaffProfile, User as UserType } from '@/lib/mock-api/db';
 import type { ScoringBreakdown } from '@/lib/scoring';
+import { VacantUnitsGrid, type VacantUnitData } from './VacantUnitsGrid';
 
 const formSchema = z.object({
   baseTypePoints:     z.coerce.number().int().min(0).max(70),
@@ -120,12 +117,7 @@ export function HousingSecretaryPanel({
   const [scoringDetails, setScoringDetails] = useState<ScoringBreakdown | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const [vacantUnits, setVacantUnits] = useState<{
-    unit: HousingUnit;
-    housingType: HousingType | null;
-    isEligible: boolean;
-    matchesPreference: boolean;
-  }[]>([]);
+  const [vacantUnits, setVacantUnits] = useState<VacantUnitData[]>([]);
   const [loadingUnits, setLoadingUnits] = useState(false);
 
   useEffect(() => {
@@ -370,20 +362,12 @@ export function HousingSecretaryPanel({
               No vacant units currently available. You may still forward without a suggestion.
             </p>
           ) : (
-            <select
-              value={watched.secretarySuggestedUnitId || ''}
-              onChange={e => form.setValue('secretarySuggestedUnitId', e.target.value || null)}
-              className="w-full text-sm px-3 py-2 rounded-xl border bg-background"
-            >
-              <option value="">-- No suggestion (Estate Officer will decide) --</option>
-              {vacantUnits.map(u => (
-                <option key={u.unit.id} value={u.unit.id}>
-                  {u.unit.name} ({u.unit.houseNumber}, {u.unit.roadNumber})
-                  {u.matchesPreference ? '\u2605 Matches Preference' : ''}
-                  {!u.isEligible ? '\u26a0 Non-eligible type' : ''}
-                </option>
-              ))}
-            </select>
+            <VacantUnitsGrid
+              vacantUnits={vacantUnits}
+              selectedUnitId={watched.secretarySuggestedUnitId || null}
+              onSelectUnit={(id) => form.setValue('secretarySuggestedUnitId', id)}
+              allowClear
+            />
           )}
         </div>
 

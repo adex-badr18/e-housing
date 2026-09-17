@@ -32,6 +32,8 @@ import {
   requeueApplicationAction,
 } from '@/app/actions/applications';
 import type { HousingApplication, PointsBreakdown, HousingUnit, HousingType } from '@/lib/mock-api/db';
+import { VacantUnitsGrid, type VacantUnitData } from './VacantUnitsGrid';
+export type { VacantUnitData };
 
 // ---------------------------------------------------------------------------
 // Validation
@@ -64,16 +66,7 @@ const requeueFormSchema = z.object({
 });
 type RequeueFormValues = z.infer<typeof requeueFormSchema>;
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
 
-export type VacantUnitData = {
-  unit: HousingUnit;
-  housingType: HousingType | null;
-  isEligible: boolean;
-  matchesPreference: boolean;
-};
 
 // ---------------------------------------------------------------------------
 // Inspection metric definition
@@ -167,138 +160,7 @@ function MetricRow({
 
 // ---------------------------------------------------------------------------
 // Unit Card — for the unit picker
-// ---------------------------------------------------------------------------
 
-function UnitCard({
-  data,
-  isSelected,
-  onSelect,
-}: {
-  data: VacantUnitData;
-  isSelected: boolean;
-  onSelect: () => void;
-}) {
-  const { unit, housingType, isEligible, matchesPreference } = data;
-
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={cn(
-        'w-full text-left p-4 rounded-xl border-2 transition-all',
-        isSelected
-          ? 'border-primary bg-primary/5 shadow-sm'
-          : 'border-border bg-background hover:border-primary/40 hover:bg-primary/[0.02]'
-      )}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2.5">
-          <div className={cn(
-            'p-2 rounded-lg shrink-0',
-            isSelected ? 'bg-primary/10' : 'bg-muted'
-          )}>
-            <Home className={cn('h-4 w-4', isSelected ? 'text-primary' : 'text-muted-foreground')} />
-          </div>
-          <div>
-            <p className="font-semibold text-sm">{unit.name}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {housingType?.name ?? 'Unknown Type'}
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-col items-end gap-1.5">
-          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200">
-            VACANT
-          </span>
-          {!isEligible && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
-              <AlertCircle className="h-2.5 w-2.5" /> Non-eligible
-            </span>
-          )}
-        </div>
-      </div>
-      {housingType && (
-        <div className="mt-3 flex flex-col gap-2">
-          <div className="flex flex-wrap gap-2">
-            <span className="text-[10px] text-muted-foreground px-2 py-0.5 rounded bg-muted">
-              {housingType.numberOfBedrooms} bed · {housingType.numberOfBathrooms} bath
-            </span>
-            <span className="text-[10px] text-muted-foreground px-2 py-0.5 rounded bg-muted capitalize">
-              {housingType.buildingType.toLowerCase()}
-            </span>
-            <span className="text-[10px] text-muted-foreground px-2 py-0.5 rounded bg-muted">
-              {housingType.parkingSpace}
-            </span>
-            {housingType.hasBQ && (
-              <span className="text-[10px] text-muted-foreground px-2 py-0.5 rounded bg-muted">
-                Has BQ
-              </span>
-            )}
-          </div>
-          
-          {matchesPreference && (
-            <div className="flex items-center gap-1 text-xs text-primary font-medium">
-              <Star className="h-3 w-3" /> Matches Preference
-            </div>
-          )}
-        </div>
-      )}
-    </button>
-  );
-}
-
-function VacantUnitsList({
-  vacantUnits,
-  selectedUnitId,
-  onSelectUnit,
-}: {
-  vacantUnits: VacantUnitData[];
-  selectedUnitId: string | null;
-  onSelectUnit: (unitId: string) => void;
-}) {
-  const eligibleUnits = vacantUnits.filter(u => u.isEligible);
-  const otherUnits = vacantUnits.filter(u => !u.isEligible);
-
-  return (
-    <div className="flex flex-col gap-6 max-h-[400px] overflow-y-auto pr-1">
-      {eligibleUnits.length > 0 && (
-        <div className="space-y-2">
-          <h5 className="text-xs font-semibold text-emerald-700 uppercase tracking-wider flex items-center gap-1.5">
-            <CheckCircle2 className="h-3.5 w-3.5" /> Eligible Units
-          </h5>
-          <div className="grid gap-2">
-            {eligibleUnits.map((data) => (
-              <UnitCard
-                key={data.unit.id}
-                data={data}
-                isSelected={selectedUnitId === data.unit.id}
-                onSelect={() => onSelectUnit(data.unit.id)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {otherUnits.length > 0 && (
-        <div className="space-y-2">
-          <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 pt-2 border-t">
-            Other Vacant Units
-          </h5>
-          <div className="grid gap-2">
-            {otherUnits.map((data) => (
-              <UnitCard
-                key={data.unit.id}
-                data={data}
-                isSelected={selectedUnitId === data.unit.id}
-                onSelect={() => onSelectUnit(data.unit.id)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Re-queue Panel — shown when application is already QUEUED
@@ -357,12 +219,12 @@ function RequeuePanel({
         )}
 
         {!loadingUnits && vacantUnits.length > 0 && (
-          <VacantUnitsList
+          <VacantUnitsGrid
             vacantUnits={vacantUnits}
             selectedUnitId={selectedUnitId}
             onSelectUnit={(id) => {
               setSelectedUnitId(id);
-              form.setValue('allocatedUnitId', id, { shouldValidate: true });
+              form.setValue('allocatedUnitId', id ?? '', { shouldValidate: true });
             }}
           />
         )}
@@ -683,28 +545,15 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
             )}
 
             {!loadingUnits && vacantUnits.length > 0 && (
-              <VacantUnitsList
+              <VacantUnitsGrid
                 vacantUnits={vacantUnits}
                 selectedUnitId={selectedUnitId}
                 onSelectUnit={(id) => {
                   setSelectedUnitId(id);
                   form.setValue('estateSuggestedUnitId', id, { shouldValidate: true });
                 }}
+                allowClear
               />
-            )}
-
-            {/* Clear selection */}
-            {selectedUnitId && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedUnitId(null);
-                  form.setValue('estateSuggestedUnitId', null);
-                }}
-                className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground transition"
-              >
-                Clear selection
-              </button>
             )}
 
             {form.formState.errors.estateSuggestedUnitId && (

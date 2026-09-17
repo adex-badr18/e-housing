@@ -24,6 +24,7 @@ import { QuitRequestButton }     from './QuitRequestButton';
 import { ApplicationDetailsCard } from './ApplicationDetailsCard';
 import { Lock, Eye, Clock, AlertTriangle, XCircle, FileX2 } from 'lucide-react';
 import { WithdrawalActionButtons } from './WithdrawalActionButtons';
+import { QuitRequestHistorySection } from './QuitRequestHistorySection';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -114,6 +115,19 @@ export function ReviewPipeline({
   const pendingQuitRequest = mockDB.quitRequests.find(
     q => q.entityId === application.id && q.entityType === 'HousingApplication' && q.status === 'PENDING'
   ) ?? null;
+
+  // All quit requests for this application (for history section), newest first
+  const allQuitRequests = mockDB.quitRequests
+    .filter(q => q.entityId === application.id && q.entityType === 'HousingApplication')
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .map(q => ({
+      ...q,
+      // Resolve reviewer name — shown to management roles only
+      reviewerName: q.reviewedById ? (() => {
+        const u = mockDB.findUserById(q.reviewedById!);
+        return u ? `${u.firstName} ${u.lastName}` : null;
+      })() : null,
+    }));
 
   // Management roles that can approve/reject withdrawal requests inline
   const isManagementRole = ['HOUSING_SECRETARY', 'ESTATE_OFFICER', 'DVC_ADMIN', 'SUPER_ADMIN'].includes(sessionRole);
@@ -342,7 +356,7 @@ export function ReviewPipeline({
             <h4 className="font-semibold text-sm">Withdraw Application</h4>
             <p className="text-xs text-muted-foreground mt-0.5">
               {isQuitRequested
-                ? 'Your withdrawal request is pending review by the Housing Secretary.'
+                ? 'Your withdrawal request is pending management review.'
                 : 'You may request to withdraw this housing application at any time prior to approval.'}
             </p>
           </div>
@@ -359,6 +373,14 @@ export function ReviewPipeline({
         <div className="pt-6 border-t flex justify-end">
           <AdminTerminateButton entityId={application.id} entityType="HousingApplication" />
         </div>
+      )}
+
+      {/* Withdrawal request history — visible to all roles */}
+      {allQuitRequests.length > 0 && (
+        <QuitRequestHistorySection
+          requests={allQuitRequests}
+          isManagement={isManagementRole}
+        />
       )}
     </div>
   );

@@ -2689,6 +2689,20 @@ for (const rev of initialApplicationReviews) {
   }
 }
 
+// Correction pass: remove any SAVE_DRAFT records for an application+stage combination
+// that already has a final (non-draft) review. This fixes stale state from the old
+// code path that kept both records coexisting.
+{
+  const finalReviewKeys = new Set(
+    mockDB.applicationReviews
+      .filter(r => !r.isDraft)
+      .map(r => `${r.applicationId}:${r.stage}`)
+  );
+  mockDB.applicationReviews = mockDB.applicationReviews.filter(
+    r => !r.isDraft || !finalReviewKeys.has(`${r.applicationId}:${r.stage}`)
+  );
+}
+
 // Sync missing exit notices into hot-reloaded singleton
 for (const exit of initialExitNotices) {
   if (!mockDB.exitNotices.some(e => e.id === exit.id)) {

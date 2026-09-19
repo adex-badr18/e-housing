@@ -481,6 +481,13 @@ export async function reviewApplication(params: {
     isDraft: false,
     reviewedAt: now,
   };
+
+  // Promote draft → final: remove any existing SAVE_DRAFT for this stage before
+  // inserting the final record. This ensures exactly one review per stage is stored.
+  mockDB.applicationReviews = mockDB.applicationReviews.filter(
+    r => !(r.applicationId === params.applicationId && r.stage === params.stage && r.isDraft)
+  );
+
   mockDB.applicationReviews.push(review);
 
   // ---- Advance application state ----

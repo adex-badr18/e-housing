@@ -107,11 +107,13 @@ export function ReviewPipeline({
     : null;
 
   // ── Build completed-stage review list ──
+  // Only include non-draft, finalised reviews for stages that have been fully passed.
+  const nonDraftReviews = reviews.filter(r => !r.isDraft);
   const completedReviews = (
     ['HOUSING', 'ESTATE', 'DVC'] as Exclude<ApplicationStage, 'COMPLETED'>[]
   )
-    .filter(s => isStageCompleted(s, currentStage) || (status === 'REJECTED' && reviews.some(r => r.stage === s)))
-    .map(s => reviews.find(r => r.stage === s))
+    .filter(s => isStageCompleted(s, currentStage) || (status === 'REJECTED' && nonDraftReviews.some(r => r.stage === s)))
+    .map(s => nonDraftReviews.find(r => r.stage === s))
     .filter(Boolean) as ApplicationReview[];
 
   // ── Determine access state ──

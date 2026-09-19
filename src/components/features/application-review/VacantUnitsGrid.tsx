@@ -126,6 +126,8 @@ export function VacantUnitsGrid({
   const eligibleUnits = vacantUnits.filter((u) => u.isEligible);
   const otherUnits = vacantUnits.filter((u) => !u.isEligible);
 
+  const selectedUnitData = vacantUnits.find(u => u.unit.id === selectedUnitId);
+
   const handleCardClick = (unitId: string) => {
     if (selectedUnitId === unitId && allowClear) {
       onSelectUnit(null);
@@ -137,11 +139,11 @@ export function VacantUnitsGrid({
   return (
     <div className="space-y-6 max-h-[480px] overflow-y-auto pr-1">
       {/* Optional Clear Selection Button Banner */}
-      {allowClear && selectedUnitId && (
+      {allowClear && selectedUnitId && selectedUnitData && (
         <div className="flex items-center justify-between bg-primary/5 border border-primary/20 p-2.5 rounded-xl text-xs">
           <span className="text-foreground font-medium flex items-center gap-1.5">
             <Home className="h-3.5 w-3.5 text-primary" />
-            Unit selected: <strong className="text-primary">{selectedUnitId}</strong>
+            Unit selected: <strong className="text-primary">{selectedUnitData.unit.name}</strong>
           </span>
           <button
             type="button"

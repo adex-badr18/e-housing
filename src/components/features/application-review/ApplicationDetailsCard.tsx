@@ -23,14 +23,13 @@ import {
   GraduationCap,
   Building2,
   Users,
+  Users2,
   Heart,
   BarChart3,
   Home,
   Clock,
-  Calendar,
   Phone,
   Mail,
-  Briefcase,
   BedDouble,
   Bath,
   Car,
@@ -38,6 +37,8 @@ import {
   Info,
   AlertCircle,
   FileText,
+  MapPin,
+  Hash,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -117,6 +118,10 @@ export interface ApplicationDetailsCardProps {
   applicantProfile: StaffProfile | null;
   preferredTypes: HousingType[];
   allocatedUnit?: HousingUnit | null;
+  secretarySuggestedUnit?: HousingUnit | null;
+  estateSuggestedUnit?: HousingUnit | null;
+  secretarySuggestedType?: HousingType | null;
+  estateSuggestedType?: HousingType | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -129,7 +134,16 @@ export function ApplicationDetailsCard({
   applicantProfile,
   preferredTypes,
   allocatedUnit,
+  secretarySuggestedUnit,
+  estateSuggestedUnit,
+  secretarySuggestedType,
+  estateSuggestedType,
 }: ApplicationDetailsCardProps) {
+  // Are both officers suggesting the same unit?
+  const bothSameUnit =
+    secretarySuggestedUnit &&
+    estateSuggestedUnit &&
+    secretarySuggestedUnit.id === estateSuggestedUnit.id;
   const breakdown = application.pointsBreakdown;
   const yearsOfService = applicantProfile?.employmentDate
     ? computeYearsOfService(applicantProfile.employmentDate)
@@ -450,32 +464,122 @@ export function ApplicationDetailsCard({
         )}
       </div>
 
-      {/* ── Section 5: Allocated Housing Unit ── */}
-      <div className="rounded-2xl border bg-card shadow-sm p-6">
-        <SectionHeader icon={Building2} title="Allocated Housing Unit" />
-        {allocatedUnit ? (
+      {/* ── Section 5: Unit Suggestions ── */}
+      {/* Show only when at least one suggestion exists */}
+      {(secretarySuggestedUnit || estateSuggestedUnit) && (
+        bothSameUnit ? (
+          /* ── Consolidated view: both officers suggested the same unit ── */
+          <div className="rounded-2xl border bg-card shadow-sm p-6">
+            <SectionHeader icon={Users2} title="Housing Unit Suggestion" />
+            <div className="rounded-xl border-2 border-emerald-200 bg-emerald-50/50 p-5 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-emerald-600 text-white">
+                  <CheckCircle2 className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="font-bold text-emerald-800 text-sm">Both Officers Agreed on the Same Unit</p>
+                  <p className="text-xs text-emerald-700 mt-0.5">
+                    The Housing Secretary and Estate Officer both recommended the same unit for this applicant.
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-3">
+                <InfoRow label="Quarter Name" value={secretarySuggestedUnit!.name} />
+                <InfoRow label="House Number" value={secretarySuggestedUnit!.houseNumber ?? '—'} />
+                <InfoRow label="Road Number" value={secretarySuggestedUnit!.roadNumber ?? '—'} />
+                {secretarySuggestedType && (
+                  <InfoRow label="Type" value={secretarySuggestedType.name} />
+                )}
+                {secretarySuggestedType && (
+                  <InfoRow label="Bedrooms" value={`${secretarySuggestedType.numberOfBedrooms} Bedroom${secretarySuggestedType.numberOfBedrooms !== 1 ? 's' : ''}`} />
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2 pt-1">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+                  Housing Secretary
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
+                  Estate Officer
+                </span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* ── Separate view: different suggestions ── */
+          <div className="rounded-2xl border bg-card shadow-sm p-6 space-y-4">
+            <SectionHeader icon={Home} title="Unit Suggestions" />
+
+            {/* Housing Secretary Suggestion */}
+            {secretarySuggestedUnit && (
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+                    Housing Secretary
+                  </span>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Suggested Unit</p>
+                </div>
+                <div className="rounded-xl border-2 border-blue-200 bg-blue-50/50 p-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-3">
+                    <InfoRow label="Quarter Name" value={secretarySuggestedUnit.name} />
+                    <InfoRow label="House Number" value={secretarySuggestedUnit.houseNumber ?? '—'} />
+                    <InfoRow label="Road Number" value={secretarySuggestedUnit.roadNumber ?? '—'} />
+                    {secretarySuggestedType && (
+                      <InfoRow label="Type" value={secretarySuggestedType.name} />
+                    )}
+                    {secretarySuggestedType && (
+                      <InfoRow label="Bedrooms" value={`${secretarySuggestedType.numberOfBedrooms} Bedroom${secretarySuggestedType.numberOfBedrooms !== 1 ? 's' : ''}`} />
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Estate Officer Suggestion */}
+            {estateSuggestedUnit && (
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
+                    Estate Officer
+                  </span>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Selected Unit</p>
+                </div>
+                <div className="rounded-xl border-2 border-purple-200 bg-purple-50/50 p-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-3">
+                    <InfoRow label="Quarter Name" value={estateSuggestedUnit.name} />
+                    <InfoRow label="House Number" value={estateSuggestedUnit.houseNumber ?? '—'} />
+                    <InfoRow label="Road Number" value={estateSuggestedUnit.roadNumber ?? '—'} />
+                    {estateSuggestedType && (
+                      <InfoRow label="Type" value={estateSuggestedType.name} />
+                    )}
+                    {estateSuggestedType && (
+                      <InfoRow label="Bedrooms" value={`${estateSuggestedType.numberOfBedrooms} Bedroom${estateSuggestedType.numberOfBedrooms !== 1 ? 's' : ''}`} />
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      )}
+
+      {/* ── Section 6: Allocated Housing Unit (only shown post-DVC approval) ── */}
+      {allocatedUnit && (
+        <div className="rounded-2xl border bg-card shadow-sm p-6">
+          <SectionHeader icon={Building2} title="Allocated Housing Unit" />
           <div className="rounded-xl border-2 border-emerald-200 bg-emerald-50/50 p-5 space-y-3">
             <div className="flex items-center gap-2">
               <div className="p-2 rounded-lg bg-emerald-600 text-white">
                 <CheckCircle2 className="h-4 w-4" />
               </div>
               <div>
-                <p className="font-bold text-emerald-800 text-sm">Unit Assigned</p>
-                <p className="text-xs text-emerald-700">Proposed by Estate Officer — pending DVC Admin approval</p>
+                <p className="font-bold text-emerald-800 text-sm">Final Unit Allocated by DVC Admin</p>
+                <p className="text-xs text-emerald-700">This is the DVC Admin&apos;s final housing unit selection for this applicant.</p>
               </div>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-3 mt-2">
               <InfoRow label="Quarter Name" value={allocatedUnit.name} />
               <InfoRow label="House Number" value={allocatedUnit.houseNumber ?? '—'} />
               <InfoRow label="Road Number" value={allocatedUnit.roadNumber ?? '—'} />
-              <InfoRow
-                label="Building Type"
-                value={
-                  (() => {
-                    return allocatedUnit.status === 'VACANT' ? 'Vacant' : 'Occupied';
-                  })()
-                }
-              />
               <InfoRow label="Occupancy Status" value={
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                   allocatedUnit.status === 'VACANT'
@@ -485,20 +589,8 @@ export function ApplicationDetailsCard({
               } />
             </div>
           </div>
-        ) : (
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-700">
-            <AlertCircle className="h-5 w-5 shrink-0 mt-0.5 text-slate-400" />
-            <div>
-              <p className="font-semibold text-sm">No Unit Allocated Yet</p>
-              <p className="text-xs mt-1">
-                Housing unit assignment is performed by the <strong>Estate Officer</strong> at{' '}
-                <strong>Stage 2</strong> of the review pipeline, based on availability and the
-                applicant&apos;s evaluation score and housing preferences.
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

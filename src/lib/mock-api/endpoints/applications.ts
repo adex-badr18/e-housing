@@ -733,7 +733,8 @@ export async function requeueApplication(
     ...application,
     status: 'UNDER_REVIEW',
     currentStage: 'DVC',
-    allocatedUnitId,
+    // Store as the EO's suggestion — allocatedUnitId is only set by DVC on final APPROVED decision
+    estateSuggestedUnitId: allocatedUnitId,
     updatedAt: now,
   };
 

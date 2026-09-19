@@ -41,11 +41,13 @@ const formSchema = z.object({
     .max(1000, 'Decision rationale must be under 1000 characters'),
   decision: z.enum(['APPROVED', 'RETURNED', 'SAVE_DRAFT', 'REJECTED']),
   finalAllocatedUnitId: z.string().nullable().optional(),
+  hasTwoOptions: z.boolean().optional(),
 }).superRefine((data, ctx) => {
-  if (data.decision === 'APPROVED' && !data.finalAllocatedUnitId) {
+  // Only mandate explicit selection when there are two distinct unit options
+  if (data.decision === 'APPROVED' && data.hasTwoOptions && !data.finalAllocatedUnitId) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: 'Please select the final housing unit to allocate before approving',
+      message: 'Please select one of the two suggested units before approving',
       path: ['finalAllocatedUnitId'],
     });
   }
@@ -226,24 +228,36 @@ export function DVCAdminPanel({
 }: DVCAdminPanelProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [selectedFinalUnitId, setSelectedFinalUnitId] = useState<string | null>(
-    application.estateSuggestedUnitId ?? application.secretarySuggestedUnitId ?? null
-  );
 
   const score = application.pointsBreakdown?.totalPoints ?? 0;
 
   // Determine suggestion scenario
   const hsUnitId = application.secretarySuggestedUnitId ?? null;
   const eoUnitId = application.estateSuggestedUnitId ?? null;
-  const isSameUnit = hsUnitId && eoUnitId && hsUnitId === eoUnitId;
+  const isSameUnit = !!(hsUnitId && eoUnitId && hsUnitId === eoUnitId);
+  const hasTwoOptions = !!(hsUnitId && eoUnitId && !isSameUnit);
+  // When only one suggestion or both agree, auto-select that unit
+  const autoSelectedUnitId = isSameUnit
+    ? eoUnitId
+    : !hasTwoOptions
+      ? (eoUnitId ?? hsUnitId)
+      : null;
+
+  const [selectedFinalUnitId, setSelectedFinalUnitId] = useState<string | null>(autoSelectedUnitId);
+
   const inspectionData: InspectionData | null = application.inspectionData ?? null;
+
+  // Lookup readable unit names
+  const hsUnit = hsUnitId ? mockDB.findUnitById(hsUnitId) : null;
+  const eoUnit = eoUnitId ? mockDB.findUnitById(eoUnitId) : null;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       comments: '',
       decision: 'APPROVED',
-      finalAllocatedUnitId: selectedFinalUnitId,
+      finalAllocatedUnitId: autoSelectedUnitId,
+      hasTwoOptions,
     },
   });
 
@@ -356,8 +370,8 @@ export function DVCAdminPanel({
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {isSameUnit
-                  ? `Housing Secretary and Estate Officer both proposed ${hsUnitId}. One inspection report is available below.`
-                  : `Housing Secretary suggested ${hsUnitId ?? 'no unit'}, Estate Officer selected ${eoUnitId ?? 'no unit'}. Inspection reports for both units are shown below. Select your preferred unit.`
+                  ? `Housing Secretary and Estate Officer both proposed ${hsUnit?.name ?? hsUnitId}. This unit has been automatically selected for allocation.`
+                  : `Housing Secretary suggested ${hsUnit?.name ?? hsUnitId ?? 'no unit'}, Estate Officer selected ${eoUnit?.name ?? eoUnitId ?? 'no unit'}. Inspection reports for both units are shown below. You must select your preferred unit before approving.`
                 }
               </p>
             </div>
@@ -409,95 +423,130 @@ export function DVCAdminPanel({
             <div>
               <h3 className="text-sm font-semibold flex items-center gap-2">
                 <Home className="h-4 w-4 text-primary" />
-                Select Final Housing Unit to Allocate
+                {hasTwoOptions ? 'Select Final Housing Unit to Allocate' : 'Final Housing Unit'}
               </h3>
               <p className="text-xs text-muted-foreground mt-1">
-                Based on the inspection scores above, select which unit should be allocated to the applicant. This is required before approving.
+                {hasTwoOptions
+                  ? 'Based on the inspection scores above, select which unit should be allocated to the applicant. This is required before approving.'
+                  : 'The unit below has been automatically selected based on the reviewers\' agreement.'}
               </p>
             </div>
 
-            <div className="flex flex-col gap-2">
-              {/* HS suggestion option */}
-              {hsUnitId && (() => {
-                const unit = mockDB.findUnitById(hsUnitId);
-                const ht = unit ? mockDB.housingTypes.find(h => h.id === unit.housingTypeId) : null;
-                const isSelected = watched.finalAllocatedUnitId === hsUnitId;
-                return (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedFinalUnitId(hsUnitId);
-                      form.setValue('finalAllocatedUnitId', hsUnitId, { shouldValidate: true });
-                    }}
-                    className={cn(
-                      'w-full text-left p-4 rounded-xl border-2 transition-all flex items-center justify-between gap-3',
-                      isSelected
-                        ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30'
-                        : 'border-border hover:border-primary/40 hover:bg-primary/[0.02]'
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={cn('p-2 rounded-lg', isSelected ? 'bg-emerald-100' : 'bg-muted')}>
-                        <Building2 className={cn('h-4 w-4', isSelected ? 'text-emerald-600' : 'text-muted-foreground')} />
+            {hasTwoOptions ? (
+              <div className="flex flex-col gap-2">
+                {/* HS suggestion option */}
+                {hsUnitId && (() => {
+                  const unit = mockDB.findUnitById(hsUnitId);
+                  const ht = unit ? mockDB.housingTypes.find(h => h.id === unit.housingTypeId) : null;
+                  const isSelected = watched.finalAllocatedUnitId === hsUnitId;
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedFinalUnitId(hsUnitId);
+                        form.setValue('finalAllocatedUnitId', hsUnitId, { shouldValidate: true });
+                      }}
+                      className={cn(
+                        'w-full text-left p-4 rounded-xl border-2 transition-all flex items-center justify-between gap-3',
+                        isSelected
+                          ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30'
+                          : 'border-border hover:border-primary/40 hover:bg-primary/[0.02]'
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={cn('p-2 rounded-lg', isSelected ? 'bg-emerald-100' : 'bg-muted')}>
+                          <Building2 className={cn('h-4 w-4', isSelected ? 'text-emerald-600' : 'text-muted-foreground')} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold">{unit?.name ?? hsUnitId}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {ht?.name}{ht ? ` · ${ht.numberOfBedrooms} bed` : ''}
+                            {unit?.roadNumber ? ` · Road ${unit.roadNumber}` : ''}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-semibold">{unit?.name ?? hsUnitId}</p>
-                        <p className="text-xs text-muted-foreground">{ht?.name} · {ht?.numberOfBedrooms} bed</p>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+                          HS Suggested
+                        </span>
+                        {isSelected && <CheckCircle2 className="h-5 w-5 text-emerald-600" />}
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
-                        HS Suggested
-                      </span>
-                      {isSameUnit && (
+                    </button>
+                  );
+                })()}
+
+                {/* EO selection option (only shown if different from HS) */}
+                {eoUnitId && (() => {
+                  const unit = mockDB.findUnitById(eoUnitId);
+                  const ht = unit ? mockDB.housingTypes.find(h => h.id === unit.housingTypeId) : null;
+                  const isSelected = watched.finalAllocatedUnitId === eoUnitId;
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedFinalUnitId(eoUnitId);
+                        form.setValue('finalAllocatedUnitId', eoUnitId, { shouldValidate: true });
+                      }}
+                      className={cn(
+                        'w-full text-left p-4 rounded-xl border-2 transition-all flex items-center justify-between gap-3',
+                        isSelected
+                          ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30'
+                          : 'border-border hover:border-primary/40 hover:bg-primary/[0.02]'
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={cn('p-2 rounded-lg', isSelected ? 'bg-emerald-100' : 'bg-muted')}>
+                          <Building2 className={cn('h-4 w-4', isSelected ? 'text-emerald-600' : 'text-muted-foreground')} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold">{unit?.name ?? eoUnitId}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {ht?.name}{ht ? ` · ${ht.numberOfBedrooms} bed` : ''}
+                            {unit?.roadNumber ? ` · Road ${unit.roadNumber}` : ''}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
                           EO Selected
                         </span>
-                      )}
-                      {isSelected && <CheckCircle2 className="h-5 w-5 text-emerald-600" />}
-                    </div>
-                  </button>
-                );
-              })()}
-
-              {/* EO selection option (only shown if different from HS) */}
-              {!isSameUnit && eoUnitId && (() => {
-                const unit = mockDB.findUnitById(eoUnitId);
+                        {isSelected && <CheckCircle2 className="h-5 w-5 text-emerald-600" />}
+                      </div>
+                    </button>
+                  );
+                })()}
+              </div>
+            ) : (
+              /* Single auto-selected unit display */
+              autoSelectedUnitId && (() => {
+                const unit = mockDB.findUnitById(autoSelectedUnitId);
                 const ht = unit ? mockDB.housingTypes.find(h => h.id === unit.housingTypeId) : null;
-                const isSelected = watched.finalAllocatedUnitId === eoUnitId;
                 return (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedFinalUnitId(eoUnitId);
-                      form.setValue('finalAllocatedUnitId', eoUnitId, { shouldValidate: true });
-                    }}
-                    className={cn(
-                      'w-full text-left p-4 rounded-xl border-2 transition-all flex items-center justify-between gap-3',
-                      isSelected
-                        ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30'
-                        : 'border-border hover:border-primary/40 hover:bg-primary/[0.02]'
-                    )}
-                  >
+                  <div className="flex items-center justify-between gap-3 p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30">
                     <div className="flex items-center gap-3">
-                      <div className={cn('p-2 rounded-lg', isSelected ? 'bg-emerald-100' : 'bg-muted')}>
-                        <Building2 className={cn('h-4 w-4', isSelected ? 'text-emerald-600' : 'text-muted-foreground')} />
+                      <div className="p-2 rounded-lg bg-emerald-100">
+                        <Building2 className="h-4 w-4 text-emerald-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold">{unit?.name ?? eoUnitId}</p>
-                        <p className="text-xs text-muted-foreground">{ht?.name} · {ht?.numberOfBedrooms} bed</p>
+                        <p className="text-sm font-semibold">{unit?.name ?? autoSelectedUnitId}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {ht?.name}{ht ? ` · ${ht.numberOfBedrooms} bed` : ''}
+                          {unit?.roadNumber ? ` · Road ${unit.roadNumber}` : ''}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
-                        EO Selected
-                      </span>
-                      {isSelected && <CheckCircle2 className="h-5 w-5 text-emerald-600" />}
+                      {isSameUnit && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                          Both Agreed
+                        </span>
+                      )}
+                      <CheckCircle2 className="h-5 w-5 text-emerald-600" />
                     </div>
-                  </button>
+                  </div>
                 );
-              })()}
-            </div>
+              })()
+            )}
 
             {form.formState.errors.finalAllocatedUnitId && (
               <p className="text-xs text-destructive flex items-center gap-1.5">

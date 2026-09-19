@@ -87,8 +87,23 @@ export function ReviewPipeline({
     .map(id => mockDB.housingTypes.find(ht => ht.id === id))
     .filter((ht): ht is NonNullable<typeof ht> => ht != null);
 
-  const allocatedUnit = application.allocatedUnitId
+  // Only show the final allocated unit once the DVC has approved the application
+  const allocatedUnit = application.status === 'APPROVED' && application.allocatedUnitId
     ? mockDB.housingUnits.find(u => u.id === application.allocatedUnitId) ?? null
+    : null;
+
+  const secretarySuggestedUnit = application.secretarySuggestedUnitId
+    ? mockDB.housingUnits.find(u => u.id === application.secretarySuggestedUnitId) ?? null
+    : null;
+  const secretarySuggestedType = secretarySuggestedUnit
+    ? mockDB.housingTypes.find(ht => ht.id === secretarySuggestedUnit.housingTypeId) ?? null
+    : null;
+
+  const estateSuggestedUnit = application.estateSuggestedUnitId
+    ? mockDB.housingUnits.find(u => u.id === application.estateSuggestedUnitId) ?? null
+    : null;
+  const estateSuggestedType = estateSuggestedUnit
+    ? mockDB.housingTypes.find(ht => ht.id === estateSuggestedUnit.housingTypeId) ?? null
     : null;
 
   // ── Build completed-stage review list ──
@@ -179,6 +194,10 @@ export function ReviewPipeline({
         applicantProfile={applicantProfile}
         preferredTypes={preferredTypes}
         allocatedUnit={allocatedUnit}
+        secretarySuggestedUnit={secretarySuggestedUnit}
+        secretarySuggestedType={secretarySuggestedType ?? undefined}
+        estateSuggestedUnit={estateSuggestedUnit}
+        estateSuggestedType={estateSuggestedType ?? undefined}
       />
 
       {/* Terminal state banners */}

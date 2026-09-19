@@ -2673,6 +2673,15 @@ for (const app of initialHousingApplications) {
   }
 }
 
+// Correction pass: strip allocatedUnitId from any application that was not APPROVED.
+// This guards against stale values written by old code paths (e.g., the previous
+// requeueApplication which wrote allocatedUnitId prematurely before DVC approval).
+for (const app of mockDB.housingApplications) {
+  if (app.status !== 'APPROVED' && app.allocatedUnitId) {
+    app.allocatedUnitId = null;
+  }
+}
+
 // Sync missing reviews into hot-reloaded singleton
 for (const rev of initialApplicationReviews) {
   if (!mockDB.applicationReviews.some(r => r.id === rev.id)) {

@@ -4,8 +4,13 @@
 // EstateOfficerPanel — Stage 2 Physical Inspection + Unit Allocation
 // =============================================================================
 // Estate Officer can:
-//   1. Run a physical inspection (PASS / FAIL / NA per metric)
-//   2. Select a vacant housing unit to pre-allocate for the applicant
+//   1. Select a vacant housing unit to suggest for the applicant
+//      (the unit picker now appears FIRST so the officer confirms/chooses a unit
+//       before filling out inspection metrics)
+//   2. Run a physical inspection (PASS / FAIL / NA per metric) for each suggested unit.
+//      - If the EO accepts the HS suggestion, only one inspection form is shown.
+//      - If the EO picks a different unit, a tabbed interface allows the officer
+//        to rate BOTH units independently.
 //   3. Forward to DVC Admin (requires unit selection) OR
 //      Place application in Queue (no unit selected yet) OR
 //      Reject the application
@@ -17,13 +22,13 @@
 import { useState, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod';
 import { toast } from 'sonner';
 import {
   Building2, Loader2, ChevronRight, XCircle,
   Clock, Home, CheckCircle2, AlertCircle, RefreshCw,
-  Star,
+  Star, BedDouble, MapPin, Hash,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -159,8 +164,104 @@ function MetricRow({
 }
 
 // ---------------------------------------------------------------------------
-// Unit Card — for the unit picker
+// Unit Detail Pill — compact readable info strip for a unit
+// ---------------------------------------------------------------------------
 
+function UnitDetailStrip({ unit, housingType }: { unit: VacantUnitData['unit']; housingType: VacantUnitData['housingType'] }) {
+  return (
+    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+      <span className="flex items-center gap-1 font-semibold text-foreground">
+        <Home className="h-3.5 w-3.5 text-primary" />
+        {unit.name}
+      </span>
+      {housingType && (
+        <span className="flex items-center gap-1">
+          <Building2 className="h-3.5 w-3.5" />
+          {housingType.name}
+        </span>
+      )}
+      {housingType && (
+        <span className="flex items-center gap-1">
+          <BedDouble className="h-3.5 w-3.5" />
+          {housingType.numberOfBedrooms} Bed
+        </span>
+      )}
+      {unit.roadNumber && (
+        <span className="flex items-center gap-1">
+          <MapPin className="h-3.5 w-3.5" />
+          Road {unit.roadNumber}
+        </span>
+      )}
+      {unit.houseNumber && (
+        <span className="flex items-center gap-1">
+          <Hash className="h-3.5 w-3.5" />
+          {unit.houseNumber}
+        </span>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Inspection Panel — metric cards + per-unit summary counts
+// ---------------------------------------------------------------------------
+
+function InspectionPanel({
+  unitRatings,
+  onRatingChange,
+}: {
+  unitRatings: Record<string, InspectionRating>;
+  onRatingChange: (metricId: string, v: InspectionRating) => void;
+}) {
+  const categories = [...new Set(INSPECTION_METRICS.map(m => m.category))];
+  const goodCount = Object.values(unitRatings).filter(v => v === 'GOOD').length;
+  const fairCount = Object.values(unitRatings).filter(v => v === 'FAIR').length;
+  const badCount  = Object.values(unitRatings).filter(v => v === 'BAD').length;
+  const rated     = Object.values(unitRatings).filter(v => v !== null).length;
+
+  return (
+    <div className="space-y-4">
+      {/* Summary row */}
+      <div className="flex gap-3 text-sm">
+        <div className="flex-1 rounded-lg border bg-emerald-50 border-emerald-200 px-3 py-2 text-center">
+          <p className="text-2xl font-bold text-emerald-600">{goodCount}</p>
+          <p className="text-xs text-emerald-700">Good</p>
+        </div>
+        <div className="flex-1 rounded-lg border bg-amber-50 border-amber-200 px-3 py-2 text-center">
+          <p className="text-2xl font-bold text-amber-600">{fairCount}</p>
+          <p className="text-xs text-amber-700">Fair</p>
+        </div>
+        <div className="flex-1 rounded-lg border bg-red-50 border-red-200 px-3 py-2 text-center">
+          <p className="text-2xl font-bold text-red-500">{badCount}</p>
+          <p className="text-xs text-red-700">Bad</p>
+        </div>
+        <div className="flex-1 rounded-lg border bg-muted px-3 py-2 text-center">
+          <p className="text-2xl font-bold text-muted-foreground">{INSPECTION_METRICS.length - rated}</p>
+          <p className="text-xs text-muted-foreground">Pending</p>
+        </div>
+      </div>
+
+      {/* Metrics by category */}
+      {categories.map(cat => (
+        <div key={cat} className="rounded-xl border bg-card overflow-hidden">
+          <div className="px-4 py-2.5 bg-muted/40 border-b">
+            <h4 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{cat}</h4>
+          </div>
+          <div className="p-3 space-y-2">
+            {INSPECTION_METRICS.filter(m => m.category === cat).map(metric => (
+              <MetricRow
+                key={metric.id}
+                metric={metric}
+                value={unitRatings[metric.id]}
+                onChange={v => onRatingChange(metric.id, v)}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Re-queue Panel — shown when application is already QUEUED
@@ -274,17 +375,22 @@ function RequeuePanel({
 
 export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOfficerPanelProps) {
   const router = useRouter();
-  const [ratings, setRatings] = useState<Record<string, InspectionRating>>(
-    () => Object.fromEntries(INSPECTION_METRICS.map(m => [m.id, null]))
-  );
+
+  // Per-unit ratings: { [unitId]: { [metricId]: InspectionRating } }
+  const initRatingsForUnit = () => Object.fromEntries(INSPECTION_METRICS.map(m => [m.id, null as InspectionRating]));
+  const [ratings, setRatings] = useState<Record<string, Record<string, InspectionRating>>>({});
+
   const [isPending, startTransition] = useTransition();
   const [vacantUnits, setVacantUnits] = useState<VacantUnitData[]>([]);
   const [loadingUnits, setLoadingUnits] = useState(true);
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(
     application.estateSuggestedUnitId ?? null
   );
+  // Active tab for inspection (when two units): 'HS' | 'EO'
+  const [activeInspectionTab, setActiveInspectionTab] = useState<'HS' | 'EO'>('HS');
 
   const isQueued = application.status === 'QUEUED';
+  const hsUnitId = application.secretarySuggestedUnitId ?? null;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -305,6 +411,22 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
       if (cancelled) return;
       if (res.success) {
         setVacantUnits(res.data);
+        // Initialise per-unit ratings for HS suggestion if present
+        const hsId = application.secretarySuggestedUnitId;
+        if (hsId) {
+          setRatings(prev => ({
+            ...prev,
+            [hsId]: prev[hsId] ?? initRatingsForUnit(),
+          }));
+        }
+        // Also initialise for EO unit if already set
+        const eoId = application.estateSuggestedUnitId;
+        if (eoId && eoId !== hsId) {
+          setRatings(prev => ({
+            ...prev,
+            [eoId]: prev[eoId] ?? initRatingsForUnit(),
+          }));
+        }
       } else {
         toast.error(res.error ?? 'Could not load vacant units');
       }
@@ -313,27 +435,60 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
     return () => { cancelled = true; };
   }, [application.id]);
 
-  function setRating(id: string, v: InspectionRating) {
-    setRatings(prev => ({ ...prev, [id]: v }));
+  // When selectedUnitId changes, ensure ratings are initialised for that unit
+  useEffect(() => {
+    if (!selectedUnitId) return;
+    setRatings(prev => ({
+      ...prev,
+      [selectedUnitId]: prev[selectedUnitId] ?? initRatingsForUnit(),
+    }));
+  }, [selectedUnitId]);
+
+  function setRating(unitId: string, metricId: string, v: InspectionRating) {
+    setRatings(prev => ({
+      ...prev,
+      [unitId]: { ...(prev[unitId] ?? initRatingsForUnit()), [metricId]: v },
+    }));
   }
 
-  const categories = [...new Set(INSPECTION_METRICS.map(m => m.category))];
-  const rated     = Object.values(ratings).filter(v => v !== null).length;
-  const goodCount = Object.values(ratings).filter(v => v === 'GOOD').length;
-  const fairCount = Object.values(ratings).filter(v => v === 'FAIR').length;
-  const badCount  = Object.values(ratings).filter(v => v === 'BAD').length;
-  const allRated  = rated === INSPECTION_METRICS.length;
+  // Derived state for inspection tab logic
+  const isSameUnit = selectedUnitId && hsUnitId && selectedUnitId === hsUnitId;
+  const showTwoTabs = !isSameUnit && !!hsUnitId && !!selectedUnitId;
+
+  // Current unit being inspected in the active tab
+  const activeUnitId = showTwoTabs
+    ? (activeInspectionTab === 'HS' ? hsUnitId : selectedUnitId)
+    : (selectedUnitId ?? hsUnitId);
+
+  const activeUnitData = activeUnitId ? vacantUnits.find(v => v.unit.id === activeUnitId) : null;
+  const activeUnitRatings = activeUnitId ? (ratings[activeUnitId] ?? initRatingsForUnit()) : initRatingsForUnit();
+
+  // Are ALL metrics for ALL relevant units rated?
+  const unitIdsToInspect = showTwoTabs
+    ? [hsUnitId!, selectedUnitId!]
+    : activeUnitId ? [activeUnitId] : [];
+  const allRated = unitIdsToInspect.every(uid => {
+    const r = ratings[uid] ?? {};
+    return INSPECTION_METRICS.every(m => r[m.id] !== null && r[m.id] !== undefined);
+  });
+
+  const badCount = Object.values(activeUnitRatings).filter(v => v === 'BAD').length;
 
   function onSubmit(values: FormValues) {
     startTransition(async () => {
       // Build inspectionData keyed by unitId
       const inspectionDataPayload: Record<string, Record<string, string>> = {};
-      const unitId = values.estateSuggestedUnitId || null;
-      if (unitId) {
-        inspectionDataPayload[unitId] = Object.fromEntries(
-          Object.entries(ratings).filter(([, v]) => v !== null)
-        ) as Record<string, string>;
-      }
+      unitIdsToInspect.forEach(uid => {
+        const unitRatings = ratings[uid];
+        if (unitRatings) {
+          const filtered = Object.fromEntries(
+            Object.entries(unitRatings).filter(([, v]) => v !== null)
+          ) as Record<string, string>;
+          if (Object.keys(filtered).length > 0) {
+            inspectionDataPayload[uid] = filtered;
+          }
+        }
+      });
 
       const res = await reviewApplicationAction({
         applicationId:    application.id,
@@ -341,7 +496,7 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
         decision:         values.decision,
         comments:         values.comments,
         estateSuggestedUnitId: values.estateSuggestedUnitId || null,
-        inspectionData:   unitId && Object.keys(inspectionDataPayload).length > 0 ? inspectionDataPayload : null,
+        inspectionData:   Object.keys(inspectionDataPayload).length > 0 ? inspectionDataPayload : null,
         isDraft:          values.decision === 'SAVE_DRAFT',
       });
 
@@ -422,37 +577,6 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
           </p>
         </div>
       )}
-      {/* Housing Secretary Suggestion Banner */}
-      {application.secretarySuggestedUnitId && (
-        <div className="flex items-start gap-3 p-4 rounded-xl border border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800">
-          <Home className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">
-              Housing Secretary&apos;s Unit Suggestion
-            </p>
-            <p className="text-xs text-blue-700 dark:text-blue-400 mt-0.5">
-              The Housing Secretary suggested <strong>{application.secretarySuggestedUnitId}</strong> for this applicant.
-              You may accept this suggestion by selecting the same unit below, or pick a different one.
-              If you choose a different unit, both will be inspected and the DVC will make the final decision.
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                const suggested = vacantUnits.find(v => v.unit.id === application.secretarySuggestedUnitId);
-                if (suggested) {
-                  setSelectedUnitId(application.secretarySuggestedUnitId!);
-                  form.setValue('estateSuggestedUnitId', application.secretarySuggestedUnitId!, { shouldValidate: true });
-                } else {
-                  toast.info('The suggested unit is no longer vacant. Please select an alternative.');
-                }
-              }}
-              className="mt-2 text-xs font-semibold text-blue-700 underline underline-offset-2 hover:text-blue-900 transition"
-            >
-              Accept suggestion
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Score from Stage 1 */}
       {pointsBreakdown && (
@@ -470,66 +594,67 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
         </div>
       )}
 
-      {/* Progress summary */}
-      <div className="flex gap-3 text-sm">
-        <div className="flex-1 rounded-lg border bg-emerald-50 border-emerald-200 px-3 py-2 text-center">
-          <p className="text-2xl font-bold text-emerald-600">{goodCount}</p>
-          <p className="text-xs text-emerald-700">Good</p>
-        </div>
-        <div className="flex-1 rounded-lg border bg-amber-50 border-amber-200 px-3 py-2 text-center">
-          <p className="text-2xl font-bold text-amber-600">{fairCount}</p>
-          <p className="text-xs text-amber-700">Fair</p>
-        </div>
-        <div className="flex-1 rounded-lg border bg-red-50 border-red-200 px-3 py-2 text-center">
-          <p className="text-2xl font-bold text-red-500">{badCount}</p>
-          <p className="text-xs text-red-700">Bad</p>
-        </div>
-        <div className="flex-1 rounded-lg border bg-muted px-3 py-2 text-center">
-          <p className="text-2xl font-bold text-muted-foreground">{INSPECTION_METRICS.length - rated}</p>
-          <p className="text-xs text-muted-foreground">Pending</p>
-        </div>
-      </div>
-
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-        {/* Inspection metrics by category */}
-        {categories.map(cat => (
-          <div key={cat} className="rounded-xl border bg-card overflow-hidden">
-            <div className="px-4 py-2.5 bg-muted/40 border-b">
-              <h4 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{cat}</h4>
+      {/* Housing Secretary Suggestion Banner */}
+      {hsUnitId && (() => {
+        const hsUnitData = vacantUnits.find(v => v.unit.id === hsUnitId);
+        const hsUnit = hsUnitData?.unit;
+        const hsType = hsUnitData?.housingType;
+        return (
+          <div className="rounded-xl border border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800 overflow-hidden">
+            <div className="px-4 py-3 bg-blue-100/60 dark:bg-blue-900/40 border-b border-blue-200 dark:border-blue-800 flex items-center gap-2">
+              <Home className="h-4 w-4 text-blue-600 shrink-0" />
+              <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">
+                Housing Secretary&apos;s Unit Suggestion
+              </p>
             </div>
-            <div className="p-3 space-y-2">
-              {INSPECTION_METRICS.filter(m => m.category === cat).map(metric => (
-                <MetricRow
-                  key={metric.id}
-                  metric={metric}
-                  value={ratings[metric.id]}
-                  onChange={v => setRating(metric.id, v)}
-                />
-              ))}
+            <div className="p-4 space-y-3">
+              {hsUnit ? (
+                <UnitDetailStrip unit={hsUnit} housingType={hsType ?? null} />
+              ) : (
+                <p className="text-xs text-blue-700 dark:text-blue-400">Loading unit details…</p>
+              )}
+              <p className="text-xs text-blue-700 dark:text-blue-400">
+                You may accept this suggestion or select a different unit below. If you pick a different unit, you will be required to record Physical Inspection scores for both units.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  if (hsUnitData) {
+                    setSelectedUnitId(hsUnitId);
+                    form.setValue('estateSuggestedUnitId', hsUnitId, { shouldValidate: true });
+                    setActiveInspectionTab('HS');
+                  } else {
+                    toast.info('The suggested unit is no longer vacant. Please select an alternative.');
+                  }
+                }}
+                className="mt-1 text-xs font-semibold text-blue-700 underline underline-offset-2 hover:text-blue-900 transition"
+              >
+                Accept this suggestion
+              </button>
             </div>
           </div>
-        ))}
+        );
+      })()}
 
-        {/* Warning if bad ratings */}
-        {badCount > 0 && watched.decision === 'FORWARDED' && (
-          <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm">
-            <XCircle className="h-4 w-4 shrink-0 mt-0.5" />
-            <p>{badCount} metric(s) marked as BAD. Consider rejecting or explain in field notes before forwarding.</p>
-          </div>
-        )}
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 
-        {/* ── Unit Allocation Section ── */}
+        {/* ── STEP 1: Housing Unit Allocation ── */}
         <div className="rounded-xl border bg-card overflow-hidden">
           <div className="px-4 py-3 bg-muted/40 border-b flex items-center justify-between">
-            <h3 className="text-sm font-semibold flex items-center gap-2">
-              <Home className="h-4 w-4 text-primary" />
-              Housing Unit Allocation
-            </h3>
+            <div>
+              <h3 className="text-sm font-semibold flex items-center gap-2">
+                <Home className="h-4 w-4 text-primary" />
+                Step 1 — Select Housing Unit
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Choose the unit you wish to allocate (or accept the Housing Secretary&apos;s suggestion above).
+              </p>
+            </div>
             {loadingUnits && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
           </div>
           <div className="p-4 space-y-3">
             <p className="text-xs text-muted-foreground">
-              All vacant units are listed below. <span className="font-medium text-emerald-700">Eligible units</span> match both the applicant&apos;s housing preferences and staff category. Non-eligible units are shown for reference and can be selected if the officer determines it is appropriate.
+              All vacant units are listed below. <span className="font-medium text-emerald-700">Eligible units</span> match both the applicant&apos;s housing preferences and staff category. Non-eligible units are shown for reference and can be selected if appropriate.
             </p>
 
             {!loadingUnits && vacantUnits.length === 0 && (
@@ -551,6 +676,8 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
                 onSelectUnit={(id) => {
                   setSelectedUnitId(id);
                   form.setValue('estateSuggestedUnitId', id, { shouldValidate: true });
+                  // Reset tab to HS when a new unit is selected
+                  setActiveInspectionTab('HS');
                 }}
                 allowClear
               />
@@ -563,17 +690,152 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
               </p>
             )}
 
-            {/* Selected unit confirmation */}
-            {selectedUnitId && (
-              <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
-                <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-                <span>
-                  <strong>{vacantUnits.find(v => v.unit.id === selectedUnitId)?.unit.name}</strong> selected for allocation
-                </span>
+            {/* Selection confirmation */}
+            {selectedUnitId && (() => {
+              const selData = vacantUnits.find(v => v.unit.id === selectedUnitId);
+              if (!selData) return null;
+              const same = hsUnitId && selectedUnitId === hsUnitId;
+              return (
+                <div className={cn(
+                  'flex items-center gap-2 text-xs rounded-lg px-3 py-2 border',
+                  same
+                    ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                    : 'text-primary bg-primary/5 border-primary/20'
+                )}>
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                  <span>
+                    <strong>{selData.unit.name}</strong> selected
+                    {same && <span className="ml-1 font-normal">(matches Housing Secretary&apos;s suggestion)</span>}
+                    {!same && hsUnitId && (
+                      <span className="ml-1 font-normal text-amber-600">
+                        — differs from Housing Secretary&apos;s suggestion. You will need to inspect both units below.
+                      </span>
+                    )}
+                  </span>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+
+        {/* ── STEP 2: Physical Inspection ── */}
+        {(selectedUnitId || hsUnitId) && (
+          <div className="rounded-xl border bg-card overflow-hidden">
+            <div className="px-4 py-3 bg-muted/40 border-b">
+              <h3 className="text-sm font-semibold">Step 2 — Physical Inspection</h3>
+              {showTwoTabs ? (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Two units have been identified. Record inspection scores for both using the tabs below.
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Record the physical inspection score for the selected unit.
+                </p>
+              )}
+            </div>
+
+            {showTwoTabs ? (
+              <div>
+                {/* Tab headers */}
+                <div className="flex border-b bg-muted/20">
+                  {([
+                    { key: 'HS' as const, unitId: hsUnitId!, label: 'HS Suggestion', badge: 'Housing Secretary', badgeColor: 'bg-blue-100 text-blue-800' },
+                    { key: 'EO' as const, unitId: selectedUnitId!, label: 'Your Selection', badge: 'Estate Officer', badgeColor: 'bg-purple-100 text-purple-800' },
+                  ]).map(tab => {
+                    const tabData = vacantUnits.find(v => v.unit.id === tab.unitId);
+                    const isActive = activeInspectionTab === tab.key;
+                    const tabRatings = ratings[tab.unitId] ?? {};
+                    const tabRated = Object.values(tabRatings).filter(v => v !== null).length;
+                    const tabComplete = tabRated === INSPECTION_METRICS.length;
+                    return (
+                      <button
+                        key={tab.key}
+                        type="button"
+                        onClick={() => setActiveInspectionTab(tab.key)}
+                        className={cn(
+                          'flex-1 text-left px-4 py-3 transition-all border-b-2',
+                          isActive
+                            ? 'border-primary bg-background'
+                            : 'border-transparent hover:bg-muted/40'
+                        )}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded-full', tab.badgeColor)}>
+                                {tab.badge}
+                              </span>
+                              {tabComplete && (
+                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                              )}
+                            </div>
+                            <p className="text-sm font-semibold truncate">{tabData?.unit.name ?? tab.unitId}</p>
+                            {tabData && (
+                              <p className="text-xs text-muted-foreground truncate">
+                                {tabData.housingType?.name}
+                                {tabData.unit.roadNumber ? ` · Road ${tabData.unit.roadNumber}` : ''}
+                              </p>
+                            )}
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-xs text-muted-foreground">{tabRated}/{INSPECTION_METRICS.length}</p>
+                            <p className="text-[10px] text-muted-foreground">rated</p>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Active tab unit details strip */}
+                {activeUnitData && (
+                  <div className="px-4 py-2.5 bg-muted/10 border-b">
+                    <UnitDetailStrip unit={activeUnitData.unit} housingType={activeUnitData.housingType} />
+                  </div>
+                )}
+
+                {/* Inspection panel for active tab */}
+                <div className="p-4">
+                  <InspectionPanel
+                    unitRatings={activeUnitRatings}
+                    onRatingChange={(metricId, v) => setRating(activeUnitId!, metricId, v)}
+                  />
+                </div>
+              </div>
+            ) : (
+              /* Single unit inspection */
+              <div>
+                {activeUnitData && (
+                  <div className="px-4 py-2.5 bg-muted/10 border-b">
+                    {isSameUnit && hsUnitId && (
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                        <span className="text-xs font-semibold text-emerald-700">
+                          Both you and the Housing Secretary suggested this unit
+                        </span>
+                      </div>
+                    )}
+                    <UnitDetailStrip unit={activeUnitData.unit} housingType={activeUnitData.housingType} />
+                  </div>
+                )}
+                <div className="p-4">
+                  <InspectionPanel
+                    unitRatings={activeUnitRatings}
+                    onRatingChange={(metricId, v) => setRating(activeUnitId!, metricId, v)}
+                  />
+                </div>
               </div>
             )}
           </div>
-        </div>
+        )}
+
+        {/* Warning if bad ratings */}
+        {badCount > 0 && watched.decision === 'FORWARDED' && (
+          <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+            <XCircle className="h-4 w-4 shrink-0 mt-0.5" />
+            <p>{badCount} metric(s) marked as BAD. Consider rejecting or explain in field notes before forwarding.</p>
+          </div>
+        )}
 
         {/* Field notes */}
         <div className="space-y-2">
@@ -686,9 +948,10 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
           {watched.decision === 'REJECTED'  && 'Submit Rejection'}
         </button>
 
-        {!allRated && (
+        {!allRated && watched.decision === 'FORWARDED' && (
           <p className="text-xs text-center text-amber-600">
-            Rate all {INSPECTION_METRICS.length} inspection metrics to proceed
+            Rate all {INSPECTION_METRICS.length} inspection metrics
+            {showTwoTabs ? ' for both units' : ''} to proceed
           </p>
         )}
       </form>

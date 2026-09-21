@@ -459,6 +459,9 @@ export async function getMyPendingAllocationAction() {
 
 // ---------------------------------------------------------------------------
 // Staff: Get active tenancy agreement
+// Supports two phases:
+//   - OFFER_ACCEPTED: agreement was created pending finalization (no occupancy yet)
+//   - Post-FINALIZED: occupancy record exists
 // ---------------------------------------------------------------------------
 
 export async function getMyTenancyAgreementAction() {
@@ -466,20 +469,60 @@ export async function getMyTenancyAgreementAction() {
   if (!session?.user) return { success: false as const, error: 'Unauthorized' };
 
   try {
+    // Phase A: check if there's an active occupancy (FINALIZED path)
     const occupancy = mockDB.findActiveOccupancyByUserId(session.user.id) ?? null;
-    if (!occupancy) return { success: true as const, data: null };
 
-    const agreement = mockDB.tenancyAgreements.find(t => t.occupancyId === occupancy.id) ?? null;
-    const unit = mockDB.findUnitById(occupancy.housingUnitId) ?? null;
-    const housingType = unit
-      ? (mockDB.housingTypes.find(ht => ht.id === unit.housingTypeId) ?? null)
+    // Phase B: check for OFFER_ACCEPTED application (pre-finalization)
+    const offerAcceptedApp = !occupancy
+      ? mockDB.housingApplications.find(
+          a => a.userId === session.user.id && a.status === 'OFFER_ACCEPTED'
+        ) ?? null
+      : null;
+
+    // Neither an occupancy nor an OFFER_ACCEPTED application — no tenancy data
+    if (!occupancy && !offerAcceptedApp) {
+      return { success: true as const, data: null };
+    }
+
+    let agreement = null;
+    let unit = null;
+    let housingType = null;
+
+    if (occupancy) {
+      // Post-finalization: pull from real occupancy
+      agreement = mockDB.tenancyAgreements.find(t => t.occupancyId === occupancy.id) ?? null;
+      unit = mockDB.findUnitById(occupancy.housingUnitId) ?? null;
+    } else if (offerAcceptedApp) {
+      // Pre-finalization: pull from the accepted allocation's pending agreement
+      const acceptedAlloc = mockDB.allocations.find(
+        a => a.applicationId === offerAcceptedApp.id && a.status === 'ACCEPTED'
+      ) ?? null;
+      if (acceptedAlloc) {
+        agreement = mockDB.tenancyAgreements.find(
+          t => t.occupancyId === `pending-${acceptedAlloc.id}`
+        ) ?? null;
+        unit = mockDB.findUnitById(acceptedAlloc.housingUnitId) ?? null;
+      }
+    }
+
+    housingType = unit
+      ? (mockDB.housingTypes.find(ht => ht.id === unit!.housingTypeId) ?? null)
       : null;
     const user = mockDB.findUserById(session.user.id) ?? null;
-    const profile = mockDB.staffProfiles.find(p => p.userId === session!.user!.id) ?? null;
+    const profile = mockDB.staffProfiles.find(p => p.userId === session.user.id) ?? null;
 
     return {
       success: true as const,
-      data: { occupancy, agreement, unit, housingType, user, profile },
+      data: {
+        occupancy,
+        agreement,
+        unit,
+        housingType,
+        user,
+        profile,
+        // discriminator: which phase we're in
+        phase: (occupancy ? 'ACTIVE' : 'PENDING_FINALIZATION') as 'ACTIVE' | 'PENDING_FINALIZATION',
+      },
     };
   } catch (err) {
     return { success: false as const, error: err instanceof Error ? err.message : 'Failed to fetch tenancy data' };

@@ -2,12 +2,13 @@ import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { getStaffDashboardData } from '@/lib/mock-api/endpoints/metrics';
 import { getActiveHousingTypes } from '@/lib/mock-api/endpoints/housing';
+import { mockDB } from '@/lib/mock-api/db';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { buttonVariants } from '@/components/ui/button';
 import Link from 'next/link';
 import {
   Home, FileText, Scroll, KeyRound, Building, DoorOpen, LogOut,
-  CheckCircle, Clock, AlertTriangle, AlertCircle, ShieldAlert,
+  CheckCircle, Clock, AlertTriangle, AlertCircle, ShieldAlert, MapPin, ArrowRight,
 } from 'lucide-react';
 import { MetricCard } from '@/components/shared/MetricCard';
 import { DashboardSection } from '@/components/shared/DashboardSection';
@@ -54,6 +55,14 @@ export default async function StaffDashboardPage() {
     allocationOfferUnit,
     tenancyAgreement,
   } = data;
+
+  // Determine if the Tenancy Agreement quick-link should appear (OFFER_ACCEPTED phase only)
+  const hasOfferAcceptedApp = mockDB.housingApplications.some(
+    a => a.userId === session.user.id && a.status === 'OFFER_ACCEPTED'
+  );
+
+  // Find the active occupancy for the link to full details
+  const activeOccupancy = mockDB.findActiveOccupancyByUserId(session.user.id) ?? null;
 
   // Compute status metrics for row 1
   const housingStatusText = profile?.currentHousingStatus === 'HAS_ALLOCATION'
@@ -154,9 +163,12 @@ export default async function StaffDashboardPage() {
             <Link href="/staff/housing" className={cn(buttonVariants({ variant: 'outline', className: 'w-full justify-start text-xs font-semibold' }))}>
               <KeyRound className="mr-2 h-4 w-4" /> My Housing Offer
             </Link>
-            <Link href="/staff/tenancy" className={cn(buttonVariants({ variant: 'outline', className: 'w-full justify-start text-xs font-semibold' }))}>
-              <Scroll className="mr-2 h-4 w-4" /> Tenancy Agreement
-            </Link>
+            {/* Tenancy Agreement link: only shown while in OFFER_ACCEPTED phase */}
+            {hasOfferAcceptedApp && (
+              <Link href="/staff/tenancy" className={cn(buttonVariants({ variant: 'outline', className: 'w-full justify-start text-xs font-semibold text-teal-700 border-teal-300 hover:bg-teal-50' }))}>
+                <Scroll className="mr-2 h-4 w-4" /> Tenancy Agreement
+              </Link>
+            )}
             <Link href="/staff/bq" className={cn(buttonVariants({ variant: 'outline', className: 'w-full justify-start text-xs font-semibold' }))}>
               <Building className="mr-2 h-4 w-4" /> BQ Management
             </Link>
@@ -234,12 +246,25 @@ export default async function StaffDashboardPage() {
       </div>
 
       {/* Row 3: Current Allocation & BQ Occupants Snapshot */}
-      {currentUnit && (
+      {currentUnit ? (
         <div className="grid gap-6 lg:grid-cols-3">
           <Card className="lg:col-span-2 shadow-sm border border-border/60">
             <CardHeader className="pb-3">
-              <CardTitle className="text-oau-navy text-base">Current Allocation Details</CardTitle>
-              <CardDescription className="text-xs">Unit details and linked Boys Quarters occupants</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-oau-navy text-base">Current Allocation Details</CardTitle>
+                  <CardDescription className="text-xs">Unit details and linked Boys Quarters occupants</CardDescription>
+                </div>
+                {activeOccupancy && (
+                  <Link
+                    href={`/management/occupancies/${activeOccupancy.id}`}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                  >
+                    <MapPin className="h-3.5 w-3.5" />
+                    View Full Details <ArrowRight className="h-3 w-3" />
+                  </Link>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <div className="grid gap-4 sm:grid-cols-3 text-xs">
@@ -386,6 +411,28 @@ export default async function StaffDashboardPage() {
             </Card>
           )}
         </div>
+      ) : (
+        /* No active occupancy — show empty state */
+        <Card className="shadow-sm border-2 border-dashed border-border">
+          <CardContent className="flex flex-col items-center justify-center py-10 text-center space-y-4">
+            <div className="h-14 w-14 rounded-full bg-muted flex items-center justify-center">
+              <Home className="h-7 w-7 text-muted-foreground/50" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="font-semibold text-oau-navy text-base">No Active Housing Occupancy</h3>
+              <p className="text-sm text-muted-foreground max-w-sm">
+                You do not currently occupy any housing unit. Submit a housing application to begin the allocation process.
+              </p>
+            </div>
+            <Link
+              href="/staff/applications/new"
+              className={cn(buttonVariants({ className: 'bg-oau-navy text-oau-cream hover:bg-oau-navy/90 text-xs font-semibold gap-2' }))}
+            >
+              <FileText className="h-4 w-4" />
+              Apply for Housing
+            </Link>
+          </CardContent>
+        </Card>
       )}
 
       {/* Row 4: My Application History */}

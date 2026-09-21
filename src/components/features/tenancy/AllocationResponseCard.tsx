@@ -127,12 +127,13 @@ export function AllocationResponseCard({ allocation, unit, housingType }: Props)
       if (res.success) {
         setResponded(response);
         if (response === 'ACCEPTED') {
-          toast.success('🎉 Allocation accepted! Your tenancy agreement is now active.', { duration: 5000 });
+          toast.success('🎉 Offer accepted! Redirecting to your Tenancy Agreement…', { duration: 5000 });
+          // Redirect to tenancy agreement page after a brief confirmation moment
+          setTimeout(() => router.push('/staff/tenancy'), 1200);
         } else {
           toast.info('Allocation offer declined. The unit will be released back to inventory.', { duration: 4000 });
+          setTimeout(() => router.refresh(), 1000);
         }
-        // Refresh after short delay so the response card is visible briefly
-        setTimeout(() => router.refresh(), 1000);
       } else {
         toast.error(res.error ?? 'Failed to respond to allocation');
       }

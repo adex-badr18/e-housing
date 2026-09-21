@@ -68,6 +68,22 @@ const appStatusConfig: Record<ApplicationStatus, { label: string; className: str
     label: 'Terminated',
     className: 'bg-red-200 text-red-900 border-red-300',
   },
+  OFFER_SENT: {
+    label: 'Offer Sent',
+    className: 'bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-900/30 dark:text-violet-300',
+  },
+  OFFER_ACCEPTED: {
+    label: 'Offer Accepted',
+    className: 'bg-teal-100 text-teal-800 border-teal-200 dark:bg-teal-900/30 dark:text-teal-300',
+  },
+  OFFER_REJECTED: {
+    label: 'Offer Rejected',
+    className: 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-900/30 dark:text-rose-300',
+  },
+  FINALIZED: {
+    label: 'Finalized',
+    className: 'bg-emerald-200 text-emerald-900 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-300 font-bold',
+  },
 };
 
 export function AppStatusBadge({ status }: { status: ApplicationStatus }) {

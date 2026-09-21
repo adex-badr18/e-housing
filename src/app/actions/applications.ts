@@ -11,6 +11,7 @@ import {
   reviewApplication,
   createAllocation,
   respondToAllocation,
+  finalizeApplication,
   getApplicationsForRole,
   getPaginatedApplicationsForManagement,
   getApplicationsForUser,
@@ -629,3 +630,48 @@ export async function getApplicationsForUserAction() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Management: Finalize Application (HS / EO after stamped tenancy doc received)
+// ---------------------------------------------------------------------------
+
+export async function finalizeApplicationAction(applicationId: string) {
+  const session = await auth();
+  if (!session?.user) return { success: false, error: 'Unauthorized' };
+
+  const allowedRoles = ['HOUSING_SECRETARY', 'ESTATE_OFFICER', 'SUPER_ADMIN'] as const;
+  if (!allowedRoles.includes(session.user.role as typeof allowedRoles[number])) {
+    return { success: false, error: 'Only Housing Secretary or Estate Officer can finalize applications' };
+  }
+
+  try {
+    const application = await finalizeApplication({
+      applicationId,
+      adminId: session.user.id,
+    });
+
+    await writeAuditEntry({
+      actorId: session.user.id,
+      action: 'APPLICATION_FINALIZED',
+      entityType: 'HousingApplication',
+      entityId: applicationId,
+      status: 'SUCCESS',
+      metadata: { finalizedBy: session.user.role },
+    });
+
+    revalidatePath('/management/applications');
+    revalidatePath(`/management/applications/${applicationId}`);
+    revalidatePath('/staff');
+    revalidatePath('/staff/applications');
+    return { success: true, data: application };
+  } catch (err) {
+    await writeAuditEntry({
+      actorId: session.user.id,
+      action: 'APPLICATION_FINALIZED',
+      entityType: 'HousingApplication',
+      entityId: applicationId,
+      status: 'FAILURE',
+      metadata: { error: String(err) },
+    });
+    return { success: false, error: err instanceof Error ? err.message : 'Failed to finalize application' };
+  }
+}

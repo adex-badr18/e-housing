@@ -34,12 +34,13 @@ import {
 
 interface SidebarProps {
   role: Role;
+  showTenancyLink?: boolean;
 }
 
-export function Sidebar({ role }: SidebarProps) {
+export function Sidebar({ role, showTenancyLink = false }: SidebarProps) {
   const pathname = usePathname();
 
-  const navItems = getNavItemsForRole(role);
+  const navItems = getNavItemsForRole(role, showTenancyLink);
 
   return (
     <div className="w-64 border-r border-oau-navy/10 bg-oau-navy flex flex-col h-full shadow-xl z-20">
@@ -120,17 +121,19 @@ export function Sidebar({ role }: SidebarProps) {
   );
 }
 
-function getNavItemsForRole(role: Role) {
+function getNavItemsForRole(role: Role, showTenancyLink = false) {
   if (role === 'STAFF') {
-    return [
+    const items = [
       { href: '/staff', label: 'Dashboard', icon: Home },
       { href: '/staff/applications', label: 'My Applications', icon: FileText },
       { href: '/staff/housing', label: 'Housing Offer', icon: KeyRound },
-      { href: '/staff/tenancy', label: 'Tenancy Agreement', icon: Scroll },
+      // Tenancy Agreement only shown when application is in OFFER_ACCEPTED phase
+      ...(showTenancyLink ? [{ href: '/staff/tenancy', label: 'Tenancy Agreement', icon: Scroll }] : []),
       { href: '/staff/bq', label: 'BQ Management', icon: Building },
       { href: '/staff/profile', label: 'My Profile', icon: DoorOpen },
       { href: '/staff/exit', label: 'Housing Exit', icon: LogOut },
     ];
+    return items;
   }
 
   if (role === 'SUPER_ADMIN') {

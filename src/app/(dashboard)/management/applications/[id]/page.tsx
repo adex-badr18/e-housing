@@ -4,10 +4,12 @@ import Link from 'next/link';
 import { getApplicationWithProfile } from '@/lib/mock-api/endpoints/applications';
 import { mockDB } from '@/lib/mock-api/db';
 import { ReviewPipeline } from '@/components/features/application-review/ReviewPipeline';
+import { FinalizeApplicationButton } from '@/components/features/application-review/FinalizeApplicationButton';
+import { HousingAllocationDetails } from '@/components/features/application-review/HousingAllocationDetails';
 import { AppStatusBadge } from '@/components/shared/StatusBadge';
 import { format } from 'date-fns';
 import { ArrowLeft, Calendar, FileText } from 'lucide-react';
-import type { Role } from '@/lib/mock-api/db';
+import type { Role, HousingUnit, HousingType } from '@/lib/mock-api/db';
 
 // ---------------------------------------------------------------------------
 // Metadata
@@ -61,7 +63,16 @@ export default async function ApplicationReviewPage({
   const detail = await getApplicationWithProfile(id);
   if (!detail) notFound();
 
-  const { application, reviews, applicantUser, applicantProfile } = detail;
+  const { application, reviews, allocation, applicantUser, applicantProfile } = detail;
+
+  let housingUnit: HousingUnit | null = null;
+  let housingType: HousingType | null = null;
+  if (allocation) {
+    housingUnit = mockDB.findUnitById(allocation.housingUnitId) ?? null;
+    if (housingUnit) {
+      housingType = mockDB.housingTypes.find(h => h.id === housingUnit!.housingTypeId) ?? null;
+    }
+  }
 
   // Build reviewer name map for attribution
   const reviewerIds = [...new Set(reviews.map(r => r.reviewerId))];
@@ -146,6 +157,21 @@ export default async function ApplicationReviewPage({
           </div>
         )}
       </div>
+
+      {/* ── FINALIZE ACTION (HS / EO only, when OFFER_ACCEPTED) ── */}
+      {application.status === 'OFFER_ACCEPTED' &&
+        ['HOUSING_SECRETARY', 'ESTATE_OFFICER', 'SUPER_ADMIN'].includes(session.user.role) && (
+          <FinalizeApplicationButton applicationId={application.id} />
+        )}
+
+      {/* ── ALLOCATION DETAILS ── */}
+      {allocation && housingUnit && housingType && (
+        <HousingAllocationDetails
+          allocation={allocation}
+          housingUnit={housingUnit}
+          housingType={housingType}
+        />
+      )}
 
       {/* ── REVIEW PIPELINE ── */}
       <ReviewPipeline

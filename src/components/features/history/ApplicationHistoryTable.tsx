@@ -8,8 +8,9 @@ import { Search, ChevronLeft, ChevronRight, ArrowRight, SlidersHorizontal } from
 import type { HousingApplication, ApplicationStatus, User } from '@/lib/mock-api/db';
 
 const ALL_STATUSES: ApplicationStatus[] = [
-  'PENDING', 'UNDER_REVIEW', 'QUEUED', 'QUIT_REQUESTED', 'APPROVED',
-  'REJECTED', 'WITHDRAWN', 'TERMINATED',
+  'PENDING', 'UNDER_REVIEW', 'QUEUED', 'RETURNED', 'QUIT_REQUESTED',
+  'OFFER_SENT', 'OFFER_ACCEPTED', 'OFFER_REJECTED', 'FINALIZED',
+  'APPROVED', 'REJECTED', 'WITHDRAWN', 'TERMINATED',
 ];
 
 const PAGE_SIZE = 10;

@@ -553,11 +553,27 @@ export async function reviewApplication(params: {
     const finalUnit = params.finalAllocatedUnitId ?? params.allocatedUnitId ?? application.estateSuggestedUnitId ?? null;
     mockDB.housingApplications[appIdx] = {
       ...application,
-      status: 'APPROVED',
+      status: 'OFFER_SENT',
       currentStage: 'COMPLETED',
       allocatedUnitId: finalUnit,
       updatedAt: now,
     };
+
+    // Auto-create the allocation offer for the applicant
+    if (finalUnit) {
+      const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+      const newAllocation: Allocation = {
+        id: mockDB.generateId('alc'),
+        applicationId: params.applicationId,
+        userId: application.userId,
+        housingUnitId: finalUnit,
+        status: 'PENDING',
+        allocatedAt: now,
+        respondedAt: null,
+        expiresAt,
+      };
+      mockDB.allocations.push(newAllocation);
+    }
   }
 
   // Update points breakdown if provided (set during Housing stage)
@@ -583,7 +599,7 @@ export async function createAllocation(params: {
   await delay(500);
 
   const application = mockDB.findApplicationById(params.applicationId);
-  if (!application || application.status !== 'APPROVED') {
+  if (!application || !['APPROVED', 'OFFER_SENT'].includes(application.status)) {
     throw new Error('Allocation can only be created for APPROVED applications');
   }
 
@@ -629,54 +645,133 @@ export async function respondToAllocation(
     respondedAt: now,
   };
 
+  const alloc = mockDB.allocations[idx];
+
+  // Find the linked application to update its status
+  const appIdx = mockDB.housingApplications.findIndex(a => a.id === alloc.applicationId);
+
   if (response === 'ACCEPTED') {
-    // Create occupancy record
-    const alloc = mockDB.allocations[idx];
-    const occupancy = {
-      id: mockDB.generateId('occ'),
-      userId,
-      housingUnitId: alloc.housingUnitId,
-      checkInDate: now.split('T')[0],
-      checkOutDate: null,
-      status: 'ACTIVE' as const,
-      createdAt: now,
-      updatedAt: now,
-    };
-    mockDB.occupancies.push(occupancy);
-
-    // Update housing unit status
-    const unitIdx = mockDB.housingUnits.findIndex(u => u.id === alloc.housingUnitId);
-    if (unitIdx !== -1) {
-      mockDB.housingUnits[unitIdx] = {
-        ...mockDB.housingUnits[unitIdx],
-        status: 'OCCUPIED',
-        currentOccupantId: userId,
+    // Update application status to OFFER_ACCEPTED
+    if (appIdx !== -1) {
+      mockDB.housingApplications[appIdx] = {
+        ...mockDB.housingApplications[appIdx],
+        status: 'OFFER_ACCEPTED',
         updatedAt: now,
       };
     }
 
-    // Update staff profile housing status
-    const profileIdx = mockDB.staffProfiles.findIndex(p => p.userId === userId);
-    if (profileIdx !== -1) {
-      mockDB.staffProfiles[profileIdx] = {
-        ...mockDB.staffProfiles[profileIdx],
-        currentHousingStatus: 'HAS_ALLOCATION',
-        updatedAt: now,
-      };
-    }
-
-    // Create tenancy agreement (mock)
+    // Create a mock tenancy agreement record (tied to a placeholder occupancy ID until finalization)
+    const agreementId = mockDB.generateId('tena');
     mockDB.tenancyAgreements.push({
-      id: mockDB.generateId('tena'),
-      occupancyId: occupancy.id,
-      documentUrl: `/documents/tenancy/${occupancy.id}-agreement.pdf`,
+      id: agreementId,
+      // We use the allocationId as a temporary reference until a real occupancy is created at finalization
+      occupancyId: `pending-${alloc.id}`,
+      documentUrl: `/documents/tenancy/${agreementId}-agreement.pdf`,
       signed: false,
       createdAt: now,
     });
+  } else {
+    // REJECTED — update application to OFFER_REJECTED, ending the cycle
+    if (appIdx !== -1) {
+      mockDB.housingApplications[appIdx] = {
+        ...mockDB.housingApplications[appIdx],
+        status: 'OFFER_REJECTED',
+        currentStage: 'COMPLETED',
+        updatedAt: now,
+      };
+    }
   }
 
   return mockDB.allocations[idx];
 }
+
+// ---------------------------------------------------------------------------
+// Finalize Application (HS / EO after signed tenancy agreement received)
+// ---------------------------------------------------------------------------
+
+export async function finalizeApplication(params: {
+  applicationId: string;
+  adminId: string;
+}): Promise<HousingApplication> {
+  await delay(500);
+
+  const appIdx = mockDB.housingApplications.findIndex(a => a.id === params.applicationId);
+  if (appIdx === -1) throw new Error('Application not found');
+
+  const application = mockDB.housingApplications[appIdx];
+  if (application.status !== 'OFFER_ACCEPTED') {
+    throw new Error('Application can only be finalized when in OFFER_ACCEPTED status');
+  }
+
+  if (!application.allocatedUnitId) {
+    throw new Error('No allocated unit found on this application');
+  }
+
+  const now = new Date().toISOString();
+  const userId = application.userId;
+  const housingUnitId = application.allocatedUnitId;
+
+  // 1. Create the occupancy record
+  const occupancy = {
+    id: mockDB.generateId('occ'),
+    userId,
+    housingUnitId,
+    checkInDate: now.split('T')[0],
+    checkOutDate: null,
+    status: 'ACTIVE' as const,
+    createdAt: now,
+    updatedAt: now,
+  };
+  mockDB.occupancies.push(occupancy);
+
+  // 2. Update housing unit status to OCCUPIED
+  const unitIdx = mockDB.housingUnits.findIndex(u => u.id === housingUnitId);
+  if (unitIdx !== -1) {
+    mockDB.housingUnits[unitIdx] = {
+      ...mockDB.housingUnits[unitIdx],
+      status: 'OCCUPIED',
+      currentOccupantId: userId,
+      updatedAt: now,
+    };
+  }
+
+  // 3. Update staff profile housing status
+  const profileIdx = mockDB.staffProfiles.findIndex(p => p.userId === userId);
+  if (profileIdx !== -1) {
+    mockDB.staffProfiles[profileIdx] = {
+      ...mockDB.staffProfiles[profileIdx],
+      currentHousingStatus: 'HAS_ALLOCATION',
+      updatedAt: now,
+    };
+  }
+
+  // 4. Link the pending tenancy agreement to the real occupancy
+  const acceptedAlloc = mockDB.allocations.find(
+    a => a.applicationId === params.applicationId && a.status === 'ACCEPTED'
+  );
+  if (acceptedAlloc) {
+    const agreementIdx = mockDB.tenancyAgreements.findIndex(
+      t => t.occupancyId === `pending-${acceptedAlloc.id}`
+    );
+    if (agreementIdx !== -1) {
+      mockDB.tenancyAgreements[agreementIdx] = {
+        ...mockDB.tenancyAgreements[agreementIdx],
+        occupancyId: occupancy.id,
+      };
+    }
+  }
+
+  // 5. Update application status to FINALIZED
+  mockDB.housingApplications[appIdx] = {
+    ...application,
+    status: 'FINALIZED',
+    updatedAt: now,
+  };
+
+  return { ...mockDB.housingApplications[appIdx] };
+}
+
+
 
 // ---------------------------------------------------------------------------
 // Estate Officer: Fetch all vacant units (with housing type info)

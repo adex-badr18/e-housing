@@ -417,7 +417,7 @@ export async function reviewApplication(params: {
       stage: params.stage,
       score: params.score ?? null,
       decision: 'SAVE_DRAFT',
-      comments: params.comments || 'Draft review saved',
+      comments: params.comments ?? '',
       suggestedUnitId: suggestedUnit,
       isDraft: true,
       reviewedAt: now,

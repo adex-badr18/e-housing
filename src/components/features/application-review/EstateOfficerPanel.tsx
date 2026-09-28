@@ -38,6 +38,15 @@ import {
 } from '@/app/actions/applications';
 import type { HousingApplication, PointsBreakdown, HousingUnit, HousingType, ApplicationReview } from '@/lib/mock-api/db';
 import { VacantUnitsGrid, type VacantUnitData } from './VacantUnitsGrid';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 export type { VacantUnitData };
 
 // ---------------------------------------------------------------------------
@@ -395,6 +404,9 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
   });
 
   const [isPending, startTransition] = useTransition();
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [pendingValues, setPendingValues] = useState<FormValues | null>(null);
+
   const [vacantUnits, setVacantUnits] = useState<VacantUnitData[]>([]);
   const [loadingUnits, setLoadingUnits] = useState(true);
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(
@@ -488,7 +500,7 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
 
   const badCount = Object.values(activeUnitRatings).filter(v => v === 'BAD').length;
 
-  function onSubmit(values: FormValues) {
+  function executeSubmit(values: FormValues) {
     startTransition(async () => {
       // Build inspectionData keyed by unitId
       const inspectionDataPayload: Record<string, Record<string, string>> = {};
@@ -524,11 +536,36 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
         } else {
           toast.error('Application rejected at Estate Office stage');
         }
+        setIsConfirmOpen(false);
+        setPendingValues(null);
         router.refresh();
       } else {
         toast.error(res.error ?? 'Failed to submit review');
       }
     });
+  }
+
+  function onSubmit(values: FormValues) {
+    if (values.decision === 'SAVE_DRAFT') {
+      executeSubmit(values);
+    } else {
+      setPendingValues(values);
+      setIsConfirmOpen(true);
+    }
+  }
+
+  function handleActionClick(decision: FormValues['decision']) {
+    form.setValue('decision', decision, { shouldValidate: true });
+    
+    if (decision === 'SAVE_DRAFT') {
+      executeSubmit(form.getValues());
+      return;
+    }
+    
+    form.handleSubmit(onSubmit, (errors) => {
+      const errorMessages = Object.values(errors).map(e => e?.message).filter(Boolean);
+      toast.error(errorMessages.length > 0 ? errorMessages.join(' | ') : 'Please fix the errors in the form before proceeding.');
+    })();
   }
 
   // ── If application is QUEUED, show the re-queue panel instead ──
@@ -870,105 +907,87 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
           )}
         </div>
 
-        {/* Decision — three options */}
-        <div className="space-y-2">
-          <p className="text-sm font-semibold">Decision</p>
-          <div className="grid gap-2">
-            {/* Forward to DVC */}
-            <label className={cn(
-              'flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
-              watched.decision === 'FORWARDED' ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/40'
-            )}>
-              <input type="radio" value="FORWARDED" {...form.register('decision')} className="accent-primary mt-0.5" />
-              <div>
-                <p className="text-sm font-semibold flex items-center gap-1.5">
-                  <ChevronRight className="h-4 w-4 text-primary" /> Forward to DVC Admin
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Unit selected — forward to DVC Admin for final approval
-                  {selectedUnitId
-                    ? <span className="text-primary font-medium"> ({vacantUnits.find(v => v.unit.id === selectedUnitId)?.unit.name})</span>
-                    : <span className="text-amber-600"> (requires unit selection above)</span>
-                  }
-                </p>
-              </div>
-            </label>
-
-            {/* Save Draft */}
-            <label className={cn(
-              'flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
-              watched.decision === 'SAVE_DRAFT' ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40' : 'border-border hover:border-muted-foreground/40'
-            )}>
-              <input type="radio" value="SAVE_DRAFT" {...form.register('decision')} className="accent-blue-500 mt-0.5" />
-              <div>
-                <p className="text-sm font-semibold flex items-center gap-1.5 text-blue-700 dark:text-blue-300">
-                  <Star className="h-4 w-4 text-blue-500" /> Save Draft
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5">Save current inspection notes & unit selection without advancing</p>
-              </div>
-            </label>
-
-            {/* Place in Queue */}
-            <label className={cn(
-              'flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
-              watched.decision === 'QUEUED' ? 'border-amber-500 bg-amber-50' : 'border-border hover:border-muted-foreground/40'
-            )}>
-              <input type="radio" value="QUEUED" {...form.register('decision')} className="accent-amber-500 mt-0.5" />
-              <div>
-                <p className="text-sm font-semibold flex items-center gap-1.5">
-                  <Clock className="h-4 w-4 text-amber-600" /> Place in Queue
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  No suitable unit available — hold application until a vacancy arises
-                </p>
-              </div>
-            </label>
-
-            {/* Reject */}
-            <label className={cn(
-              'flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
-              watched.decision === 'REJECTED' ? 'border-destructive bg-red-50' : 'border-border hover:border-muted-foreground/40'
-            )}>
-              <input type="radio" value="REJECTED" {...form.register('decision')} className="accent-red-500 mt-0.5" />
-              <div>
-                <p className="text-sm font-semibold flex items-center gap-1.5">
-                  <XCircle className="h-4 w-4 text-destructive" /> Reject Application
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5">Conditions do not meet requirements</p>
-              </div>
-            </label>
-          </div>
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50 dark:hover:bg-blue-950 min-w-[120px]"
+            onClick={() => handleActionClick('SAVE_DRAFT')}
+            disabled={isPending}
+          >
+            <Star className="mr-2 h-4 w-4" /> Save Draft
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            className="flex-1 min-w-[120px]"
+            onClick={() => handleActionClick('REJECTED')}
+            disabled={isPending}
+          >
+            <XCircle className="mr-2 h-4 w-4" /> Reject
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="flex-1 text-amber-600 border-amber-200 hover:bg-amber-50 dark:hover:bg-amber-950 min-w-[120px]"
+            onClick={() => handleActionClick('QUEUED')}
+            disabled={isPending}
+          >
+            <Clock className="mr-2 h-4 w-4" /> Queue
+          </Button>
+          <Button
+            type="button"
+            className="flex-1 sm:flex-none sm:w-auto min-w-[220px]"
+            onClick={() => handleActionClick('FORWARDED')}
+            disabled={isPending || !allRated}
+          >
+            <ChevronRight className="mr-2 h-4 w-4" /> Forward to DVC Admin
+          </Button>
         </div>
 
-        <button
-          type="submit"
-          disabled={isPending || (watched.decision === 'FORWARDED' && !allRated)}
-          className={cn(
-            'w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all shadow-sm',
-            watched.decision === 'REJECTED'
-              ? 'bg-destructive text-white hover:bg-destructive/90'
-              : watched.decision === 'QUEUED'
-              ? 'bg-amber-500 text-white hover:bg-amber-600'
-              : watched.decision === 'SAVE_DRAFT'
-              ? 'bg-blue-600 text-white hover:bg-blue-700'
-              : 'bg-primary text-primary-foreground hover:bg-primary/90',
-            'disabled:opacity-50 disabled:cursor-not-allowed'
-          )}
-        >
-          {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-          {watched.decision === 'FORWARDED' && 'Submit & Forward to DVC Admin'}
-          {watched.decision === 'SAVE_DRAFT' && 'Save Draft Inspection'}
-          {watched.decision === 'QUEUED'    && 'Place in Queue'}
-          {watched.decision === 'REJECTED'  && 'Submit Rejection'}
-        </button>
-
-        {!allRated && watched.decision === 'FORWARDED' && (
+        {!allRated && (
           <p className="text-xs text-center text-amber-600">
             Rate all {INSPECTION_METRICS.length} inspection metrics
-            {showTwoTabs ? ' for both units' : ''} to proceed
+            {showTwoTabs ? ' for both units' : ''} to proceed with forwarding.
           </p>
         )}
       </form>
+
+      {/* Confirmation Modal */}
+      <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {pendingValues?.decision === 'FORWARDED' && 'Confirm Allocation'}
+              {pendingValues?.decision === 'QUEUED' && 'Confirm Queuing'}
+              {pendingValues?.decision === 'REJECTED' && 'Confirm Rejection'}
+            </DialogTitle>
+            <DialogDescription>
+              {pendingValues?.decision === 'FORWARDED' && 'Are you sure you want to finalize this unit allocation and forward it to the DVC Admin?'}
+              {pendingValues?.decision === 'QUEUED' && 'Are you sure you want to place this application in the queue? It will wait until a suitable unit becomes available.'}
+              {pendingValues?.decision === 'REJECTED' && 'Are you sure you want to reject this application? This action is final.'}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsConfirmOpen(false)} disabled={isPending}>
+              Cancel
+            </Button>
+            <Button
+              variant={
+                pendingValues?.decision === 'REJECTED' ? 'destructive' :
+                pendingValues?.decision === 'QUEUED' ? 'secondary' : 'default'
+              }
+              onClick={() => pendingValues && executeSubmit(pendingValues)}
+              disabled={isPending}
+              className={pendingValues?.decision === 'QUEUED' ? 'bg-amber-500 text-white hover:bg-amber-600' : ''}
+            >
+              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

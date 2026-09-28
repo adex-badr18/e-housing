@@ -22,6 +22,15 @@ import { autoScoreApplicationAction, reviewApplicationAction, getVacantUnitsForA
 import type { HousingApplication, StaffProfile, User as UserType } from '@/lib/mock-api/db';
 import type { ScoringBreakdown } from '@/lib/scoring';
 import { VacantUnitsGrid, type VacantUnitData } from './VacantUnitsGrid';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 const formSchema = z.object({
   baseTypePoints:     z.coerce.number().int().min(0).max(70),
@@ -117,6 +126,9 @@ export function HousingSecretaryPanel({
   const [scoringDetails, setScoringDetails] = useState<ScoringBreakdown | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [pendingValues, setPendingValues] = useState<FormValues | null>(null);
+
   const [vacantUnits, setVacantUnits] = useState<VacantUnitData[]>([]);
   const [loadingUnits, setLoadingUnits] = useState(false);
 
@@ -178,7 +190,7 @@ export function HousingSecretaryPanel({
 
 
 
-  function onSubmit(values: FormValues) {
+  function executeSubmit(values: FormValues) {
     startTransition(async () => {
       const payload = {
         applicationId:             application.id,
@@ -205,11 +217,36 @@ export function HousingSecretaryPanel({
         } else {
           toast.success('Application rejected');
         }
+        setIsConfirmOpen(false);
+        setPendingValues(null);
         router.refresh();
       } else {
         toast.error(res.error ?? 'Failed to submit review');
       }
     });
+  }
+
+  function onSubmit(values: FormValues) {
+    if (isAtEstateStage || values.decision === 'SAVE_DRAFT') {
+      executeSubmit(values);
+    } else {
+      setPendingValues(values);
+      setIsConfirmOpen(true);
+    }
+  }
+
+  function handleActionClick(decision: FormValues['decision']) {
+    form.setValue('decision', decision, { shouldValidate: true });
+    
+    if (decision === 'SAVE_DRAFT') {
+      executeSubmit(form.getValues());
+      return;
+    }
+    
+    form.handleSubmit(onSubmit, (errors) => {
+      const errorMessages = Object.values(errors).map(e => e?.message).filter(Boolean);
+      toast.error(errorMessages.length > 0 ? errorMessages.join(' | ') : 'Please fix the errors in the form before proceeding.');
+    })();
   }
 
   return (
@@ -411,97 +448,75 @@ export function HousingSecretaryPanel({
           )}
         </div>
 
-        {/* Decision options: hidden at ESTATE stage (only Save Updates allowed) */}
-        {!isAtEstateStage && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <label className={cn(
-              'flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
-              watched.decision === 'FORWARDED'
-                ? 'border-primary bg-primary/5'
-                : 'border-border hover:border-muted-foreground/40'
-            )}>
-              <input
-                type="radio"
-                value="FORWARDED"
-                {...form.register('decision')}
-                className="accent-primary"
-              />
-              <div>
-                <p className="text-sm font-semibold flex items-center gap-1.5">
-                  <ChevronRight className="h-4 w-4 text-primary" /> Forward
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5">Advance to Estate Officer</p>
-              </div>
-            </label>
-
-            <label className={cn(
-              'flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
-              watched.decision === 'SAVE_DRAFT'
-                ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40'
-                : 'border-border hover:border-muted-foreground/40'
-            )}>
-              <input
-                type="radio"
-                value="SAVE_DRAFT"
-                {...form.register('decision')}
-                className="accent-blue-500"
-              />
-              <div>
-                <p className="text-sm font-semibold flex items-center gap-1.5 text-blue-700 dark:text-blue-300">
-                  <Save className="h-4 w-4 text-blue-500" /> Save Draft
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5">Save progress without advancing</p>
-              </div>
-            </label>
-
-            <label className={cn(
-              'flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
-              watched.decision === 'REJECTED'
-                ? 'border-destructive bg-red-50'
-                : 'border-border hover:border-muted-foreground/40'
-            )}>
-              <input
-                type="radio"
-                value="REJECTED"
-                {...form.register('decision')}
-                className="accent-red-500"
-              />
-              <div>
-                <p className="text-sm font-semibold flex items-center gap-1.5">
-                  <XCircle className="h-4 w-4 text-destructive" /> Reject Application
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5">Criteria not met</p>
-              </div>
-            </label>
+        {/* Action Buttons */}
+        {!isAtEstateStage ? (
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50 dark:hover:bg-blue-950"
+              onClick={() => handleActionClick('SAVE_DRAFT')}
+              disabled={isPending}
+            >
+              <Save className="mr-2 h-4 w-4" /> Save Draft
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              className="flex-1"
+              onClick={() => handleActionClick('REJECTED')}
+              disabled={isPending}
+            >
+              <XCircle className="mr-2 h-4 w-4" /> Reject Application
+            </Button>
+            <Button
+              type="button"
+              className="flex-1 sm:flex-none sm:w-auto min-w-[220px]"
+              onClick={() => handleActionClick('FORWARDED')}
+              disabled={isPending}
+            >
+              <ChevronRight className="mr-2 h-4 w-4" /> Forward to Estate Officer
+            </Button>
           </div>
+        ) : (
+          <Button
+            type="button"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            onClick={() => handleActionClick('SAVE_DRAFT')}
+            disabled={isPending}
+          >
+            {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+            Save Verification Updates
+          </Button>
         )}
-
-        {/* Submit button */}
-        <button
-          type="submit"
-          disabled={isPending}
-          className={cn(
-            'w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all',
-            isAtEstateStage
-              ? 'bg-blue-600 text-white hover:bg-blue-700'
-              : watched.decision === 'REJECTED'
-              ? 'bg-destructive text-white hover:bg-destructive/90'
-              : watched.decision === 'SAVE_DRAFT'
-              ? 'bg-blue-600 text-white hover:bg-blue-700'
-              : 'bg-primary text-primary-foreground hover:bg-primary/90',
-            'disabled:opacity-50 disabled:cursor-not-allowed shadow-sm'
-          )}
-        >
-          {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-          {isAtEstateStage
-            ? 'Save Verification Updates'
-            : watched.decision === 'FORWARDED'
-            ? 'Submit & Forward to Estate Officer'
-            : watched.decision === 'SAVE_DRAFT'
-            ? 'Save Draft Review'
-            : 'Submit Rejection'}
-        </button>
       </form>
+
+      {/* Confirmation Modal */}
+      <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm {pendingValues?.decision === 'FORWARDED' ? 'Forward' : 'Rejection'}</DialogTitle>
+            <DialogDescription>
+              {pendingValues?.decision === 'FORWARDED'
+                ? 'Are you sure you want to forward this application to the Estate Officer? They will receive it for physical inspection and unit allocation.'
+                : 'Are you sure you want to reject this application? This action will mark the application as unsuccessful.'}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsConfirmOpen(false)} disabled={isPending}>
+              Cancel
+            </Button>
+            <Button
+              variant={pendingValues?.decision === 'REJECTED' ? 'destructive' : 'default'}
+              onClick={() => pendingValues && executeSubmit(pendingValues)}
+              disabled={isPending}
+            >
+              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Confirm {pendingValues?.decision === 'FORWARDED' ? 'Forward' : 'Rejection'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

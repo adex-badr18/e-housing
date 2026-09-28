@@ -24,6 +24,15 @@ import {
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { reviewApplicationAction } from '@/app/actions/applications';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import type {
   HousingApplication, ApplicationReview, PointsBreakdown,
   User as UserType, StaffProfile, InspectionData,
@@ -37,12 +46,22 @@ import { mockDB } from '@/lib/mock-api/db';
 const formSchema = z.object({
   comments: z
     .string()
-    .min(5, 'Decision rationale must be at least 5 characters')
-    .max(1000, 'Decision rationale must be under 1000 characters'),
+    .max(1000, 'Decision rationale must be under 1000 characters')
+    .optional()
+    .or(z.literal('')),
   decision: z.enum(['APPROVED', 'RETURNED', 'SAVE_DRAFT', 'REJECTED']),
   finalAllocatedUnitId: z.string().nullable().optional(),
   hasTwoOptions: z.boolean().optional(),
 }).superRefine((data, ctx) => {
+  // Enforce comments for rejection or return
+  if ((data.decision === 'RETURNED' || data.decision === 'REJECTED') && (!data.comments || data.comments.length < 5)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Decision rationale must be at least 5 characters for this action',
+      path: ['comments'],
+    });
+  }
+
   // Only mandate explicit selection when there are two distinct unit options
   if (data.decision === 'APPROVED' && data.hasTwoOptions && !data.finalAllocatedUnitId) {
     ctx.addIssue({
@@ -120,12 +139,14 @@ function InspectionScoreCard({
   badge,
   badgeColor,
   scores,
+  actionButton,
 }: {
   unitId: string;
   label: string;
   badge: string;
   badgeColor: string;
   scores: Record<string, string>;
+  actionButton?: React.ReactNode;
 }) {
   const unit = mockDB.findUnitById(unitId);
   const housingType = unit ? mockDB.housingTypes.find(ht => ht.id === unit.housingTypeId) : null;
@@ -136,7 +157,7 @@ function InspectionScoreCard({
   const badCount  = Object.values(scores).filter(v => v === 'BAD').length;
 
   return (
-    <div className="rounded-xl border bg-card overflow-hidden">
+    <div className="rounded-xl border bg-card overflow-hidden flex flex-col h-full">
       {/* Unit header */}
       <div className="px-4 py-3 bg-muted/40 border-b flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
@@ -199,6 +220,13 @@ function InspectionScoreCard({
           );
         })}
       </div>
+
+      {/* Action Button Slot */}
+      {actionButton && (
+        <div className="p-4 pt-0 mt-auto">
+          {actionButton}
+        </div>
+      )}
     </div>
   );
 }
@@ -228,6 +256,9 @@ export function DVCAdminPanel({
 }: DVCAdminPanelProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [pendingValues, setPendingValues] = useState<FormValues | null>(null);
 
   const score = application.pointsBreakdown?.totalPoints ?? 0;
 
@@ -263,7 +294,7 @@ export function DVCAdminPanel({
 
   const watched = form.watch();
 
-  function onSubmit(values: FormValues) {
+  function executeSubmit(values: FormValues) {
     startTransition(async () => {
       const res = await reviewApplicationAction({
         applicationId:      application.id,
@@ -284,11 +315,36 @@ export function DVCAdminPanel({
         } else {
           toast.error('Application has been rejected.');
         }
+        setIsConfirmOpen(false);
+        setPendingValues(null);
         router.refresh();
       } else {
         toast.error(res.error ?? 'Failed to submit decision');
       }
     });
+  }
+
+  function onSubmit(values: FormValues) {
+    if (values.decision === 'SAVE_DRAFT') {
+      executeSubmit(values);
+    } else {
+      setPendingValues(values);
+      setIsConfirmOpen(true);
+    }
+  }
+
+  function handleActionClick(decision: FormValues['decision']) {
+    form.setValue('decision', decision, { shouldValidate: true });
+    
+    if (decision === 'SAVE_DRAFT') {
+      executeSubmit(form.getValues());
+      return;
+    }
+    
+    form.handleSubmit(onSubmit, (errors) => {
+      const errorMessages = Object.values(errors).map(e => e?.message).filter(Boolean);
+      toast.error(errorMessages.length > 0 ? errorMessages.join(' | ') : 'Please fix the errors in the form before proceeding.');
+    })();
   }
 
   return (
@@ -390,6 +446,11 @@ export function DVCAdminPanel({
                   badge="Both Agreed"
                   badgeColor="bg-emerald-100 text-emerald-800 border-emerald-300"
                   scores={inspectionData[eoUnitId]}
+                  actionButton={
+                    <div className="flex items-center justify-center p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-semibold mt-4">
+                      <CheckCircle2 className="h-4 w-4 mr-2" /> Auto-Selected for Allocation
+                    </div>
+                  }
                 />
               )}
               {!isSameUnit && hsUnitId && inspectionData[hsUnitId] && (
@@ -399,6 +460,23 @@ export function DVCAdminPanel({
                   badge="Housing Secretary"
                   badgeColor="bg-blue-100 text-blue-800 border-blue-300"
                   scores={inspectionData[hsUnitId]}
+                  actionButton={
+                    <Button
+                      type="button"
+                      variant={watched.finalAllocatedUnitId === hsUnitId ? "default" : "outline"}
+                      className={cn("w-full mt-4", watched.finalAllocatedUnitId === hsUnitId ? "bg-emerald-600 hover:bg-emerald-700" : "")}
+                      onClick={() => {
+                        setSelectedFinalUnitId(hsUnitId);
+                        form.setValue('finalAllocatedUnitId', hsUnitId, { shouldValidate: true });
+                      }}
+                    >
+                      {watched.finalAllocatedUnitId === hsUnitId ? (
+                        <><CheckCircle2 className="mr-2 h-4 w-4" /> Selected for Allocation</>
+                      ) : (
+                        "Select this Unit"
+                      )}
+                    </Button>
+                  }
                 />
               )}
               {!isSameUnit && eoUnitId && inspectionData[eoUnitId] && (
@@ -408,6 +486,23 @@ export function DVCAdminPanel({
                   badge="Estate Officer"
                   badgeColor="bg-purple-100 text-purple-800 border-purple-300"
                   scores={inspectionData[eoUnitId]}
+                  actionButton={
+                    <Button
+                      type="button"
+                      variant={watched.finalAllocatedUnitId === eoUnitId ? "default" : "outline"}
+                      className={cn("w-full mt-4", watched.finalAllocatedUnitId === eoUnitId ? "bg-emerald-600 hover:bg-emerald-700" : "")}
+                      onClick={() => {
+                        setSelectedFinalUnitId(eoUnitId);
+                        form.setValue('finalAllocatedUnitId', eoUnitId, { shouldValidate: true });
+                      }}
+                    >
+                      {watched.finalAllocatedUnitId === eoUnitId ? (
+                        <><CheckCircle2 className="mr-2 h-4 w-4" /> Selected for Allocation</>
+                      ) : (
+                        "Select this Unit"
+                      )}
+                    </Button>
+                  }
                 />
               )}
             </div>
@@ -418,152 +513,12 @@ export function DVCAdminPanel({
             </div>
           )}
 
-          {/* ── Final Unit Selection ── */}
-          <div className="rounded-xl border bg-card p-5 space-y-4">
-            <div>
-              <h3 className="text-sm font-semibold flex items-center gap-2">
-                <Home className="h-4 w-4 text-primary" />
-                {hasTwoOptions ? 'Select Final Housing Unit to Allocate' : 'Final Housing Unit'}
-              </h3>
-              <p className="text-xs text-muted-foreground mt-1">
-                {hasTwoOptions
-                  ? 'Based on the inspection scores above, select which unit should be allocated to the applicant. This is required before approving.'
-                  : 'The unit below has been automatically selected based on the reviewers\' agreement.'}
-              </p>
-            </div>
-
-            {hasTwoOptions ? (
-              <div className="flex flex-col gap-2">
-                {/* HS suggestion option */}
-                {hsUnitId && (() => {
-                  const unit = mockDB.findUnitById(hsUnitId);
-                  const ht = unit ? mockDB.housingTypes.find(h => h.id === unit.housingTypeId) : null;
-                  const isSelected = watched.finalAllocatedUnitId === hsUnitId;
-                  return (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedFinalUnitId(hsUnitId);
-                        form.setValue('finalAllocatedUnitId', hsUnitId, { shouldValidate: true });
-                      }}
-                      className={cn(
-                        'w-full text-left p-4 rounded-xl border-2 transition-all flex items-center justify-between gap-3',
-                        isSelected
-                          ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30'
-                          : 'border-border hover:border-primary/40 hover:bg-primary/[0.02]'
-                      )}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={cn('p-2 rounded-lg', isSelected ? 'bg-emerald-100' : 'bg-muted')}>
-                          <Building2 className={cn('h-4 w-4', isSelected ? 'text-emerald-600' : 'text-muted-foreground')} />
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold">{unit?.name ?? hsUnitId}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {ht?.name}{ht ? ` · ${ht.numberOfBedrooms} bed` : ''}
-                            {unit?.roadNumber ? ` · Road ${unit.roadNumber}` : ''}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
-                          HS Suggested
-                        </span>
-                        {isSelected && <CheckCircle2 className="h-5 w-5 text-emerald-600" />}
-                      </div>
-                    </button>
-                  );
-                })()}
-
-                {/* EO selection option (only shown if different from HS) */}
-                {eoUnitId && (() => {
-                  const unit = mockDB.findUnitById(eoUnitId);
-                  const ht = unit ? mockDB.housingTypes.find(h => h.id === unit.housingTypeId) : null;
-                  const isSelected = watched.finalAllocatedUnitId === eoUnitId;
-                  return (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedFinalUnitId(eoUnitId);
-                        form.setValue('finalAllocatedUnitId', eoUnitId, { shouldValidate: true });
-                      }}
-                      className={cn(
-                        'w-full text-left p-4 rounded-xl border-2 transition-all flex items-center justify-between gap-3',
-                        isSelected
-                          ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30'
-                          : 'border-border hover:border-primary/40 hover:bg-primary/[0.02]'
-                      )}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={cn('p-2 rounded-lg', isSelected ? 'bg-emerald-100' : 'bg-muted')}>
-                          <Building2 className={cn('h-4 w-4', isSelected ? 'text-emerald-600' : 'text-muted-foreground')} />
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold">{unit?.name ?? eoUnitId}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {ht?.name}{ht ? ` · ${ht.numberOfBedrooms} bed` : ''}
-                            {unit?.roadNumber ? ` · Road ${unit.roadNumber}` : ''}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
-                          EO Selected
-                        </span>
-                        {isSelected && <CheckCircle2 className="h-5 w-5 text-emerald-600" />}
-                      </div>
-                    </button>
-                  );
-                })()}
-              </div>
-            ) : (
-              /* Single auto-selected unit display */
-              autoSelectedUnitId && (() => {
-                const unit = mockDB.findUnitById(autoSelectedUnitId);
-                const ht = unit ? mockDB.housingTypes.find(h => h.id === unit.housingTypeId) : null;
-                return (
-                  <div className="flex items-center justify-between gap-3 p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-emerald-100">
-                        <Building2 className="h-4 w-4 text-emerald-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold">{unit?.name ?? autoSelectedUnitId}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {ht?.name}{ht ? ` · ${ht.numberOfBedrooms} bed` : ''}
-                          {unit?.roadNumber ? ` · Road ${unit.roadNumber}` : ''}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {isSameUnit && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                          Both Agreed
-                        </span>
-                      )}
-                      <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                    </div>
-                  </div>
-                );
-              })()
-            )}
-
-            {form.formState.errors.finalAllocatedUnitId && (
-              <p className="text-xs text-destructive flex items-center gap-1.5">
-                <AlertCircle className="h-3.5 w-3.5" />
-                {form.formState.errors.finalAllocatedUnitId.message}
-              </p>
-            )}
-
-            {watched.finalAllocatedUnitId && (
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                <span>
-                  <strong>{mockDB.findUnitById(watched.finalAllocatedUnitId)?.name ?? watched.finalAllocatedUnitId}</strong> will be allocated upon approval.
-                </span>
-              </div>
-            )}
-          </div>
+          {form.formState.errors.finalAllocatedUnitId && (
+            <p className="text-xs text-destructive flex items-center gap-1.5 mt-2">
+              <AlertCircle className="h-3.5 w-3.5" />
+              {form.formState.errors.finalAllocatedUnitId.message}
+            </p>
+          )}
         </div>
       ) : (
         <div className="flex items-center gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-800">
@@ -623,90 +578,15 @@ export function DVCAdminPanel({
 
       {/* Decision form */}
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-        {/* Decision toggle */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          <label className={cn(
-            'flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
-            watched.decision === 'APPROVED'
-              ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40'
-              : 'border-border hover:border-muted-foreground/40'
-          )}>
-            <input type="radio" value="APPROVED" {...form.register('decision')} className="accent-emerald-600" />
-            <div>
-              <p className="text-sm font-semibold flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" /> Approve
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Grant final approval &amp; trigger allocation
-              </p>
-            </div>
-          </label>
-
-          <label className={cn(
-            'flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
-            watched.decision === 'RETURNED'
-              ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/40'
-              : 'border-border hover:border-muted-foreground/40'
-          )}>
-            <input type="radio" value="RETURNED" {...form.register('decision')} className="accent-amber-600" />
-            <div>
-              <p className="text-sm font-semibold flex items-center gap-1.5 text-amber-700 dark:text-amber-300">
-                <RotateCcw className="h-4 w-4 text-amber-600" /> Return for Review
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Forward back with instructions
-              </p>
-            </div>
-          </label>
-
-          <label className={cn(
-            'flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
-            watched.decision === 'SAVE_DRAFT'
-              ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40'
-              : 'border-border hover:border-muted-foreground/40'
-          )}>
-            <input type="radio" value="SAVE_DRAFT" {...form.register('decision')} className="accent-blue-500" />
-            <div>
-              <p className="text-sm font-semibold flex items-center gap-1.5 text-blue-700 dark:text-blue-300">
-                <Save className="h-4 w-4 text-blue-500" /> Save Draft
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Save without completing
-              </p>
-            </div>
-          </label>
-
-          <label className={cn(
-            'flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
-            watched.decision === 'REJECTED'
-              ? 'border-destructive bg-red-50 dark:bg-red-950/40'
-              : 'border-border hover:border-muted-foreground/40'
-          )}>
-            <input type="radio" value="REJECTED" {...form.register('decision')} className="accent-red-500" />
-            <div>
-              <p className="text-sm font-semibold flex items-center gap-1.5 text-red-700 dark:text-red-300">
-                <XCircle className="h-4 w-4 text-destructive" /> Reject
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Final rejection
-              </p>
-            </div>
-          </label>
-        </div>
-
         {/* Rationale / Instructions */}
         <div className="space-y-2">
           <label className="text-sm font-semibold">
-            {watched.decision === 'RETURNED' ? 'Modification Instructions for Reviewers' : 'Decision Rationale'}
+            Decision Rationale / Instructions
           </label>
           <textarea
             {...form.register('comments')}
             rows={4}
-            placeholder={
-              watched.decision === 'RETURNED'
-                ? 'Specify what needs to change (e.g. inspect an alternative unit, re-verify scoring)...'
-                : 'Provide the official rationale for your decision...'
-            }
+            placeholder="Provide the official rationale for your decision, or specify what needs to change if returning..."
             className={cn(
               'w-full text-sm px-3 py-2 rounded-xl border bg-background resize-none',
               'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition'
@@ -717,32 +597,83 @@ export function DVCAdminPanel({
           )}
         </div>
 
-        {/* Submit */}
-        <button
-          type="submit"
-          disabled={isPending}
-          className={cn(
-            'w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all shadow-md',
-            watched.decision === 'APPROVED'
-              ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-              : watched.decision === 'RETURNED'
-              ? 'bg-amber-600 text-white hover:bg-amber-700'
-              : watched.decision === 'SAVE_DRAFT'
-              ? 'bg-blue-600 text-white hover:bg-blue-700'
-              : 'bg-destructive text-white hover:bg-destructive/90',
-            'disabled:opacity-50 disabled:cursor-not-allowed'
-          )}
-        >
-          {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-          {watched.decision === 'APPROVED'
-            ? '✓ Approve Application'
-            : watched.decision === 'RETURNED'
-            ? '↩ Return to Estate Officer & Housing Secretary'
-            : watched.decision === 'SAVE_DRAFT'
-            ? 'Save Draft Decision'
-            : '✗ Reject Application'}
-        </button>
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50 dark:hover:bg-blue-950 min-w-[120px]"
+            onClick={() => handleActionClick('SAVE_DRAFT')}
+            disabled={isPending}
+          >
+            <Save className="mr-2 h-4 w-4" /> Save Draft
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            className="flex-1 min-w-[120px]"
+            onClick={() => handleActionClick('REJECTED')}
+            disabled={isPending}
+          >
+            <XCircle className="mr-2 h-4 w-4" /> Reject
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="flex-1 text-amber-600 border-amber-200 hover:bg-amber-50 dark:hover:bg-amber-950 min-w-[120px]"
+            onClick={() => handleActionClick('RETURNED')}
+            disabled={isPending}
+          >
+            <RotateCcw className="mr-2 h-4 w-4" /> Return for Review
+          </Button>
+          <Button
+            type="button"
+            className="flex-1 sm:flex-none sm:w-auto min-w-[220px] bg-emerald-600 hover:bg-emerald-700 text-white"
+            onClick={() => handleActionClick('APPROVED')}
+            disabled={isPending || (hasTwoOptions && !watched.finalAllocatedUnitId)}
+          >
+            <CheckCircle2 className="mr-2 h-4 w-4" /> Approve Application
+          </Button>
+        </div>
       </form>
+
+      {/* Confirmation Modal */}
+      <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {pendingValues?.decision === 'APPROVED' && 'Confirm Final Approval'}
+              {pendingValues?.decision === 'RETURNED' && 'Confirm Return for Modification'}
+              {pendingValues?.decision === 'REJECTED' && 'Confirm Rejection'}
+            </DialogTitle>
+            <DialogDescription>
+              {pendingValues?.decision === 'APPROVED' && 'Are you sure you want to approve this application? The allocated housing unit will be finalized and the applicant will be notified.'}
+              {pendingValues?.decision === 'RETURNED' && 'Are you sure you want to return this application to the Housing Secretary and Estate Officer? Ensure you have provided clear instructions in the rationale field.'}
+              {pendingValues?.decision === 'REJECTED' && 'Are you sure you want to reject this application? This action is final.'}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsConfirmOpen(false)} disabled={isPending}>
+              Cancel
+            </Button>
+            <Button
+              variant={
+                pendingValues?.decision === 'REJECTED' ? 'destructive' :
+                pendingValues?.decision === 'RETURNED' ? 'secondary' : 'default'
+              }
+              onClick={() => pendingValues && executeSubmit(pendingValues)}
+              disabled={isPending}
+              className={
+                pendingValues?.decision === 'APPROVED' ? 'bg-emerald-600 text-white hover:bg-emerald-700' :
+                pendingValues?.decision === 'RETURNED' ? 'bg-amber-500 text-white hover:bg-amber-600' : ''
+              }
+            >
+              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

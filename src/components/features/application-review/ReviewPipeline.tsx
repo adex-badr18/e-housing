@@ -347,6 +347,7 @@ export function ReviewPipeline({
               <EstateOfficerPanel
                 application={application}
                 pointsBreakdown={application.pointsBreakdown ?? null}
+                draftReview={reviews.find(r => r.stage === 'ESTATE' && r.isDraft)}
               />
             )}
             {currentStage === 'DVC' && !isReturned && sessionRole === 'DVC_ADMIN' && (

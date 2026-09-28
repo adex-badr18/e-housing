@@ -36,7 +36,7 @@ import {
   getVacantUnitsForApplicationAction,
   requeueApplicationAction,
 } from '@/app/actions/applications';
-import type { HousingApplication, PointsBreakdown, HousingUnit, HousingType } from '@/lib/mock-api/db';
+import type { HousingApplication, PointsBreakdown, HousingUnit, HousingType, ApplicationReview } from '@/lib/mock-api/db';
 import { VacantUnitsGrid, type VacantUnitData } from './VacantUnitsGrid';
 export type { VacantUnitData };
 
@@ -110,6 +110,7 @@ const INSPECTION_METRICS: InspectionMetric[] = [
 interface EstateOfficerPanelProps {
   application: HousingApplication;
   pointsBreakdown: PointsBreakdown | null;
+  draftReview?: ApplicationReview;
 }
 
 // ---------------------------------------------------------------------------
@@ -373,12 +374,25 @@ function RequeuePanel({
 // Main Component
 // ---------------------------------------------------------------------------
 
-export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOfficerPanelProps) {
+export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }: EstateOfficerPanelProps) {
   const router = useRouter();
 
   // Per-unit ratings: { [unitId]: { [metricId]: InspectionRating } }
   const initRatingsForUnit = () => Object.fromEntries(INSPECTION_METRICS.map(m => [m.id, null as InspectionRating]));
-  const [ratings, setRatings] = useState<Record<string, Record<string, InspectionRating>>>({});
+  const [ratings, setRatings] = useState<Record<string, Record<string, InspectionRating>>>(() => {
+    // If application has previously saved inspection data (from a draft), load it.
+    if (application.inspectionData) {
+      const savedRatings: Record<string, Record<string, InspectionRating>> = {};
+      Object.entries(application.inspectionData).forEach(([unitId, unitData]) => {
+        savedRatings[unitId] = { ...initRatingsForUnit() };
+        Object.entries(unitData).forEach(([metricId, value]) => {
+          savedRatings[unitId][metricId] = value as InspectionRating;
+        });
+      });
+      return savedRatings;
+    }
+    return {};
+  });
 
   const [isPending, startTransition] = useTransition();
   const [vacantUnits, setVacantUnits] = useState<VacantUnitData[]>([]);
@@ -395,7 +409,7 @@ export function EstateOfficerPanel({ application, pointsBreakdown }: EstateOffic
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      comments: '',
+      comments: draftReview?.comments ?? '',
       decision: 'FORWARDED',
       estateSuggestedUnitId: application.estateSuggestedUnitId ?? null,
     },

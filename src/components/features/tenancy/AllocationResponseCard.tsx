@@ -28,6 +28,15 @@ import {
   BadgeDollarSign,
 } from 'lucide-react';
 import type { Allocation, HousingUnit, HousingType } from '@/lib/mock-api/db';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -115,6 +124,8 @@ export function AllocationResponseCard({ allocation, unit, housingType }: Props)
   const countdown = useCountdown(allocation.expiresAt ?? '');
   const [isPending, startTransition] = useTransition();
   const [responded, setResponded] = useState<'ACCEPTED' | 'REJECTED' | null>(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [pendingResponse, setPendingResponse] = useState<'ACCEPTED' | 'REJECTED' | null>(null);
 
   const isUrgent = !countdown.expired && countdown.days === 0 && countdown.hours < 24;
 
@@ -125,6 +136,7 @@ export function AllocationResponseCard({ allocation, unit, housingType }: Props)
         response,
       });
       if (res.success) {
+        setIsConfirmOpen(false);
         setResponded(response);
         if (response === 'ACCEPTED') {
           toast.success('🎉 Offer accepted! Redirecting to your Tenancy Agreement…', { duration: 5000 });
@@ -287,7 +299,10 @@ export function AllocationResponseCard({ allocation, unit, housingType }: Props)
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
               id="accept-allocation-btn"
-              onClick={() => handleResponse('ACCEPTED')}
+              onClick={() => {
+                setPendingResponse('ACCEPTED');
+                setIsConfirmOpen(true);
+              }}
               disabled={isPending}
               className={cn(
                 'flex items-center justify-center gap-2.5 rounded-xl py-4 px-6 font-bold text-base transition-all duration-200',
@@ -305,7 +320,10 @@ export function AllocationResponseCard({ allocation, unit, housingType }: Props)
 
             <button
               id="reject-allocation-btn"
-              onClick={() => handleResponse('REJECTED')}
+              onClick={() => {
+                setPendingResponse('REJECTED');
+                setIsConfirmOpen(true);
+              }}
               disabled={isPending}
               className={cn(
                 'flex items-center justify-center gap-2.5 rounded-xl py-4 px-6 font-bold text-base transition-all duration-200',
@@ -328,6 +346,36 @@ export function AllocationResponseCard({ allocation, unit, housingType }: Props)
           </p>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {pendingResponse === 'ACCEPTED' ? 'Confirm Allocation Acceptance' : 'Confirm Allocation Rejection'}
+            </DialogTitle>
+            <DialogDescription>
+              {pendingResponse === 'ACCEPTED' 
+                ? 'Are you sure you want to accept this housing allocation? This will generate your tenancy agreement and initiate the deduction process.'
+                : 'Are you sure you want to decline this offer? The housing unit will be returned to inventory and your application will be closed. This action cannot be undone.'}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsConfirmOpen(false)} disabled={isPending}>
+              Cancel
+            </Button>
+            <Button
+              variant={pendingResponse === 'REJECTED' ? 'destructive' : 'default'}
+              onClick={() => pendingResponse && handleResponse(pendingResponse)}
+              disabled={isPending}
+              className={pendingResponse === 'ACCEPTED' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : ''}
+            >
+              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {pendingResponse === 'ACCEPTED' ? 'Confirm Acceptance' : 'Confirm Rejection'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

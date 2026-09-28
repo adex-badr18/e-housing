@@ -2673,12 +2673,22 @@ for (const app of initialHousingApplications) {
   }
 }
 
-// Correction pass: strip allocatedUnitId from any application that was not APPROVED.
+// Correction pass: strip allocatedUnitId from any application that hasn't reached the approval stage.
 // This guards against stale values written by old code paths (e.g., the previous
 // requeueApplication which wrote allocatedUnitId prematurely before DVC approval).
 for (const app of mockDB.housingApplications) {
-  if (app.status !== 'APPROVED' && app.allocatedUnitId) {
+  const isPostApproval = ['APPROVED', 'OFFER_SENT', 'OFFER_ACCEPTED', 'OFFER_REJECTED', 'FINALIZED'].includes(app.status);
+  if (!isPostApproval && app.allocatedUnitId) {
     app.allocatedUnitId = null;
+  }
+}
+
+// Correction pass: restore allocatedUnitId if an Allocation exists but the application is missing it.
+// (Fixes the state corruption caused by the previous bug during hot-reloads)
+for (const alloc of mockDB.allocations) {
+  const app = mockDB.housingApplications.find(a => a.id === alloc.applicationId);
+  if (app && !app.allocatedUnitId) {
+    app.allocatedUnitId = alloc.housingUnitId;
   }
 }
 

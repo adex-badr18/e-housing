@@ -4,7 +4,18 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { finalizeApplicationAction } from '@/app/actions/applications';
-import { CheckCircle2, Loader2, FileCheck2 } from 'lucide-react';
+import { CheckCircle2, Loader2, FileCheck2, AlertTriangle } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface FinalizeApplicationButtonProps {
   applicationId: string;
@@ -13,21 +24,17 @@ interface FinalizeApplicationButtonProps {
 export function FinalizeApplicationButton({ applicationId }: FinalizeApplicationButtonProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [confirmed, setConfirmed] = useState(false);
+  const [open, setOpen] = useState(false);
 
   function handleFinalize() {
-    if (!confirmed) {
-      setConfirmed(true);
-      return;
-    }
     startTransition(async () => {
       const res = await finalizeApplicationAction(applicationId);
       if (res.success) {
         toast.success('Application finalized. Occupancy record has been created.', { duration: 5000 });
+        setOpen(false);
         router.refresh();
       } else {
         toast.error(res.error ?? 'Failed to finalize application');
-        setConfirmed(false);
       }
     });
   }
@@ -45,31 +52,47 @@ export function FinalizeApplicationButton({ applicationId }: FinalizeApplication
         </div>
       </div>
 
-      {confirmed && !isPending && (
-        <div className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-          ⚠ Are you sure? This action is irreversible. Click again to confirm.
-        </div>
-      )}
-
-      <button
-        id="finalize-application-btn"
-        onClick={handleFinalize}
-        disabled={isPending}
-        className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-          confirmed
-            ? 'bg-amber-600 hover:bg-amber-700 text-white'
-            : 'bg-teal-700 hover:bg-teal-800 text-white'
-        } disabled:opacity-60 disabled:cursor-not-allowed`}
-      >
-        {isPending ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : confirmed ? (
-          <CheckCircle2 className="h-4 w-4" />
-        ) : (
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger
+          id="finalize-application-btn"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all bg-teal-700 hover:bg-teal-800 text-white"
+        >
           <FileCheck2 className="h-4 w-4" />
-        )}
-        {isPending ? 'Finalizing…' : confirmed ? 'Confirm Finalization' : 'Mark Agreement as Submitted'}
-      </button>
+          Mark Agreement as Submitted
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-amber-700">
+              <AlertTriangle className="h-5 w-5" />
+              Confirm Finalization
+            </DialogTitle>
+            <DialogDescription className="pt-2 text-foreground">
+              Are you sure you want to finalize this application? This action is irreversible and will officially mark the housing unit as occupied and create an active occupancy record for the applicant.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 gap-2 sm:gap-0">
+            <DialogClose
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-[color,box-shadow] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
+              disabled={isPending}
+            >
+              Cancel
+            </DialogClose>
+            <Button
+              type="button"
+              onClick={handleFinalize}
+              disabled={isPending}
+              className="bg-teal-700 hover:bg-teal-800 text-white"
+            >
+              {isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <CheckCircle2 className="mr-2 h-4 w-4" />
+              )}
+              {isPending ? 'Finalizing…' : 'Confirm'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { mockDB } from '@/lib/mock-api/db';
 import { ReviewPipeline } from '@/components/features/application-review/ReviewPipeline';
 import { FinalizeApplicationButton } from '@/components/features/application-review/FinalizeApplicationButton';
 import { HousingAllocationDetails } from '@/components/features/application-review/HousingAllocationDetails';
+import { AdminTerminateButton } from '@/components/features/application-review/AdminTerminateButton';
 import { AppStatusBadge } from '@/components/shared/StatusBadge';
 import { format } from 'date-fns';
 import { ArrowLeft, Calendar, FileText } from 'lucide-react';
@@ -82,6 +83,12 @@ export default async function ApplicationReviewPage({
     if (u) reviewerNames[uid] = `${u.firstName} ${u.lastName}`;
   }
 
+  // Whether this management role can terminate the application
+  const isTerminalAppStatus = ['REJECTED', 'APPROVED', 'WITHDRAWN', 'TERMINATED'].includes(application.status);
+  const isCompleted = application.currentStage === 'COMPLETED';
+  const canTerminate = !isTerminalAppStatus && !isCompleted &&
+    ['SUPER_ADMIN', 'HOUSING_SECRETARY', 'ESTATE_OFFICER', 'DVC_ADMIN'].includes(session.user.role);
+
   return (
     <div className="w-full space-y-6">
       {/* Back link */}
@@ -120,7 +127,12 @@ export default async function ApplicationReviewPage({
               </p>
             )}
           </div>
-          <AppStatusBadge status={application.status} />
+          <div className="flex items-center gap-2 flex-wrap">
+            <AppStatusBadge status={application.status} />
+            {canTerminate && (
+              <AdminTerminateButton entityId={application.id} entityType="HousingApplication" />
+            )}
+          </div>
         </div>
 
         {/* Meta strip */}

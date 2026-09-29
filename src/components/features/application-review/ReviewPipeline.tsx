@@ -19,7 +19,7 @@ import { CompletedStageCard } from './CompletedStageCard';
 import { HousingSecretaryPanel } from './HousingSecretaryPanel';
 import { EstateOfficerPanel }    from './EstateOfficerPanel';
 import { DVCAdminPanel }         from './DVCAdminPanel';
-import { AdminTerminateButton }  from './AdminTerminateButton';
+
 import { QuitRequestButton }     from './QuitRequestButton';
 import { ApplicationDetailsCard } from './ApplicationDetailsCard';
 import { Lock, Eye, Clock, AlertTriangle, XCircle, FileX2 } from 'lucide-react';
@@ -180,7 +180,6 @@ export function ReviewPipeline({
   // Role is waiting (stage not yet reached)
   const isWaiting = !isSuperAdmin && expectedStage != null && !isMyTurn && !hasActed && !isTerminalStatus && !isQueued && !isQuitRequested && !isReturned;
 
-  const canAdminTerminate = !isTerminalStatus && ['HOUSING_SECRETARY', 'ESTATE_OFFICER', 'DVC_ADMIN', 'SUPER_ADMIN'].includes(sessionRole);
 
   return (
     <div className="space-y-8">
@@ -390,12 +389,6 @@ export function ReviewPipeline({
         </div>
       )}
       
-      {/* Admin termination controls */}
-      {canAdminTerminate && (
-        <div className="pt-6 border-t flex justify-end">
-          <AdminTerminateButton entityId={application.id} entityType="HousingApplication" />
-        </div>
-      )}
 
       {/* Withdrawal request history — visible to all roles */}
       {allQuitRequests.length > 0 && (

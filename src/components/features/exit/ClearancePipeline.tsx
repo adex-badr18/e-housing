@@ -86,7 +86,7 @@ function StatusBadge({ status }: { status: StageStatus }) {
   }[status];
   const Icon = map.icon;
   return (
-    <span className={cn('inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border', map.cls)}>
+    <span className={cn('inline-flex items-center gap-1.5 text-sm font-semibold px-2.5 py-1 rounded-full border', map.cls)}>
       <Icon className="h-3.5 w-3.5" />
       {map.label}
     </span>
@@ -137,7 +137,7 @@ function StageActionPanel({
 
   return (
     <div className="mt-4 p-4 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 space-y-4">
-      <p className="text-xs font-semibold text-primary uppercase tracking-wider">Record Your Inspection Result</p>
+      <p className="text-sm font-semibold text-primary uppercase tracking-wider">Record Your Inspection Result</p>
 
       {/* Pass / Fail toggle */}
       <div className="flex gap-3">
@@ -154,8 +154,8 @@ function StageActionPanel({
           />
           <CheckCircle2 className={cn('h-5 w-5', choice === 'PASSED' ? 'text-emerald-600' : 'text-muted-foreground')} />
           <div>
-            <p className="text-sm font-semibold">Pass Inspection</p>
-            <p className="text-xs text-muted-foreground">Property meets all requirements</p>
+            <p className="text-base font-semibold">Pass Inspection</p>
+            <p className="text-sm text-muted-foreground">Property meets all requirements</p>
           </div>
         </label>
 
@@ -172,8 +172,8 @@ function StageActionPanel({
           />
           <XCircle className={cn('h-5 w-5', choice === 'FAILED' ? 'text-red-500' : 'text-muted-foreground')} />
           <div>
-            <p className="text-sm font-semibold">Fail Inspection</p>
-            <p className="text-xs text-muted-foreground">Issues found — flag for remediation</p>
+            <p className="text-base font-semibold">Fail Inspection</p>
+            <p className="text-sm text-muted-foreground">Issues found — flag for remediation</p>
           </div>
         </label>
       </div>
@@ -182,7 +182,7 @@ function StageActionPanel({
         onClick={handleSubmit}
         disabled={isPending}
         className={cn(
-          'w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all',
+          'w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-base transition-all',
           choice === 'PASSED'
             ? 'bg-emerald-600 text-white hover:bg-emerald-700'
             : 'bg-destructive text-white hover:bg-destructive/90',
@@ -240,7 +240,7 @@ function StageCard({
 
       {/* Step circle */}
       <div className={cn(
-        'relative z-10 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center border-2 font-bold text-sm transition-all',
+        'relative z-10 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center border-2 font-bold text-base transition-all',
         isPassed ? 'bg-emerald-500 border-emerald-500 text-white' :
         isFailed ? 'bg-red-500 border-red-500 text-white' :
         isUnlocked ? 'bg-primary border-primary text-white' :
@@ -269,8 +269,8 @@ function StageCard({
               isUnlocked ? 'text-primary' : 'text-muted-foreground'
             )} />
             <div>
-              <p className="font-semibold text-sm">{def.label}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{def.unit}</p>
+              <p className="font-semibold text-base">{def.label}</p>
+              <p className="text-sm text-muted-foreground mt-0.5">{def.unit}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -281,7 +281,7 @@ function StageCard({
 
         {/* Inspector info */}
         {inspector && inspectionDate && (
-          <div className="mt-3 pt-3 border-t grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+          <div className="mt-3 pt-3 border-t grid grid-cols-2 gap-2 text-sm text-muted-foreground">
             <div className="flex items-center gap-1.5">
               <User className="h-3.5 w-3.5" />
               {inspector.firstName} {inspector.lastName}
@@ -297,7 +297,7 @@ function StageCard({
 
         {/* Locked hint */}
         {!isUnlocked && (
-          <p className="mt-2 text-xs text-muted-foreground flex items-center gap-1.5">
+          <p className="mt-2 text-sm text-muted-foreground flex items-center gap-1.5">
             <Lock className="h-3 w-3" />
             Unlocked after previous stage passes
           </p>
@@ -314,7 +314,7 @@ function StageCard({
 
         {/* Waiting for other role hint */}
         {isUnlocked && status === 'PENDING' && !canAct && (
-          <div className="mt-3 flex items-center gap-1.5 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+          <div className="mt-3 flex items-center gap-1.5 text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
             <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
             Waiting for <strong>{def.roleLabel}</strong> to complete this stage
           </div>
@@ -359,13 +359,13 @@ export function ClearancePipeline({ notice, currentUserRole, users }: ClearanceP
           </div>
           <div className="flex-1">
             <h3 className="font-bold text-emerald-800">Property Fully Cleared</h3>
-            <p className="text-sm text-emerald-700 mt-0.5">
+            <p className="text-base text-emerald-700 mt-0.5">
               All inspections passed. The property has been vacated and the clearance certificate issued.
             </p>
           </div>
           <a
             href={`/management/exit/${notice.id}/certificate`}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition shrink-0"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition shrink-0"
           >
             View Certificate <ChevronRight className="h-3.5 w-3.5" />
           </a>
@@ -376,8 +376,8 @@ export function ClearancePipeline({ notice, currentUserRole, users }: ClearanceP
       {!notice.isCleared && (
         <div className="rounded-xl border bg-card p-4">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium">Clearance Progress</span>
-            <span className="text-sm font-bold text-primary">
+            <span className="text-base font-medium">Clearance Progress</span>
+            <span className="text-base font-bold text-primary">
               {[notice.housingInspectionStatus, notice.electricalInspectionStatus, notice.estateInspectionStatus]
                 .filter(s => s === 'PASSED').length} / 3 Passed
             </span>

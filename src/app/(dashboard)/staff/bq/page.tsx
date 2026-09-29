@@ -32,7 +32,7 @@ export default async function StaffBQPage() {
     return (
       <div className="w-full space-y-6">
         <div>
-          <Link href="/staff" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1.5 mb-6 group">
+          <Link href="/staff" className="text-base text-muted-foreground hover:text-primary flex items-center gap-1.5 mb-6 group">
             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
             Back to Dashboard
           </Link>
@@ -41,13 +41,13 @@ export default async function StaffBQPage() {
         <div className="rounded-2xl border-2 border-dashed border-border bg-secondary/30 p-12 text-center space-y-4">
           <Lock className="h-14 w-14 text-muted-foreground/30 mx-auto" />
           <h2 className="text-xl font-semibold">No Active Housing Allocation</h2>
-          <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+          <p className="text-base text-muted-foreground max-w-sm mx-auto">
             BQ management is only available to staff members with an active housing allocation.
             Please accept a housing offer first.
           </p>
           <Link
             href="/staff/housing"
-            className="inline-flex items-center gap-2 mt-4 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center gap-2 mt-4 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-base font-semibold hover:bg-primary/90 transition-colors"
           >
             View Housing Offer
           </Link>
@@ -64,7 +64,7 @@ export default async function StaffBQPage() {
     return (
       <div className="w-full space-y-6">
         <div>
-          <Link href="/staff" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1.5 mb-6 group">
+          <Link href="/staff" className="text-base text-muted-foreground hover:text-primary flex items-center gap-1.5 mb-6 group">
             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
             Back to Dashboard
           </Link>
@@ -73,7 +73,7 @@ export default async function StaffBQPage() {
         <div className="rounded-2xl border-2 border-dashed border-border bg-secondary/30 p-12 text-center space-y-4">
           <Home className="h-14 w-14 text-muted-foreground/30 mx-auto" />
           <h2 className="text-xl font-semibold">No BQ Units Attached</h2>
-          <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+          <p className="text-base text-muted-foreground max-w-sm mx-auto">
             Your current unit (<strong>{unit?.name}</strong>) does not include any Boys Quarters sub-units.
             BQ management is only available for housing types with BQ facilities.
           </p>
@@ -87,7 +87,7 @@ export default async function StaffBQPage() {
   return (
     <div className="w-full space-y-6">
       <div>
-        <Link href="/staff" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1.5 mb-6 group">
+        <Link href="/staff" className="text-base text-muted-foreground hover:text-primary flex items-center gap-1.5 mb-6 group">
           <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
           Back to Dashboard
         </Link>
@@ -98,7 +98,7 @@ export default async function StaffBQPage() {
               Manage sub-occupants for Boys Quarters units attached to your housing — <strong>{unit?.name}</strong>.
             </p>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/5 border border-primary/20 text-sm text-primary/80">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/5 border border-primary/20 text-base text-primary/80">
             <Home className="h-4 w-4" />
             <span className="font-medium">1 BQ unit attached</span>
           </div>

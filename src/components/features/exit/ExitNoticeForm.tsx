@@ -112,8 +112,8 @@ export function ExitNoticeForm({ currentUnit }: ExitNoticeFormProps) {
       <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
         <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
         <div>
-          <p className="font-semibold text-amber-800 text-sm">This action initiates your housing exit process</p>
-          <p className="text-xs text-amber-700 mt-1">
+          <p className="font-semibold text-amber-800 text-base">This action initiates your housing exit process</p>
+          <p className="text-sm text-amber-700 mt-1">
             You are submitting an exit notice for <strong>{currentUnit.name}</strong>.
             Once submitted, this will trigger a mandatory 3-stage inspection pipeline before clearance is issued.
           </p>
@@ -122,7 +122,7 @@ export function ExitNoticeForm({ currentUnit }: ExitNoticeFormProps) {
 
       {/* Reason Selection */}
       <div className="space-y-3">
-        <h3 className="text-sm font-semibold flex items-center gap-2">
+        <h3 className="text-base font-semibold flex items-center gap-2">
           <FileText className="h-4 w-4 text-muted-foreground" />
           Reason for Departure
         </h3>
@@ -148,60 +148,60 @@ export function ExitNoticeForm({ currentUnit }: ExitNoticeFormProps) {
                 />
                 <Icon className={cn('h-5 w-5 mt-0.5 shrink-0', isSelected ? 'text-primary' : 'text-muted-foreground')} />
                 <div>
-                  <p className={cn('text-sm font-semibold', isSelected ? 'text-primary' : 'text-foreground')}>
+                  <p className={cn('text-base font-semibold', isSelected ? 'text-primary' : 'text-foreground')}>
                     {reason.label}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{reason.description}</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">{reason.description}</p>
                 </div>
               </label>
             );
           })}
         </div>
         {form.formState.errors.reason && (
-          <p className="text-xs text-destructive">{form.formState.errors.reason.message}</p>
+          <p className="text-sm text-destructive">{form.formState.errors.reason.message}</p>
         )}
       </div>
 
       {/* Custom Reason (conditional) */}
       {selectedReason === 'OTHER' && (
         <div className="space-y-2">
-          <label className="text-sm font-semibold">Specify Reason <span className="text-destructive">*</span></label>
+          <label className="text-base font-semibold">Specify Reason <span className="text-destructive">*</span></label>
           <textarea
             {...form.register('customReason')}
             rows={3}
             placeholder="Please describe your specific reason for departure..."
             className={cn(
-              'w-full text-sm px-3 py-2.5 rounded-xl border bg-background resize-none',
+              'w-full text-base px-3 py-2.5 rounded-xl border bg-background resize-none',
               'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition',
               form.formState.errors.customReason ? 'border-destructive' : 'border-border'
             )}
           />
           {form.formState.errors.customReason && (
-            <p className="text-xs text-destructive">{form.formState.errors.customReason.message}</p>
+            <p className="text-sm text-destructive">{form.formState.errors.customReason.message}</p>
           )}
         </div>
       )}
 
       {/* Additional Notes */}
       <div className="space-y-2">
-        <label className="text-sm font-semibold">Additional Notes <span className="text-muted-foreground font-normal">(Optional)</span></label>
+        <label className="text-base font-semibold">Additional Notes <span className="text-muted-foreground font-normal">(Optional)</span></label>
         <textarea
           {...form.register('additionalNotes')}
           rows={4}
           placeholder="Any additional context or special circumstances to inform the inspection team..."
           className={cn(
-            'w-full text-sm px-3 py-2.5 rounded-xl border border-border bg-background resize-none',
+            'w-full text-base px-3 py-2.5 rounded-xl border border-border bg-background resize-none',
             'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition'
           )}
         />
         {form.formState.errors.additionalNotes && (
-          <p className="text-xs text-destructive">{form.formState.errors.additionalNotes.message}</p>
+          <p className="text-sm text-destructive">{form.formState.errors.additionalNotes.message}</p>
         )}
       </div>
 
       {/* Pre-Departure Acknowledgements */}
       <div className="rounded-xl border bg-card p-5 space-y-3">
-        <h3 className="font-semibold text-sm flex items-center gap-2">
+        <h3 className="font-semibold text-base flex items-center gap-2">
           <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
           Pre-Departure Acknowledgements
         </h3>
@@ -223,14 +223,14 @@ export function ExitNoticeForm({ currentUnit }: ExitNoticeFormProps) {
                 className="mt-0.5 accent-emerald-600 h-4 w-4 cursor-pointer"
               />
               <div>
-                <p className="text-sm font-medium">{ack.label}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{ack.description}</p>
+                <p className="text-base font-medium">{ack.label}</p>
+                <p className="text-sm text-muted-foreground mt-0.5">{ack.description}</p>
               </div>
             </label>
           ))}
         </div>
         {!allAcknowledged && (
-          <p className="text-xs text-amber-600 flex items-center gap-1.5">
+          <p className="text-sm text-amber-600 flex items-center gap-1.5">
             <Info className="h-3.5 w-3.5" />
             You must acknowledge all conditions before submitting
           </p>
@@ -242,7 +242,7 @@ export function ExitNoticeForm({ currentUnit }: ExitNoticeFormProps) {
         type="submit"
         disabled={isPending || !allAcknowledged}
         className={cn(
-          'w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm transition-all',
+          'w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-base transition-all',
           'bg-destructive text-white hover:bg-destructive/90 shadow-sm',
           'disabled:opacity-50 disabled:cursor-not-allowed'
         )}
@@ -256,7 +256,7 @@ export function ExitNoticeForm({ currentUnit }: ExitNoticeFormProps) {
       </button>
 
       {!allAcknowledged && (
-        <p className="text-xs text-center text-muted-foreground">
+        <p className="text-sm text-center text-muted-foreground">
           Complete all 4 acknowledgements to enable submission
         </p>
       )}

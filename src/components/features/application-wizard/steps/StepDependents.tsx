@@ -30,7 +30,7 @@ export function StepDependents({ form }: StepDependentsProps) {
         </div>
         <div>
           <h2 className="text-lg font-semibold">Spouse & Dependents</h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-base text-muted-foreground">
             Providing dependents information may affect your allocation score.
           </p>
         </div>
@@ -39,7 +39,7 @@ export function StepDependents({ form }: StepDependentsProps) {
       {/* Spouse Section — only shown when married */}
       {isMarried ? (
         <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+          <h3 className="text-base font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Heart className="h-4 w-4 text-rose-400" />
             Spouse Information
           </h3>
@@ -64,7 +64,7 @@ export function StepDependents({ form }: StepDependentsProps) {
           </div>
         </div>
       ) : (
-        <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 border border-border text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 border border-border text-base text-muted-foreground">
           <Info className="h-4 w-4 shrink-0" />
           Spouse section is only shown for married staff. Your marital status from Step 1 is:{' '}
           <span className="font-medium text-foreground capitalize">{maritalStatus?.toLowerCase()}</span>
@@ -76,7 +76,7 @@ export function StepDependents({ form }: StepDependentsProps) {
       {/* Dependents Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+          <h3 className="text-base font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Users className="h-4 w-4" />
             Dependents ({fields.length})
           </h3>
@@ -86,7 +86,7 @@ export function StepDependents({ form }: StepDependentsProps) {
             size="sm"
             id="add-dependent-btn"
             onClick={() => append({ name: '', relationship: '' })}
-            className="gap-1.5 h-8 text-xs"
+            className="gap-1.5 h-8 text-sm"
           >
             <UserPlus className="h-3.5 w-3.5" />
             Add Dependent
@@ -94,10 +94,10 @@ export function StepDependents({ form }: StepDependentsProps) {
         </div>
 
         {fields.length === 0 ? (
-          <div className="text-center py-8 rounded-xl border border-dashed border-border text-muted-foreground text-sm">
+          <div className="text-center py-8 rounded-xl border border-dashed border-border text-muted-foreground text-base">
             <Users className="h-8 w-8 mx-auto opacity-20 mb-2" />
             <p>No dependents added yet.</p>
-            <p className="text-xs mt-1">Click &quot;Add Dependent&quot; to add children or other dependents.</p>
+            <p className="text-sm mt-1">Click &quot;Add Dependent&quot; to add children or other dependents.</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -107,13 +107,13 @@ export function StepDependents({ form }: StepDependentsProps) {
                 className="relative grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 rounded-xl border border-border bg-muted/20 group animate-in fade-in slide-in-from-top-1 duration-200"
               >
                 <div className="absolute top-3 right-3">
-                  <span className="text-xs text-muted-foreground font-medium px-1.5 py-0.5 rounded bg-muted border border-border">
+                  <span className="text-sm text-muted-foreground font-medium px-1.5 py-0.5 rounded bg-muted border border-border">
                     #{index + 1}
                   </span>
                 </div>
 
                 <div className="space-y-1">
-                  <Label htmlFor={`dep-name-${index}`} className="text-xs">Full Name *</Label>
+                  <Label htmlFor={`dep-name-${index}`} className="text-sm">Full Name *</Label>
                   <Input
                     id={`dep-name-${index}`}
                     placeholder="Full name"
@@ -121,14 +121,14 @@ export function StepDependents({ form }: StepDependentsProps) {
                     className={errors.dependents?.[index]?.name ? 'border-destructive' : ''}
                   />
                   {errors.dependents?.[index]?.name && (
-                    <p className="text-xs text-destructive">
+                    <p className="text-sm text-destructive">
                       {errors.dependents[index].name?.message}
                     </p>
                   )}
                 </div>
 
                 <div className="space-y-1">
-                  <Label htmlFor={`dep-rel-${index}`} className="text-xs">Relationship *</Label>
+                  <Label htmlFor={`dep-rel-${index}`} className="text-sm">Relationship *</Label>
                   <Input
                     id={`dep-rel-${index}`}
                     placeholder="e.g. Child, Parent"
@@ -136,14 +136,14 @@ export function StepDependents({ form }: StepDependentsProps) {
                     className={errors.dependents?.[index]?.relationship ? 'border-destructive' : ''}
                   />
                   {errors.dependents?.[index]?.relationship && (
-                    <p className="text-xs text-destructive">
+                    <p className="text-sm text-destructive">
                       {errors.dependents[index].relationship?.message}
                     </p>
                   )}
                 </div>
 
                 <div className="space-y-1">
-                  <Label htmlFor={`dep-age-${index}`} className="text-xs">Age (optional)</Label>
+                  <Label htmlFor={`dep-age-${index}`} className="text-sm">Age (optional)</Label>
                   <div className="flex gap-2">
                     <Input
                       id={`dep-age-${index}`}

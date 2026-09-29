@@ -90,7 +90,7 @@ async function OccupanciesContent({ searchParams }: PageProps) {
           <h1 className="text-2xl font-bold tracking-tight text-[rgb(27,34,50)]">
             Housing Occupancies
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">
+          <p className="text-muted-foreground text-base mt-1">
             Full registry of housing allocations — search, filter, and manage occupancy records.
           </p>
         </div>
@@ -102,10 +102,10 @@ async function OccupanciesContent({ searchParams }: PageProps) {
           <div key={label} className={`rounded-xl border p-4 ${bg}`}>
             <div className="flex items-center gap-2 mb-1">
               <Icon className={`h-4 w-4 ${color}`} />
-              <p className="text-xs font-medium text-muted-foreground">{label}</p>
+              <p className="text-sm font-medium text-muted-foreground">{label}</p>
             </div>
             <p className={`text-2xl font-bold ${color}`}>{value}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>
+            <p className="text-sm text-muted-foreground mt-0.5">{sub}</p>
           </div>
         ))}
       </div>

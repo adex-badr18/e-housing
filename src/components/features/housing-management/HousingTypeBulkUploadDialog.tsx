@@ -178,7 +178,7 @@ function StepIndicator({ current }: { current: 1 | 2 | 3 }) {
       {steps.map((s, i) => (
         <div key={s.n} className="flex items-center gap-1">
           <div className={cn(
-            'flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold border transition-colors',
+            'flex items-center justify-center w-6 h-6 rounded-full text-sm font-bold border transition-colors',
             current === s.n
               ? 'bg-primary text-primary-foreground border-primary'
               : current > s.n
@@ -188,7 +188,7 @@ function StepIndicator({ current }: { current: 1 | 2 | 3 }) {
             {current > s.n ? <CheckCircle2 className="h-3.5 w-3.5" /> : s.n}
           </div>
           <span className={cn(
-            'text-xs font-medium',
+            'text-sm font-medium',
             current === s.n ? 'text-foreground' : 'text-muted-foreground',
           )}>
             {s.label}
@@ -323,11 +323,11 @@ export function HousingTypeBulkUploadDialog({
                 </div>
                 <div className="text-center">
                   <p className="font-semibold">Drop your Excel file here</p>
-                  <p className="text-sm text-muted-foreground mt-1">or click to browse</p>
-                  <p className="text-xs text-muted-foreground mt-2">Supports .xlsx and .xls</p>
+                  <p className="text-base text-muted-foreground mt-1">or click to browse</p>
+                  <p className="text-sm text-muted-foreground mt-2">Supports .xlsx and .xls</p>
                 </div>
                 {isParsing && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2 text-base text-muted-foreground">
                     <RefreshCw className="h-4 w-4 animate-spin" />
                     Parsing file…
                   </div>
@@ -346,8 +346,8 @@ export function HousingTypeBulkUploadDialog({
               <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-muted/20">
                 <Download className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium">Need a template?</p>
-                  <p className="text-xs text-muted-foreground">Download our pre-formatted Excel template with a sample row</p>
+                  <p className="text-base font-medium">Need a template?</p>
+                  <p className="text-sm text-muted-foreground">Download our pre-formatted Excel template with a sample row</p>
                 </div>
                 <Button variant="outline" size="sm" onClick={downloadTemplate} className="gap-1.5 shrink-0">
                   <Download className="h-3.5 w-3.5" />
@@ -361,14 +361,14 @@ export function HousingTypeBulkUploadDialog({
           {step === 2 && (
             <div className="space-y-3">
               {errorCount > 0 && (
-                <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-800">
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200 text-base text-amber-800">
                   <AlertCircle className="h-4 w-4 shrink-0" />
                   <span><strong>{errorCount}</strong> validation error{errorCount !== 1 ? 's' : ''} across {rows.filter(r => r.errors.length > 0).length} row{rows.filter(r => r.errors.length > 0).length !== 1 ? 's' : ''}. Fix them before submitting.</span>
                 </div>
               )}
 
               <div className="overflow-x-auto rounded-xl border border-border">
-                <table className="w-full text-xs">
+                <table className="w-full text-sm">
                   <thead className="bg-muted/60 sticky top-0">
                     <tr>
                       <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-44 min-w-[150px]">Name *</th>
@@ -399,7 +399,7 @@ export function HousingTypeBulkUploadDialog({
                               <Input
                                 value={row.name}
                                 onChange={e => updateCell(row._id, 'name', e.target.value)}
-                                className={cn('h-7 text-xs w-full', row.errors.find(e => e.field === 'name') ? 'border-destructive' : '')}
+                                className={cn('h-7 text-sm w-full', row.errors.find(e => e.field === 'name') ? 'border-destructive' : '')}
                               />
                             </td>
                             {/* Building */}
@@ -408,7 +408,7 @@ export function HousingTypeBulkUploadDialog({
                                 value={row.buildingType}
                                 onValueChange={v => updateCell(row._id, 'buildingType', v)}
                               >
-                                <SelectTrigger className="h-7 text-xs w-full"><SelectValue /></SelectTrigger>
+                                <SelectTrigger className="h-7 text-sm w-full"><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="BUNGALOW">Bungalow</SelectItem>
                                   <SelectItem value="STOREY">Storey</SelectItem>
@@ -420,21 +420,21 @@ export function HousingTypeBulkUploadDialog({
                               <Input
                                 type="number" min={1} value={row.numberOfBedrooms}
                                 onChange={e => updateCell(row._id, 'numberOfBedrooms', Number(e.target.value))}
-                                className={cn('h-7 text-xs w-full text-center', row.errors.find(e => e.field === 'numberOfBedrooms') ? 'border-destructive' : '')}
+                                className={cn('h-7 text-sm w-full text-center', row.errors.find(e => e.field === 'numberOfBedrooms') ? 'border-destructive' : '')}
                               />
                             </td>
                             {/* Bath */}
                             <td className="px-2 py-1.5 text-center w-16">
                               <Input type="number" min={0} value={row.numberOfBathrooms}
                                 onChange={e => updateCell(row._id, 'numberOfBathrooms', Number(e.target.value))}
-                                className="h-7 text-xs w-full text-center"
+                                className="h-7 text-sm w-full text-center"
                               />
                             </td>
                             {/* WC */}
                             <td className="px-2 py-1.5 text-center w-16">
                               <Input type="number" min={0} value={row.numberOfToilets}
                                 onChange={e => updateCell(row._id, 'numberOfToilets', Number(e.target.value))}
-                                className="h-7 text-xs w-full text-center"
+                                className="h-7 text-sm w-full text-center"
                               />
                             </td>
                             {/* Parking */}
@@ -443,7 +443,7 @@ export function HousingTypeBulkUploadDialog({
                                 value={row.parkingSpace}
                                 onValueChange={v => updateCell(row._id, 'parkingSpace', v)}
                               >
-                                <SelectTrigger className={cn('h-7 text-xs w-full', row.errors.find(e => e.field === 'parkingSpace') ? 'border-destructive' : '')}><SelectValue /></SelectTrigger>
+                                <SelectTrigger className={cn('h-7 text-sm w-full', row.errors.find(e => e.field === 'parkingSpace') ? 'border-destructive' : '')}><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="Garage">Garage</SelectItem>
                                   <SelectItem value="Car Park">Car Park</SelectItem>
@@ -457,7 +457,7 @@ export function HousingTypeBulkUploadDialog({
                                 value={row.hasBQ ? 'yes' : 'no'}
                                 onValueChange={v => updateCell(row._id, 'hasBQ', v === 'yes')}
                               >
-                                <SelectTrigger className="h-7 text-xs w-full"><SelectValue /></SelectTrigger>
+                                <SelectTrigger className="h-7 text-sm w-full"><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="yes">Yes</SelectItem>
                                   <SelectItem value="no">No</SelectItem>
@@ -469,7 +469,7 @@ export function HousingTypeBulkUploadDialog({
                               <Input
                                 type="number" min={1} value={row.allocationPoints}
                                 onChange={e => updateCell(row._id, 'allocationPoints', Number(e.target.value))}
-                                className={cn('h-7 text-xs w-full text-center', row.errors.find(e => e.field === 'allocationPoints') ? 'border-destructive' : '')}
+                                className={cn('h-7 text-sm w-full text-center', row.errors.find(e => e.field === 'allocationPoints') ? 'border-destructive' : '')}
                               />
                             </td>
                             {/* Rent */}
@@ -477,7 +477,7 @@ export function HousingTypeBulkUploadDialog({
                               <Input
                                 type="number" min={0} value={row.annualRent}
                                 onChange={e => updateCell(row._id, 'annualRent', Number(e.target.value))}
-                                className={cn('h-7 text-xs w-full text-right', row.errors.find(e => e.field === 'annualRent') ? 'border-destructive' : '')}
+                                className={cn('h-7 text-sm w-full text-right', row.errors.find(e => e.field === 'annualRent') ? 'border-destructive' : '')}
                               />
                             </td>
                             {/* Delete */}
@@ -514,7 +514,7 @@ export function HousingTypeBulkUploadDialog({
                 </table>
               </div>
 
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
                 <span>{rows.length} row{rows.length !== 1 ? 's' : ''} total</span>
                 <button type="button" onClick={() => { reset(); }} className="flex items-center gap-1 hover:text-foreground transition-colors">
                   <RotateCcw className="h-3 w-3" />
@@ -536,14 +536,14 @@ export function HousingTypeBulkUploadDialog({
                 ].map(s => (
                   <div key={s.label} className={cn('rounded-xl border p-4 text-center', s.className)}>
                     <p className="text-2xl font-bold">{s.count}</p>
-                    <p className="text-xs font-medium mt-0.5">{s.label}</p>
+                    <p className="text-sm font-medium mt-0.5">{s.label}</p>
                   </div>
                 ))}
               </div>
 
               {/* Row-by-row table */}
               <div className="rounded-xl border border-border overflow-hidden">
-                <table className="w-full text-sm">
+                <table className="w-full text-base">
                   <thead className="bg-muted/50">
                     <tr>
                       <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground">Housing Type</th>
@@ -556,17 +556,17 @@ export function HousingTypeBulkUploadDialog({
                         <td className="px-4 py-2.5 font-medium">{r.name}</td>
                         <td className="px-4 py-2.5">
                           {r.outcome === 'created' && (
-                            <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 gap-1 text-xs">
+                            <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 gap-1 text-sm">
                               <CheckCircle2 className="h-3 w-3" /> Created
                             </Badge>
                           )}
                           {r.outcome === 'updated' && (
-                            <Badge className="bg-blue-100 text-blue-800 border-blue-200 gap-1 text-xs">
+                            <Badge className="bg-blue-100 text-blue-800 border-blue-200 gap-1 text-sm">
                               <RefreshCw className="h-3 w-3" /> Updated
                             </Badge>
                           )}
                           {r.outcome === 'error' && (
-                            <span className="flex items-center gap-1.5 text-xs text-destructive">
+                            <span className="flex items-center gap-1.5 text-sm text-destructive">
                               <XCircle className="h-3.5 w-3.5" />
                               {r.message ?? 'Failed'}
                             </span>

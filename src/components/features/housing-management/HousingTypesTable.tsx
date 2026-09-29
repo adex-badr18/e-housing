@@ -198,7 +198,7 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
       </div>
 
       {/* Results count */}
-      <p className="text-xs text-muted-foreground">
+      <p className="text-sm text-muted-foreground">
         Showing <span className="font-semibold text-foreground">{filtered.length}</span> of{' '}
         {data.length} housing types
       </p>
@@ -240,15 +240,15 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
                   onClick={() => setDetailTarget(ht)}
                 >
                   <TableCell className="font-medium">{ht.name}</TableCell>
-                  <TableCell className="capitalize text-sm text-muted-foreground">
+                  <TableCell className="capitalize text-base text-muted-foreground">
                     {ht.buildingType.charAt(0) + ht.buildingType.slice(1).toLowerCase()}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="text-xs font-medium">
+                    <Badge variant="outline" className="text-sm font-medium">
                       {ht.parkingSpace}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-sm">
+                  <TableCell className="text-base">
                     <span className="font-medium">{ht.numberOfBedrooms}</span>
                     <span className="text-muted-foreground"> bed / </span>
                     <span className="font-medium">{ht.numberOfBathrooms}</span>
@@ -259,16 +259,16 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
                       {ht.allocationPoints} pts
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-sm font-medium">
+                  <TableCell className="text-base font-medium">
                     ₦{ht.annualRent.toLocaleString()}
                   </TableCell>
                   <TableCell>
                     {ht.hasBQ ? (
-                      <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-xs font-medium">
+                      <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-sm font-medium">
                         BQ
                       </Badge>
                     ) : (
-                      <span className="text-muted-foreground text-xs">—</span>
+                      <span className="text-muted-foreground text-sm">—</span>
                     )}
                   </TableCell>
                   <TableCell>
@@ -306,7 +306,7 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-1">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Page <span className="font-semibold text-foreground">{page + 1}</span> of{' '}
             <span className="font-semibold text-foreground">{totalPages}</span>
             {' '}·{' '}
@@ -326,7 +326,7 @@ export function HousingTypesTable({ initialData, onDataChange }: HousingTypesTab
                 <button
                   key={pageNum}
                   onClick={() => setPage(pageNum)}
-                  className={`h-8 w-8 rounded-lg border text-xs font-medium transition ${
+                  className={`h-8 w-8 rounded-lg border text-sm font-medium transition ${
                     pageNum === page
                       ? 'bg-primary text-primary-foreground border-primary'
                       : 'hover:bg-muted'

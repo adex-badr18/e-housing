@@ -35,7 +35,7 @@ export function DependantsInfoCard({
       <div className="rounded-xl border border-border bg-muted/30 overflow-hidden">
         <div className="flex items-center gap-2 px-5 py-3.5 border-b bg-background/60">
           <Heart className="size-4 text-rose-500 shrink-0" />
-          <span className="text-sm font-semibold text-foreground">Spouse Details</span>
+          <span className="text-base font-semibold text-foreground">Spouse Details</span>
           {isMarried && (
             <Badge variant="secondary" className="ml-auto text-[11px] font-medium">
               Married
@@ -45,7 +45,7 @@ export function DependantsInfoCard({
 
         <div className="p-5">
           {!isMarried || !hasSpouseInfo ? (
-            <div className="flex items-center gap-2 text-muted-foreground text-sm py-2">
+            <div className="flex items-center gap-2 text-muted-foreground text-base py-2">
               <AlertCircle className="size-4 shrink-0" />
               <span>
                 {!isMarried
@@ -89,7 +89,7 @@ export function DependantsInfoCard({
       <div className="rounded-xl border border-border bg-muted/30 overflow-hidden">
         <div className="flex items-center gap-2 px-5 py-3.5 border-b bg-background/60">
           <Baby className="size-4 text-amber-500 shrink-0" />
-          <span className="text-sm font-semibold text-foreground">Child Dependants</span>
+          <span className="text-base font-semibold text-foreground">Child Dependants</span>
           <Badge variant="outline" className="ml-auto text-[11px] font-medium">
             {childList.length} registered
           </Badge>
@@ -97,7 +97,7 @@ export function DependantsInfoCard({
 
         <div className="p-5">
           {childList.length === 0 ? (
-            <div className="flex items-center gap-2 text-muted-foreground text-sm py-2">
+            <div className="flex items-center gap-2 text-muted-foreground text-base py-2">
               <AlertCircle className="size-4 shrink-0" />
               <span>No child dependants were registered during onboarding.</span>
             </div>
@@ -113,11 +113,11 @@ export function DependantsInfoCard({
                   key={i}
                   className="grid grid-cols-[2rem_1fr_5rem] gap-3 items-center px-3 py-2.5 rounded-lg odd:bg-muted/50 even:bg-transparent"
                 >
-                  <span className="text-xs font-bold text-muted-foreground">{i + 1}</span>
-                  <span className="text-sm font-medium text-foreground truncate">
+                  <span className="text-sm font-bold text-muted-foreground">{i + 1}</span>
+                  <span className="text-base font-medium text-foreground truncate">
                     {child.name || <span className="italic text-muted-foreground">—</span>}
                   </span>
-                  <span className="text-sm text-muted-foreground text-right">
+                  <span className="text-base text-muted-foreground text-right">
                     {child.age != null ? `${child.age} yr${child.age !== 1 ? 's' : ''}` : '—'}
                   </span>
                 </div>
@@ -126,7 +126,7 @@ export function DependantsInfoCard({
           )}
 
           {numberOfDependents != null && numberOfDependents > 0 && (
-            <div className="mt-4 pt-3 border-t border-border/60 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <div className="mt-4 pt-3 border-t border-border/60 flex items-center gap-1.5 text-sm text-muted-foreground">
               <Users className="size-3.5" />
               <span>Total recorded dependants: <strong className="text-foreground">{numberOfDependents}</strong></span>
             </div>
@@ -155,7 +155,7 @@ function InfoField({
         {icon}
         {label}
       </dt>
-      <dd className="text-sm font-medium text-foreground">
+      <dd className="text-base font-medium text-foreground">
         {value || <span className="text-muted-foreground italic">Not provided</span>}
       </dd>
     </div>

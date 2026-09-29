@@ -41,7 +41,7 @@ export default async function ManagementExitHistoryDetailPage({
       <div className="flex flex-col gap-4">
         <Link
           href="/management/exit/history"
-          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-fit"
+          className="inline-flex items-center gap-2 text-base font-medium text-muted-foreground hover:text-foreground transition-colors w-fit"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Exit History
@@ -50,7 +50,7 @@ export default async function ManagementExitHistoryDetailPage({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-oau-navy">Exit Notice Details</h1>
-            <p className="text-muted-foreground text-sm mt-1">
+            <p className="text-muted-foreground text-base mt-1">
               Submitted on {format(new Date(notice.submittedAt), 'dd MMMM yyyy, HH:mm')}
             </p>
           </div>
@@ -67,12 +67,12 @@ export default async function ManagementExitHistoryDetailPage({
             <User className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="font-semibold text-sm">Applicant</h3>
-            <p className="text-sm mt-0.5">
+            <h3 className="font-semibold text-base">Applicant</h3>
+            <p className="text-base mt-0.5">
               {applicantUser ? `${applicantUser.firstName} ${applicantUser.lastName}` : 'Unknown'}
             </p>
             {applicantProfile && (
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 {applicantProfile.rank} • {applicantProfile.department}
               </p>
             )}
@@ -84,11 +84,11 @@ export default async function ManagementExitHistoryDetailPage({
             <Building2 className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="font-semibold text-sm">Housing Unit</h3>
-            <p className="text-sm mt-0.5">
+            <h3 className="font-semibold text-base">Housing Unit</h3>
+            <p className="text-base mt-0.5">
               {unit ? unit.name : 'Unknown Unit'}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               ID: {notice.housingUnitId}
             </p>
           </div>

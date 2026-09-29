@@ -150,7 +150,7 @@ export function HousingUnitDialog({
               onChange={(e) => setName(e.target.value)}
               className={errors.name ? 'border-destructive' : ''}
             />
-            {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
+            {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
           </div>
 
           {/* House Number & Road Number */}
@@ -164,7 +164,7 @@ export function HousingUnitDialog({
                 onChange={(e) => setHouseNumber(e.target.value)}
                 className={errors.houseNumber ? 'border-destructive' : ''}
               />
-              {errors.houseNumber && <p className="text-xs text-destructive">{errors.houseNumber}</p>}
+              {errors.houseNumber && <p className="text-sm text-destructive">{errors.houseNumber}</p>}
             </div>
 
             <div className="space-y-1.5">
@@ -176,7 +176,7 @@ export function HousingUnitDialog({
                 onChange={(e) => setRoadNumber(e.target.value)}
                 className={errors.roadNumber ? 'border-destructive' : ''}
               />
-              {errors.roadNumber && <p className="text-xs text-destructive">{errors.roadNumber}</p>}
+              {errors.roadNumber && <p className="text-sm text-destructive">{errors.roadNumber}</p>}
             </div>
           </div>
 
@@ -197,17 +197,17 @@ export function HousingUnitDialog({
                   ))}
               </SelectContent>
             </Select>
-            {errors.housingTypeId && <p className="text-xs text-destructive">{errors.housingTypeId}</p>}
+            {errors.housingTypeId && <p className="text-sm text-destructive">{errors.housingTypeId}</p>}
           </div>
 
           {/* Type Preview — dynamic based on selected type */}
           {selectedType && (
             <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-              <p className="text-sm font-medium flex items-center gap-2">
+              <p className="text-base font-medium flex items-center gap-2">
                 <Home className="h-4 w-4 text-primary" />
                 Type Preview
               </p>
-              <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="grid grid-cols-2 gap-2 text-base">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <BedDouble className="h-3.5 w-3.5" />
                   {selectedType.numberOfBedrooms} Bedroom{selectedType.numberOfBedrooms !== 1 ? 's' : ''}
@@ -224,10 +224,10 @@ export function HousingUnitDialog({
               </div>
               {selectedType.hasBQ && (
                 <div className="flex items-center gap-2 pt-1 border-t border-border">
-                  <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
+                  <Badge className="bg-primary/10 text-primary border-primary/20 text-sm">
                     Auto-creates 1 BQ
                   </Badge>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     Boys Quarters will be created automatically
                   </span>
                 </div>

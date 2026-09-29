@@ -38,7 +38,7 @@ export function StepHousingPreferences({ form, eligibleTypes }: StepHousingPrefe
         </div>
         <div>
           <h2 className="text-lg font-semibold">Housing Preferences</h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-base text-muted-foreground">
             Select up to 3 housing types in order of preference. Your first selection is your top choice.
           </p>
         </div>
@@ -51,7 +51,7 @@ export function StepHousingPreferences({ form, eligibleTypes }: StepHousingPrefe
             <div
               key={n}
               className={cn(
-                'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-200',
+                'w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-200',
                 selected.length >= n
                   ? 'bg-primary text-primary-foreground scale-110 shadow-md shadow-primary/20'
                   : 'bg-muted text-muted-foreground border border-border'
@@ -61,16 +61,16 @@ export function StepHousingPreferences({ form, eligibleTypes }: StepHousingPrefe
             </div>
           ))}
         </div>
-        <span className="text-sm text-muted-foreground">
+        <span className="text-base text-muted-foreground">
           <span className="font-semibold text-foreground">{selected.length}</span> / 3 selected
           {selected.length === 3 && (
-            <span className="ml-2 text-xs text-amber-600 font-medium">(maximum reached)</span>
+            <span className="ml-2 text-sm text-amber-600 font-medium">(maximum reached)</span>
           )}
         </span>
       </div>
 
       {errors.preferredHousingTypeIds && (
-        <div className="flex items-center gap-2 text-destructive text-sm">
+        <div className="flex items-center gap-2 text-destructive text-base">
           <AlertCircle className="h-4 w-4 shrink-0" />
           {errors.preferredHousingTypeIds.message as string}
         </div>
@@ -81,7 +81,7 @@ export function StepHousingPreferences({ form, eligibleTypes }: StepHousingPrefe
         <div className="text-center py-12 text-muted-foreground">
           <Home className="h-12 w-12 mx-auto opacity-20 mb-3" />
           <p className="font-medium">No housing types available for your grade level.</p>
-          <p className="text-sm mt-1">Please contact the Housing Secretary for assistance.</p>
+          <p className="text-base mt-1">Please contact the Housing Secretary for assistance.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -109,7 +109,7 @@ export function StepHousingPreferences({ form, eligibleTypes }: StepHousingPrefe
                 {/* Rank badge */}
                 {isSelected && (
                   <div className="absolute top-3 right-3 flex items-center gap-1">
-                    <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                    <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
                       {rank}
                     </div>
                     <CheckCircle2 className="h-4 w-4 text-primary" />
@@ -118,19 +118,19 @@ export function StepHousingPreferences({ form, eligibleTypes }: StepHousingPrefe
 
                 {/* Type name & building type */}
                 <div className="pr-14">
-                  <p className="font-semibold text-sm leading-tight">{ht.name}</p>
+                  <p className="font-semibold text-base leading-tight">{ht.name}</p>
                   <div className="flex items-center gap-2 mt-1.5">
-                    <Badge className="bg-muted text-muted-foreground border-border text-xs">
+                    <Badge className="bg-muted text-muted-foreground border-border text-sm">
                       {ht.buildingType.charAt(0) + ht.buildingType.slice(1).toLowerCase()}
                     </Badge>
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-sm">
                       {ht.parkingSpace}
                     </Badge>
                   </div>
                 </div>
 
                 {/* Stats */}
-                <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                <div className="mt-3 grid grid-cols-2 gap-2 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1.5">
                     <BedDouble className="h-3.5 w-3.5" />
                     {ht.numberOfBedrooms} Bedroom{ht.numberOfBedrooms !== 1 ? 's' : ''}
@@ -180,13 +180,13 @@ export function StepHousingPreferences({ form, eligibleTypes }: StepHousingPrefe
       )}
 
       {selected.length > 0 && (
-        <div className="rounded-lg bg-muted/50 border border-border p-3 text-sm space-y-1.5">
+        <div className="rounded-lg bg-muted/50 border border-border p-3 text-base space-y-1.5">
           <p className="font-medium text-foreground">Your preference order:</p>
           {selected.map((id, i) => {
             const ht = eligibleTypes.find((t) => t.id === id);
             return (
               <div key={id} className="flex items-center gap-2 text-muted-foreground">
-                <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold shrink-0">
+                <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground text-sm flex items-center justify-center font-bold shrink-0">
                   {i + 1}
                 </span>
                 {ht?.name ?? id}

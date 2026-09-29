@@ -35,7 +35,7 @@ export function HousingManagementClient({
         </div>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Housing Configuration & Inventory</h1>
-          <p className="text-muted-foreground text-sm mt-1">
+          <p className="text-muted-foreground text-base mt-1">
             Manage housing types (categories, amenities, allocation points) and the physical unit inventory.
           </p>
         </div>
@@ -75,8 +75,8 @@ export function HousingManagementClient({
         ].map(({ label, value, sub, color, bg }) => (
           <div key={label} className={`rounded-xl border p-4 ${bg}`}>
             <p className={`text-2xl font-bold ${color}`}>{value}</p>
-            <p className="text-sm font-medium">{label}</p>
-            <p className="text-xs text-muted-foreground">{sub}</p>
+            <p className="text-base font-medium">{label}</p>
+            <p className="text-sm text-muted-foreground">{sub}</p>
           </div>
         ))}
       </div>
@@ -91,7 +91,7 @@ export function HousingManagementClient({
             type="button"
             onClick={() => setActiveTab(id)}
             className={cn(
-              'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
+              'flex items-center gap-2 px-4 py-2 rounded-lg text-base font-medium transition-all duration-200',
               activeTab === id
                 ? 'bg-background text-primary shadow-sm border border-border'
                 : 'text-muted-foreground hover:text-foreground hover:bg-background/50'

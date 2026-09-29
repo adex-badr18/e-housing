@@ -140,7 +140,7 @@ export function ApplicationWizard({
         </div>
         <Link
           href="/staff"
-          className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+          className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-primary text-primary-foreground text-base font-medium hover:bg-primary/90 transition-colors"
         >
           <Home className="h-4 w-4" />
           Return to Dashboard
@@ -166,10 +166,10 @@ export function ApplicationWizard({
         </div>
         
         <div className="flex flex-wrap items-center justify-center gap-3 pt-4 border-t border-border/50">
-          <Link href={`/staff/applications/${activeApplication.id}`} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors">
+          <Link href={`/staff/applications/${activeApplication.id}`} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-base font-medium hover:bg-primary/90 transition-colors">
             View Application Details
           </Link>
-          <Link href="/staff/applications" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border bg-background text-sm font-medium hover:bg-muted transition-colors">
+          <Link href="/staff/applications" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border bg-background text-base font-medium hover:bg-muted transition-colors">
             Back to Applications
           </Link>
           <QuitRequestButton 
@@ -187,7 +187,7 @@ export function ApplicationWizard({
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Housing Application</h1>
-        <p className="text-muted-foreground text-sm mt-1">
+        <p className="text-muted-foreground text-base mt-1">
           Complete all steps to submit your housing application for review.
         </p>
       </div>

@@ -21,7 +21,7 @@ function PipelineMini({ notice }: { notice: ExitNotice }) {
     <div className="flex items-center gap-0.5">
       {stages.map(({ status, Icon }, i) => (
         <div key={i} className={cn(
-          'w-6 h-6 rounded-full flex items-center justify-center border text-xs',
+          'w-6 h-6 rounded-full flex items-center justify-center border text-sm',
           status === 'PASSED' ? 'bg-emerald-100 border-emerald-300 text-emerald-700' :
           status === 'FAILED' ? 'bg-red-100 border-red-300 text-red-700' :
           'bg-muted border-border text-muted-foreground'
@@ -34,9 +34,9 @@ function PipelineMini({ notice }: { notice: ExitNotice }) {
 }
 
 function NoticeStatusBadge({ notice }: { notice: ExitNotice }) {
-  if (notice.isCleared) return <span className="text-xs font-semibold px-2 py-0.5 rounded-full border bg-emerald-100 text-emerald-800 border-emerald-200">Cleared</span>;
-  if (notice.isWithdrawn) return <span className="text-xs font-semibold px-2 py-0.5 rounded-full border bg-slate-200 text-slate-800 border-slate-300">Withdrawn</span>;
-  return <span className="text-xs font-semibold px-2 py-0.5 rounded-full border bg-amber-100 text-amber-800 border-amber-200">In Progress</span>;
+  if (notice.isCleared) return <span className="text-sm font-semibold px-2 py-0.5 rounded-full border bg-emerald-100 text-emerald-800 border-emerald-200">Cleared</span>;
+  if (notice.isWithdrawn) return <span className="text-sm font-semibold px-2 py-0.5 rounded-full border bg-slate-200 text-slate-800 border-slate-300">Withdrawn</span>;
+  return <span className="text-sm font-semibold px-2 py-0.5 rounded-full border bg-amber-100 text-amber-800 border-amber-200">In Progress</span>;
 }
 
 interface ExitHistoryTableProps {
@@ -93,29 +93,29 @@ export function ExitHistoryTable({ notices, detailBasePath, userMap }: ExitHisto
             placeholder="Search by ID, reason, or name…"
             value={search}
             onChange={e => handleSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+            className="w-full pl-9 pr-4 py-2.5 text-base rounded-xl border bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
           />
         </div>
         <button
           onClick={() => setShowFilters(f => !f)}
-          className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border bg-background hover:bg-muted transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 text-base font-medium rounded-xl border bg-background hover:bg-muted transition-colors"
         >
           <SlidersHorizontal className="h-4 w-4" />
           Filters
           {statusFilter !== 'ALL' && (
-            <span className="ml-1 bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-full font-bold">1</span>
+            <span className="ml-1 bg-primary text-primary-foreground text-sm px-1.5 py-0.5 rounded-full font-bold">1</span>
           )}
         </button>
       </div>
 
       {showFilters && (
         <div className="p-4 rounded-xl border bg-muted/30 flex flex-wrap gap-2 items-center">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mr-1">Status:</span>
+          <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mr-1">Status:</span>
           {statusOptions.map(opt => (
             <button
               key={opt.value}
               onClick={() => handleFilter(opt.value)}
-              className={`text-xs px-3 py-1.5 rounded-lg font-medium border transition-colors ${
+              className={`text-sm px-3 py-1.5 rounded-lg font-medium border transition-colors ${
                 statusFilter === opt.value
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-background border-border hover:bg-muted'
@@ -127,7 +127,7 @@ export function ExitHistoryTable({ notices, detailBasePath, userMap }: ExitHisto
         </div>
       )}
 
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span>{filtered.length} record{filtered.length !== 1 ? 's' : ''} found</span>
         {totalPages > 1 && <span>Page {currentPage} of {totalPages}</span>}
       </div>
@@ -135,22 +135,22 @@ export function ExitHistoryTable({ notices, detailBasePath, userMap }: ExitHisto
       {paged.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 gap-3 rounded-xl border border-dashed bg-muted/10 text-center">
           <Search className="h-10 w-10 text-muted-foreground/30" />
-          <p className="text-sm font-medium text-muted-foreground">No exit notices found</p>
-          <p className="text-xs text-muted-foreground/60">Try adjusting your search or filter.</p>
+          <p className="text-base font-medium text-muted-foreground">No exit notices found</p>
+          <p className="text-sm text-muted-foreground/60">Try adjusting your search or filter.</p>
         </div>
       ) : (
         <div className="rounded-2xl border bg-card shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-base">
               <thead>
                 <tr className="border-b bg-muted/40">
-                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Notice ID</th>
-                  {userMap && <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Applicant</th>}
-                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Reason</th>
-                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Status</th>
-                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Pipeline</th>
-                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Submitted</th>
-                  <th className="text-right px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Action</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-sm uppercase tracking-wide">Notice ID</th>
+                  {userMap && <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-sm uppercase tracking-wide">Applicant</th>}
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-sm uppercase tracking-wide">Reason</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-sm uppercase tracking-wide">Status</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-sm uppercase tracking-wide">Pipeline</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-sm uppercase tracking-wide">Submitted</th>
+                  <th className="text-right px-4 py-3 font-semibold text-muted-foreground text-sm uppercase tracking-wide">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -159,21 +159,21 @@ export function ExitHistoryTable({ notices, detailBasePath, userMap }: ExitHisto
                   return (
                     <tr key={notice.id} className="hover:bg-muted/20 transition-colors group">
                       <td className="px-4 py-3.5">
-                        <p className="font-mono text-xs font-semibold">{notice.id}</p>
+                        <p className="font-mono text-sm font-semibold">{notice.id}</p>
                       </td>
                       {userMap && (
                         <td className="px-4 py-3.5">
-                          <p className="font-medium text-sm">
+                          <p className="font-medium text-base">
                             {applicant ? `${applicant.firstName} ${applicant.lastName}` : <span className="text-muted-foreground italic">Unknown</span>}
                           </p>
                         </td>
                       )}
                       <td className="px-4 py-3.5">
-                        <span className="text-xs capitalize">{notice.reason.toLowerCase().replace('_', ' ')}</span>
+                        <span className="text-sm capitalize">{notice.reason.toLowerCase().replace('_', ' ')}</span>
                       </td>
                       <td className="px-4 py-3.5"><NoticeStatusBadge notice={notice} /></td>
                       <td className="px-4 py-3.5"><PipelineMini notice={notice} /></td>
-                      <td className="px-4 py-3.5 text-muted-foreground text-xs">
+                      <td className="px-4 py-3.5 text-muted-foreground text-sm">
                         {format(new Date(notice.submittedAt), 'dd MMM yyyy')}
                         <br />
                         <span className="text-muted-foreground/60">{format(new Date(notice.submittedAt), 'HH:mm')}</span>
@@ -181,7 +181,7 @@ export function ExitHistoryTable({ notices, detailBasePath, userMap }: ExitHisto
                       <td className="px-4 py-3.5 text-right">
                         <Link
                           href={`${detailBasePath}/${notice.id}`}
-                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline group-hover:gap-2 transition-all"
+                          className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline group-hover:gap-2 transition-all"
                         >
                           View <ArrowRight className="h-3.5 w-3.5" />
                         </Link>
@@ -200,7 +200,7 @@ export function ExitHistoryTable({ notices, detailBasePath, userMap }: ExitHisto
           <button
             onClick={() => setPage(p => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-base rounded-lg border hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <ChevronLeft className="h-4 w-4" /> Previous
           </button>
@@ -209,7 +209,7 @@ export function ExitHistoryTable({ notices, detailBasePath, userMap }: ExitHisto
               <button
                 key={p}
                 onClick={() => setPage(p)}
-                className={`w-8 h-8 text-sm rounded-lg font-medium transition-colors ${
+                className={`w-8 h-8 text-base rounded-lg font-medium transition-colors ${
                   p === currentPage ? 'bg-primary text-primary-foreground' : 'border hover:bg-muted'
                 }`}
               >
@@ -220,7 +220,7 @@ export function ExitHistoryTable({ notices, detailBasePath, userMap }: ExitHisto
           <button
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-base rounded-lg border hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Next <ChevronRight className="h-4 w-4" />
           </button>

@@ -144,8 +144,8 @@ function MetricRow({
       value === null   && 'bg-background border-border'
     )}>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium">{metric.label}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">{metric.description}</p>
+        <p className="text-base font-medium">{metric.label}</p>
+        <p className="text-sm text-muted-foreground mt-0.5">{metric.description}</p>
       </div>
       <div className="flex gap-1.5 shrink-0">
         {(['GOOD', 'FAIR', 'BAD', 'NA'] as const).map(opt => (
@@ -154,7 +154,7 @@ function MetricRow({
             type="button"
             onClick={() => onChange(value === opt ? null : opt)}
             className={cn(
-              'text-xs font-semibold px-2.5 py-1 rounded-md border transition-all',
+              'text-sm font-semibold px-2.5 py-1 rounded-md border transition-all',
               opt === 'GOOD' && value === 'GOOD' && 'bg-emerald-500 text-white border-emerald-500',
               opt === 'GOOD' && value !== 'GOOD' && 'border-emerald-300 text-emerald-700 hover:bg-emerald-50',
               opt === 'FAIR' && value === 'FAIR' && 'bg-amber-500 text-white border-amber-500',
@@ -179,7 +179,7 @@ function MetricRow({
 
 function UnitDetailStrip({ unit, housingType }: { unit: VacantUnitData['unit']; housingType: VacantUnitData['housingType'] }) {
   return (
-    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+    <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
       <span className="flex items-center gap-1 font-semibold text-foreground">
         <Home className="h-3.5 w-3.5 text-primary" />
         {unit.name}
@@ -232,22 +232,22 @@ function InspectionPanel({
   return (
     <div className="space-y-4">
       {/* Summary row */}
-      <div className="flex gap-3 text-sm">
+      <div className="flex gap-3 text-base">
         <div className="flex-1 rounded-lg border bg-emerald-50 border-emerald-200 px-3 py-2 text-center">
           <p className="text-2xl font-bold text-emerald-600">{goodCount}</p>
-          <p className="text-xs text-emerald-700">Good</p>
+          <p className="text-sm text-emerald-700">Good</p>
         </div>
         <div className="flex-1 rounded-lg border bg-amber-50 border-amber-200 px-3 py-2 text-center">
           <p className="text-2xl font-bold text-amber-600">{fairCount}</p>
-          <p className="text-xs text-amber-700">Fair</p>
+          <p className="text-sm text-amber-700">Fair</p>
         </div>
         <div className="flex-1 rounded-lg border bg-red-50 border-red-200 px-3 py-2 text-center">
           <p className="text-2xl font-bold text-red-500">{badCount}</p>
-          <p className="text-xs text-red-700">Bad</p>
+          <p className="text-sm text-red-700">Bad</p>
         </div>
         <div className="flex-1 rounded-lg border bg-muted px-3 py-2 text-center">
           <p className="text-2xl font-bold text-muted-foreground">{INSPECTION_METRICS.length - rated}</p>
-          <p className="text-xs text-muted-foreground">Pending</p>
+          <p className="text-sm text-muted-foreground">Pending</p>
         </div>
       </div>
 
@@ -255,7 +255,7 @@ function InspectionPanel({
       {categories.map(cat => (
         <div key={cat} className="rounded-xl border bg-card overflow-hidden">
           <div className="px-4 py-2.5 bg-muted/40 border-b">
-            <h4 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{cat}</h4>
+            <h4 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">{cat}</h4>
           </div>
           <div className="p-3 space-y-2">
             {INSPECTION_METRICS.filter(m => m.category === cat).map(metric => (
@@ -315,7 +315,7 @@ function RequeuePanel({
       {/* Vacant unit picker */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h4 className="text-sm font-semibold flex items-center gap-2">
+          <h4 className="text-base font-semibold flex items-center gap-2">
             <Home className="h-4 w-4 text-primary" />
             Select a Vacant Unit
           </h4>
@@ -325,7 +325,7 @@ function RequeuePanel({
         {!loadingUnits && vacantUnits.length === 0 && (
           <div className="flex items-center gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-800">
             <AlertCircle className="h-5 w-5 shrink-0" />
-            <p className="text-sm">No vacant housing units are currently available. Check back later.</p>
+            <p className="text-base">No vacant housing units are currently available. Check back later.</p>
           </div>
         )}
 
@@ -340,26 +340,26 @@ function RequeuePanel({
           />
         )}
         {form.formState.errors.allocatedUnitId && (
-          <p className="text-xs text-destructive">{form.formState.errors.allocatedUnitId?.message}</p>
+          <p className="text-sm text-destructive">{form.formState.errors.allocatedUnitId?.message}</p>
         )}
       </div>
 
       {/* Notes */}
       <div className="space-y-2">
-        <label className="text-sm font-semibold">
-          Re-activation Notes <span className="text-xs font-normal text-muted-foreground">(Optional)</span>
+        <label className="text-base font-semibold">
+          Re-activation Notes <span className="text-sm font-normal text-muted-foreground">(Optional)</span>
         </label>
         <textarea
           {...form.register('notes')}
           rows={3}
           placeholder="Explain why the application is being re-activated now (optional)..."
           className={cn(
-            'w-full text-sm px-3 py-2 rounded-xl border bg-background resize-none',
+            'w-full text-base px-3 py-2 rounded-xl border bg-background resize-none',
             'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition'
           )}
         />
         {form.formState.errors.notes && (
-          <p className="text-xs text-destructive">{form.formState.errors.notes.message}</p>
+          <p className="text-sm text-destructive">{form.formState.errors.notes.message}</p>
         )}
       </div>
 
@@ -367,7 +367,7 @@ function RequeuePanel({
         type="submit"
         disabled={isPending || !selectedUnitId || vacantUnits.length === 0}
         className={cn(
-          'w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all',
+          'w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-base transition-all',
           'bg-primary text-primary-foreground hover:bg-primary/90',
           'disabled:opacity-50 disabled:cursor-not-allowed shadow-sm'
         )}
@@ -576,8 +576,8 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
         <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50">
           <Clock className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-semibold text-amber-800">Application is in Queue</p>
-            <p className="text-xs text-amber-700 mt-0.5">
+            <p className="text-base font-semibold text-amber-800">Application is in Queue</p>
+            <p className="text-sm text-amber-700 mt-0.5">
               This application is awaiting a suitable vacant unit. Once a unit becomes available,
               select it below and forward the application to DVC Admin.
             </p>
@@ -589,8 +589,8 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
           <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/5 border border-primary/20">
             <Building2 className="h-5 w-5 text-primary shrink-0" />
             <div className="flex-1">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Housing Secretary Score</p>
-              <p className="text-sm font-semibold text-foreground mt-0.5">
+              <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Housing Secretary Score</p>
+              <p className="text-base font-semibold text-foreground mt-0.5">
                 {pointsBreakdown.totalPoints} pts
                 <span className="font-normal text-muted-foreground ml-2">
                   (Base {pointsBreakdown.baseTypePoints} + Seniority {pointsBreakdown.seniorityBonus} + Dependents {pointsBreakdown.dependentsBonus} + Marital {pointsBreakdown.maritalStatusBonus})
@@ -614,16 +614,16 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
       {/* DVC Return Banner */}
       {application.status === 'RETURNED' && (
         <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-4 dark:bg-amber-950/40 dark:border-amber-800 space-y-2">
-          <div className="flex items-center gap-2 text-amber-900 dark:text-amber-300 font-bold text-sm">
+          <div className="flex items-center gap-2 text-amber-900 dark:text-amber-300 font-bold text-base">
             <AlertCircle className="h-5 w-5 text-amber-600" />
             Application Returned by DVC Admin for Modification
           </div>
           {application.dvcReturnNote && (
-            <p className="text-xs text-amber-800 dark:text-amber-400 bg-white/70 dark:bg-amber-900/40 p-2.5 rounded-lg font-mono">
+            <p className="text-sm text-amber-800 dark:text-amber-400 bg-white/70 dark:bg-amber-900/40 p-2.5 rounded-lg font-mono">
               &quot;{application.dvcReturnNote}&quot;
             </p>
           )}
-          <p className="text-xs text-amber-700 dark:text-amber-400">
+          <p className="text-sm text-amber-700 dark:text-amber-400">
             Please re-verify the housing unit allocation or inspect an alternative vacant unit based on the DVC Admin&apos;s feedback before resubmitting.
           </p>
         </div>
@@ -634,8 +634,8 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
         <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/5 border border-primary/20">
           <Building2 className="h-5 w-5 text-primary shrink-0" />
           <div className="flex-1">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Housing Secretary Score</p>
-            <p className="text-sm font-semibold text-foreground mt-0.5">
+            <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Housing Secretary Score</p>
+            <p className="text-base font-semibold text-foreground mt-0.5">
               {pointsBreakdown.totalPoints} pts
               <span className="font-normal text-muted-foreground ml-2">
                 (Base {pointsBreakdown.baseTypePoints} + Seniority {pointsBreakdown.seniorityBonus} + Dependents {pointsBreakdown.dependentsBonus} + Marital {pointsBreakdown.maritalStatusBonus})
@@ -654,7 +654,7 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
           <div className="rounded-xl border border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800 overflow-hidden">
             <div className="px-4 py-3 bg-blue-100/60 dark:bg-blue-900/40 border-b border-blue-200 dark:border-blue-800 flex items-center gap-2">
               <Home className="h-4 w-4 text-blue-600 shrink-0" />
-              <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">
+              <p className="text-base font-semibold text-blue-800 dark:text-blue-300">
                 Housing Secretary&apos;s Unit Suggestion
               </p>
             </div>
@@ -662,9 +662,9 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
               {hsUnit ? (
                 <UnitDetailStrip unit={hsUnit} housingType={hsType ?? null} />
               ) : (
-                <p className="text-xs text-blue-700 dark:text-blue-400">Loading unit details…</p>
+                <p className="text-sm text-blue-700 dark:text-blue-400">Loading unit details…</p>
               )}
-              <p className="text-xs text-blue-700 dark:text-blue-400">
+              <p className="text-sm text-blue-700 dark:text-blue-400">
                 You may accept this suggestion or select a different unit below. If you pick a different unit, you will be required to record Physical Inspection scores for both units.
               </p>
               <button
@@ -678,7 +678,7 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
                     toast.info('The suggested unit is no longer vacant. Please select an alternative.');
                   }
                 }}
-                className="mt-1 text-xs font-semibold text-blue-700 underline underline-offset-2 hover:text-blue-900 transition"
+                className="mt-1 text-sm font-semibold text-blue-700 underline underline-offset-2 hover:text-blue-900 transition"
               >
                 Accept this suggestion
               </button>
@@ -693,18 +693,18 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
         <div className="rounded-xl border bg-card overflow-hidden">
           <div className="px-4 py-3 bg-muted/40 border-b flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-semibold flex items-center gap-2">
+              <h3 className="text-base font-semibold flex items-center gap-2">
                 <Home className="h-4 w-4 text-primary" />
                 Step 1 — Select Housing Unit
               </h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-sm text-muted-foreground mt-0.5">
                 Choose the unit you wish to allocate (or accept the Housing Secretary&apos;s suggestion above).
               </p>
             </div>
             {loadingUnits && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
           </div>
           <div className="p-4 space-y-3">
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               All vacant units are listed below. <span className="font-medium text-emerald-700">Eligible units</span> match both the applicant&apos;s housing preferences and staff category. Non-eligible units are shown for reference and can be selected if appropriate.
             </p>
 
@@ -712,8 +712,8 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
               <div className="flex items-center gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-800">
                 <AlertCircle className="h-5 w-5 shrink-0" />
                 <div>
-                  <p className="text-sm font-medium">No vacant units available</p>
-                  <p className="text-xs mt-0.5">
+                  <p className="text-base font-medium">No vacant units available</p>
+                  <p className="text-sm mt-0.5">
                     If no suitable unit exists, place this application in the queue using the decision below.
                   </p>
                 </div>
@@ -735,7 +735,7 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
             )}
 
             {form.formState.errors.estateSuggestedUnitId && (
-              <p className="text-xs text-destructive flex items-center gap-1.5">
+              <p className="text-sm text-destructive flex items-center gap-1.5">
                 <AlertCircle className="h-3 w-3" />
                 {form.formState.errors.estateSuggestedUnitId?.message}
               </p>
@@ -748,7 +748,7 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
               const same = hsUnitId && selectedUnitId === hsUnitId;
               return (
                 <div className={cn(
-                  'flex items-center gap-2 text-xs rounded-lg px-3 py-2 border',
+                  'flex items-center gap-2 text-sm rounded-lg px-3 py-2 border',
                   same
                     ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
                     : 'text-primary bg-primary/5 border-primary/20'
@@ -773,13 +773,13 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
         {(selectedUnitId || hsUnitId) && (
           <div className="rounded-xl border bg-card overflow-hidden">
             <div className="px-4 py-3 bg-muted/40 border-b">
-              <h3 className="text-sm font-semibold">Step 2 — Physical Inspection</h3>
+              <h3 className="text-base font-semibold">Step 2 — Physical Inspection</h3>
               {showTwoTabs ? (
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-sm text-muted-foreground mt-0.5">
                   Two units have been identified. Record inspection scores for both using the tabs below.
                 </p>
               ) : (
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-sm text-muted-foreground mt-0.5">
                   Record the physical inspection score for the selected unit.
                 </p>
               )}
@@ -820,16 +820,16 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
                                 <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
                               )}
                             </div>
-                            <p className="text-sm font-semibold truncate">{tabData?.unit.name ?? tab.unitId}</p>
+                            <p className="text-base font-semibold truncate">{tabData?.unit.name ?? tab.unitId}</p>
                             {tabData && (
-                              <p className="text-xs text-muted-foreground truncate">
+                              <p className="text-sm text-muted-foreground truncate">
                                 {tabData.housingType?.name}
                                 {tabData.unit.roadNumber ? ` · Road ${tabData.unit.roadNumber}` : ''}
                               </p>
                             )}
                           </div>
                           <div className="text-right shrink-0">
-                            <p className="text-xs text-muted-foreground">{tabRated}/{INSPECTION_METRICS.length}</p>
+                            <p className="text-sm text-muted-foreground">{tabRated}/{INSPECTION_METRICS.length}</p>
                             <p className="text-[10px] text-muted-foreground">rated</p>
                           </div>
                         </div>
@@ -861,7 +861,7 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
                     {isSameUnit && hsUnitId && (
                       <div className="flex items-center gap-1.5 mb-2">
                         <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                        <span className="text-xs font-semibold text-emerald-700">
+                        <span className="text-sm font-semibold text-emerald-700">
                           Both you and the Housing Secretary suggested this unit
                         </span>
                       </div>
@@ -882,7 +882,7 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
 
         {/* Warning if bad ratings */}
         {badCount > 0 && watched.decision === 'FORWARDED' && (
-          <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+          <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-base">
             <XCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <p>{badCount} metric(s) marked as BAD. Consider rejecting or explain in field notes before forwarding.</p>
           </div>
@@ -890,20 +890,20 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
 
         {/* Field notes */}
         <div className="space-y-2">
-          <label className="text-sm font-semibold">
-            Field Notes & Observations <span className="text-xs font-normal text-muted-foreground">(Optional)</span>
+          <label className="text-base font-semibold">
+            Field Notes & Observations <span className="text-sm font-normal text-muted-foreground">(Optional)</span>
           </label>
           <textarea
             {...form.register('comments')}
             rows={4}
             placeholder="Describe your on-site findings, conditions observed, and recommendations (optional)..."
             className={cn(
-              'w-full text-sm px-3 py-2 rounded-xl border bg-background resize-none',
+              'w-full text-base px-3 py-2 rounded-xl border bg-background resize-none',
               'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition'
             )}
           />
           {form.formState.errors.comments && (
-            <p className="text-xs text-destructive">{form.formState.errors.comments.message}</p>
+            <p className="text-sm text-destructive">{form.formState.errors.comments.message}</p>
           )}
         </div>
 
@@ -947,7 +947,7 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
         </div>
 
         {!allRated && (
-          <p className="text-xs text-center text-amber-600">
+          <p className="text-sm text-center text-amber-600">
             Rate all {INSPECTION_METRICS.length} inspection metrics
             {showTwoTabs ? ' for both units' : ''} to proceed with forwarding.
           </p>

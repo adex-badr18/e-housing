@@ -161,7 +161,7 @@ function StepIndicator({ current }: { current: 1 | 2 | 3 }) {
         <div key={s.n} className="flex items-center gap-2">
           <div
             className={cn(
-              'flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-colors',
+              'flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold border transition-colors',
               current === s.n
                 ? 'bg-primary text-primary-foreground border-primary'
                 : current > s.n
@@ -337,11 +337,11 @@ export function HousingUnitBulkUploadDialog({
           <div className="space-y-6 py-4 flex-1 overflow-y-auto">
             <div className="flex items-center justify-between p-4 rounded-xl bg-muted/40 border border-border">
               <div className="space-y-0.5">
-                <p className="text-sm font-semibold flex items-center gap-2">
+                <p className="text-base font-semibold flex items-center gap-2">
                   <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
                   Excel Template
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Use our standardized template pre-formatted with unit headers.
                 </p>
               </div>
@@ -385,20 +385,20 @@ export function HousingUnitBulkUploadDialog({
                 <Upload className="h-8 w-8" />
               </div>
               <div>
-                <p className="text-sm font-semibold">Click to upload or drag & drop</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-base font-semibold">Click to upload or drag & drop</p>
+                <p className="text-sm text-muted-foreground mt-0.5">
                   Excel files only (.xlsx, .xls)
                 </p>
               </div>
               {file && (
-                <Badge variant="secondary" className="mt-2 text-xs">
+                <Badge variant="secondary" className="mt-2 text-sm">
                   {file.name}
                 </Badge>
               )}
             </div>
 
             {parseError && (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-xs text-destructive">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-sm text-destructive">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 <span>{parseError}</span>
               </div>
@@ -410,11 +410,11 @@ export function HousingUnitBulkUploadDialog({
         {step === 2 && (
           <div className="space-y-3 flex-1 overflow-hidden flex flex-col py-2">
             <div className="flex items-center justify-between gap-2 shrink-0">
-              <p className="text-xs text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Review and edit rows below. Inline errors are highlighted in red.
               </p>
               {errorCount > 0 && (
-                <Badge variant="destructive" className="text-xs gap-1">
+                <Badge variant="destructive" className="text-sm gap-1">
                   <AlertCircle className="h-3 w-3" />
                   {errorCount} Error{errorCount !== 1 ? 's' : ''}
                 </Badge>
@@ -422,7 +422,7 @@ export function HousingUnitBulkUploadDialog({
             </div>
 
             {errorCount > 0 && (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800 shrink-0">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-800 shrink-0">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 <span>
                   <strong>{errorCount}</strong> validation error{errorCount !== 1 ? 's' : ''} across{' '}
@@ -433,7 +433,7 @@ export function HousingUnitBulkUploadDialog({
             )}
 
             <div className="flex-1 overflow-auto rounded-xl border border-border">
-              <table className="w-full text-xs">
+              <table className="w-full text-sm">
                 <thead className="bg-muted/60 sticky top-0 z-10">
                   <tr>
                     <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-44 min-w-[140px]">Unit Name *</th>
@@ -461,7 +461,7 @@ export function HousingUnitBulkUploadDialog({
                               value={row.name}
                               onChange={(e) => updateCell(row._id, 'name', e.target.value)}
                               className={cn(
-                                'h-7 text-xs w-full',
+                                'h-7 text-sm w-full',
                                 row.errors.find((e) => e.field === 'name') ? 'border-destructive' : ''
                               )}
                             />
@@ -472,7 +472,7 @@ export function HousingUnitBulkUploadDialog({
                               value={row.houseNumber}
                               onChange={(e) => updateCell(row._id, 'houseNumber', e.target.value)}
                               className={cn(
-                                'h-7 text-xs w-full',
+                                'h-7 text-sm w-full',
                                 row.errors.find((e) => e.field === 'houseNumber') ? 'border-destructive' : ''
                               )}
                             />
@@ -483,7 +483,7 @@ export function HousingUnitBulkUploadDialog({
                               value={row.roadNumber}
                               onChange={(e) => updateCell(row._id, 'roadNumber', e.target.value)}
                               className={cn(
-                                'h-7 text-xs w-full',
+                                'h-7 text-sm w-full',
                                 row.errors.find((e) => e.field === 'roadNumber') ? 'border-destructive' : ''
                               )}
                             />
@@ -496,7 +496,7 @@ export function HousingUnitBulkUploadDialog({
                             >
                               <SelectTrigger
                                 className={cn(
-                                  'h-7 text-xs w-full',
+                                  'h-7 text-sm w-full',
                                   row.errors.find((e) => e.field === 'housingTypeId') ? 'border-destructive' : ''
                                 )}
                               >
@@ -519,7 +519,7 @@ export function HousingUnitBulkUploadDialog({
                               value={row.status}
                               onValueChange={(v) => updateCell(row._id, 'status', v as UnitStatus)}
                             >
-                              <SelectTrigger className="h-7 text-xs w-full">
+                              <SelectTrigger className="h-7 text-sm w-full">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
@@ -563,7 +563,7 @@ export function HousingUnitBulkUploadDialog({
               </table>
             </div>
 
-            <div className="flex items-center justify-between text-xs text-muted-foreground shrink-0 pt-1">
+            <div className="flex items-center justify-between text-sm text-muted-foreground shrink-0 pt-1">
               <span>{rows.length} row{rows.length !== 1 ? 's' : ''} total</span>
               <button
                 type="button"
@@ -583,22 +583,22 @@ export function HousingUnitBulkUploadDialog({
             <div className="grid grid-cols-3 gap-4 text-center">
               <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
                 <p className="text-3xl font-extrabold text-emerald-700">{results.created}</p>
-                <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wider mt-1">Created</p>
+                <p className="text-sm font-semibold text-emerald-800 uppercase tracking-wider mt-1">Created</p>
               </div>
               <div className="p-4 rounded-xl bg-blue-50 border border-blue-200">
                 <p className="text-3xl font-extrabold text-blue-700">{results.updated}</p>
-                <p className="text-xs font-semibold text-blue-800 uppercase tracking-wider mt-1">Updated</p>
+                <p className="text-sm font-semibold text-blue-800 uppercase tracking-wider mt-1">Updated</p>
               </div>
               <div className="p-4 rounded-xl bg-red-50 border border-red-200">
                 <p className="text-3xl font-extrabold text-red-700">{results.errors.length}</p>
-                <p className="text-xs font-semibold text-red-800 uppercase tracking-wider mt-1">Errors</p>
+                <p className="text-sm font-semibold text-red-800 uppercase tracking-wider mt-1">Errors</p>
               </div>
             </div>
 
             {results.errors.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs font-semibold text-destructive uppercase tracking-wider">Failed Rows</p>
-                <div className="rounded-xl border border-destructive/20 divide-y divide-destructive/10 text-xs">
+                <p className="text-sm font-semibold text-destructive uppercase tracking-wider">Failed Rows</p>
+                <div className="rounded-xl border border-destructive/20 divide-y divide-destructive/10 text-sm">
                   {results.errors.map((err, idx) => (
                     <div key={idx} className="p-3 flex items-center justify-between">
                       <span className="font-semibold">{err.name}</span>

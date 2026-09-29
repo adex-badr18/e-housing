@@ -21,7 +21,7 @@ function InspectionBadge({ status }: { status: string }) {
     FAILED:  'bg-red-100 text-red-700 border-red-200',
   };
   return (
-    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium border ${map[status] ?? ''}`}>
+    <span className={`inline-flex px-2 py-0.5 rounded-full text-sm font-medium border ${map[status] ?? ''}`}>
       {status}
     </span>
   );
@@ -86,10 +86,10 @@ export async function HousingSecretaryDashboard() {
                 header: 'Applicant',
                 render: r => (
                   <div>
-                    <p className="font-medium text-xs">
+                    <p className="font-medium text-sm">
                       {r.applicantUser ? `${r.applicantUser.firstName} ${r.applicantUser.lastName}` : r.userId}
                     </p>
-                    <p className="text-muted-foreground text-xs">{r.applicantProfile?.department ?? '—'}</p>
+                    <p className="text-muted-foreground text-sm">{r.applicantProfile?.department ?? '—'}</p>
                   </div>
                 ),
               },
@@ -97,7 +97,7 @@ export async function HousingSecretaryDashboard() {
                 key: 'grade',
                 header: 'Grade / Step',
                 render: r => (
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     {r.applicantProfile ? `${r.applicantProfile.salaryLevel || r.applicantProfile.salaryGradeLevel || '—'} ${r.applicantProfile.salaryStep ? `(${r.applicantProfile.salaryStep})` : ''}` : '—'}
                   </span>
                 ),
@@ -110,7 +110,7 @@ export async function HousingSecretaryDashboard() {
               {
                 key: 'submitted',
                 header: 'Submitted',
-                render: r => <span className="text-xs text-muted-foreground">{formatDate(r.submittedAt)}</span>,
+                render: r => <span className="text-sm text-muted-foreground">{formatDate(r.submittedAt)}</span>,
               },
             ]}
           />
@@ -133,10 +133,10 @@ export async function HousingSecretaryDashboard() {
                 header: 'Occupant',
                 render: r => (
                   <div>
-                    <p className="font-medium text-xs">
+                    <p className="font-medium text-sm">
                       {r.occupantUser ? `${r.occupantUser.firstName} ${r.occupantUser.lastName}` : r.userId}
                     </p>
-                    <p className="text-muted-foreground text-xs">{r.housingUnit?.name ?? '—'}</p>
+                    <p className="text-muted-foreground text-sm">{r.housingUnit?.name ?? '—'}</p>
                   </div>
                 ),
               },
@@ -144,7 +144,7 @@ export async function HousingSecretaryDashboard() {
                 key: 'reason',
                 header: 'Reason',
                 render: r => (
-                  <Badge variant="outline" className="text-xs">{r.reason}</Badge>
+                  <Badge variant="outline" className="text-sm">{r.reason}</Badge>
                 ),
               },
               {
@@ -155,7 +155,7 @@ export async function HousingSecretaryDashboard() {
               {
                 key: 'submitted',
                 header: 'Submitted',
-                render: r => <span className="text-xs text-muted-foreground">{formatDate(r.submittedAt)}</span>,
+                render: r => <span className="text-sm text-muted-foreground">{formatDate(r.submittedAt)}</span>,
               },
             ]}
           />
@@ -178,7 +178,7 @@ export async function HousingSecretaryDashboard() {
               key: 'timestamp',
               header: 'Date & Time',
               render: r => (
-                <span className="text-xs font-mono text-muted-foreground">
+                <span className="text-sm font-mono text-muted-foreground">
                   {new Date(r.createdAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                 </span>
               ),
@@ -186,15 +186,15 @@ export async function HousingSecretaryDashboard() {
             {
               key: 'action',
               header: 'Action',
-              render: r => <code className="text-xs bg-muted px-2 py-0.5 rounded font-mono">{r.action}</code>,
+              render: r => <code className="text-sm bg-muted px-2 py-0.5 rounded font-mono">{r.action}</code>,
             },
             {
               key: 'entity',
               header: 'Entity',
               render: r => (
                 <div>
-                  <span className="text-xs font-medium">{r.entityType}</span>
-                  <span className="text-xs text-muted-foreground ml-1 font-mono">#{r.entityId.split('-').pop()}</span>
+                  <span className="text-sm font-medium">{r.entityType}</span>
+                  <span className="text-sm text-muted-foreground ml-1 font-mono">#{r.entityId.split('-').pop()}</span>
                 </div>
               ),
             },
@@ -202,7 +202,7 @@ export async function HousingSecretaryDashboard() {
               key: 'status',
               header: 'Status',
               render: r => (
-                <span className={`text-xs font-medium ${r.status === 'SUCCESS' ? 'text-emerald-600' : 'text-red-600'}`}>
+                <span className={`text-sm font-medium ${r.status === 'SUCCESS' ? 'text-emerald-600' : 'text-red-600'}`}>
                   {r.status}
                 </span>
               ),

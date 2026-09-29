@@ -41,7 +41,7 @@ export default async function ManagementExitHistoryPage() {
         </Link>
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-oau-navy">All Exit Notices (History)</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
+          <p className="text-muted-foreground mt-1 text-base">
             View all exit notices across the system, including withdrawn and cleared ones.
           </p>
         </div>

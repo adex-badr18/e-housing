@@ -45,11 +45,11 @@ function DetailRow({
 }) {
   return (
     <div className="flex items-center justify-between py-2.5 border-b border-border/50 last:border-0">
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <div className="flex items-center gap-2 text-base text-muted-foreground">
         {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
         <span>{label}</span>
       </div>
-      <div className="text-sm font-medium text-right">{value}</div>
+      <div className="text-base font-medium text-right">{value}</div>
     </div>
   );
 }
@@ -64,9 +64,9 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 function BoolBadge({ value, trueLabel = 'Yes', falseLabel = 'No' }: { value: boolean; trueLabel?: string; falseLabel?: string }) {
   return value ? (
-    <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 font-medium text-xs">{trueLabel}</Badge>
+    <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 font-medium text-sm">{trueLabel}</Badge>
   ) : (
-    <Badge variant="outline" className="text-muted-foreground text-xs">{falseLabel}</Badge>
+    <Badge variant="outline" className="text-muted-foreground text-sm">{falseLabel}</Badge>
   );
 }
 
@@ -90,7 +90,7 @@ export function HousingTypeDetailDialog({
               </div>
               <div>
                 <DialogTitle className="text-lg leading-tight">{housingType.name}</DialogTitle>
-                <DialogDescription className="mt-0.5 capitalize text-sm">
+                <DialogDescription className="mt-0.5 capitalize text-base">
                   {housingType.buildingType.charAt(0) + housingType.buildingType.slice(1).toLowerCase()}
                 </DialogDescription>
               </div>
@@ -100,19 +100,19 @@ export function HousingTypeDetailDialog({
 
           {/* Icon summary row */}
           <div className="flex flex-wrap gap-3 mt-4 p-3 rounded-xl bg-muted/40 border border-border">
-            <div className="flex items-center gap-1.5 text-sm font-medium">
+            <div className="flex items-center gap-1.5 text-base font-medium">
               <BedDouble className="h-4 w-4 text-primary" />
               <span>{housingType.numberOfBedrooms} Bed</span>
             </div>
-            <div className="flex items-center gap-1.5 text-sm font-medium">
+            <div className="flex items-center gap-1.5 text-base font-medium">
               <Bath className="h-4 w-4 text-primary" />
               <span>{housingType.numberOfBathrooms} Bath</span>
             </div>
-            <div className="flex items-center gap-1.5 text-sm font-medium">
+            <div className="flex items-center gap-1.5 text-base font-medium">
               <Toilet className="h-4 w-4 text-primary" />
               <span>{housingType.numberOfToilets} Toilet{housingType.numberOfToilets !== 1 ? 's' : ''}</span>
             </div>
-            <div className="flex items-center gap-1.5 text-sm font-medium">
+            <div className="flex items-center gap-1.5 text-base font-medium">
               <Star className="h-4 w-4 text-amber-500" />
               <span>{housingType.allocationPoints} pts</span>
             </div>
@@ -127,7 +127,7 @@ export function HousingTypeDetailDialog({
             <DetailRow
               label="Building Type"
               value={
-                <Badge variant="outline" className="capitalize text-xs">
+                <Badge variant="outline" className="capitalize text-sm">
                   {housingType.buildingType.charAt(0) + housingType.buildingType.slice(1).toLowerCase()}
                 </Badge>
               }
@@ -147,7 +147,7 @@ export function HousingTypeDetailDialog({
           <SectionTitle>Amenities</SectionTitle>
           <div className="rounded-xl border border-border bg-muted/20 px-4 py-1 divide-y divide-border/40">
             <DetailRow label="Parking Space" value={
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" className="text-sm">
                 {housingType.parkingSpace}
               </Badge>
             } icon={Car} />

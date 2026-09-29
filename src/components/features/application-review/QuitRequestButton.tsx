@@ -46,7 +46,7 @@ export function QuitRequestButton({ entityId, entityType, hasPendingRequest }: Q
     return (
       <button
         disabled
-        className="text-xs font-semibold px-3 py-1.5 rounded-lg border bg-orange-50 border-orange-200 text-orange-800 flex items-center gap-1.5 opacity-80 cursor-not-allowed"
+        className="text-sm font-semibold px-3 py-1.5 rounded-lg border bg-orange-50 border-orange-200 text-orange-800 flex items-center gap-1.5 opacity-80 cursor-not-allowed"
       >
         <Loader2 className="h-3.5 w-3.5 animate-spin" /> Awaiting Withdrawal Approval
       </button>
@@ -57,7 +57,7 @@ export function QuitRequestButton({ entityId, entityType, hasPendingRequest }: Q
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="text-xs font-semibold px-3 py-1.5 rounded-lg border bg-background text-destructive hover:bg-destructive/5 transition-colors flex items-center gap-1.5"
+        className="text-sm font-semibold px-3 py-1.5 rounded-lg border bg-background text-destructive hover:bg-destructive/5 transition-colors flex items-center gap-1.5"
       >
         <XCircle className="h-3.5 w-3.5" /> {label}
       </button>
@@ -71,25 +71,25 @@ export function QuitRequestButton({ entityId, entityType, hasPendingRequest }: Q
           <h3 className="text-lg font-bold text-destructive flex items-center gap-2">
             <XCircle className="h-5 w-5" /> Request Withdrawal
           </h3>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-base text-muted-foreground mt-1">
             Are you sure you want to withdraw this {entityType === 'HousingApplication' ? 'application' : 'exit notice'}? This request must be approved by the Housing Secretary.
           </p>
         </div>
         
         <form onSubmit={form.handleSubmit(onSubmit)} className="p-5 space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-semibold">Reason for Withdrawal</label>
+            <label className="text-base font-semibold">Reason for Withdrawal</label>
             <textarea
               {...form.register('reason')}
               rows={4}
               placeholder="Please explain why you want to withdraw..."
               className={cn(
-                'w-full text-sm px-3 py-2 rounded-xl border bg-background resize-none',
+                'w-full text-base px-3 py-2 rounded-xl border bg-background resize-none',
                 'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition'
               )}
             />
             {form.formState.errors.reason && (
-              <p className="text-xs text-destructive">{form.formState.errors.reason.message}</p>
+              <p className="text-sm text-destructive">{form.formState.errors.reason.message}</p>
             )}
           </div>
 
@@ -101,14 +101,14 @@ export function QuitRequestButton({ entityId, entityType, hasPendingRequest }: Q
                 form.reset();
               }}
               disabled={isPending}
-              className="flex-1 py-2.5 rounded-xl font-semibold text-sm border hover:bg-muted transition-colors disabled:opacity-50"
+              className="flex-1 py-2.5 rounded-xl font-semibold text-base border hover:bg-muted transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-sm bg-destructive text-white hover:bg-destructive/90 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-base bg-destructive text-white hover:bg-destructive/90 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               Submit Request

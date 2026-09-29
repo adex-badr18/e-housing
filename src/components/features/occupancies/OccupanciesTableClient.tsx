@@ -41,14 +41,14 @@ interface OccupanciesTableClientProps {
 function OccupancyStatusBadge({ status }: { status: OccupancyStatus }) {
   if (status === 'ACTIVE') {
     return (
-      <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 border font-medium text-xs px-2 py-0.5 gap-1">
+      <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 border font-medium text-sm px-2 py-0.5 gap-1">
         <CheckCircle2 className="h-3 w-3" />
         Active
       </Badge>
     );
   }
   return (
-    <Badge className="bg-rose-100 text-rose-800 border-rose-200 border font-medium text-xs px-2 py-0.5 gap-1">
+    <Badge className="bg-rose-100 text-rose-800 border-rose-200 border font-medium text-sm px-2 py-0.5 gap-1">
       <LogOutIcon className="h-3 w-3" />
       Exited
     </Badge>
@@ -58,20 +58,20 @@ function OccupancyStatusBadge({ status }: { status: OccupancyStatus }) {
 function TenancyBadge({ signed }: { signed: boolean | null | undefined }) {
   if (signed == null) {
     return (
-      <Badge className="bg-slate-100 text-slate-600 border-slate-200 border font-medium text-xs px-2 py-0.5">
+      <Badge className="bg-slate-100 text-slate-600 border-slate-200 border font-medium text-sm px-2 py-0.5">
         No Agreement
       </Badge>
     );
   }
   if (signed) {
     return (
-      <Badge className="bg-blue-100 text-blue-800 border-blue-200 border font-medium text-xs px-2 py-0.5">
+      <Badge className="bg-blue-100 text-blue-800 border-blue-200 border font-medium text-sm px-2 py-0.5">
         Signed
       </Badge>
     );
   }
   return (
-    <Badge className="bg-amber-100 text-amber-800 border-amber-200 border font-medium text-xs px-2 py-0.5">
+    <Badge className="bg-amber-100 text-amber-800 border-amber-200 border font-medium text-sm px-2 py-0.5">
       Pending Signature
     </Badge>
   );
@@ -172,13 +172,13 @@ export function OccupanciesTableClient({
             placeholder="Search by name, staff ID, department, unit..."
             value={search}
             onChange={e => handleSearch(e.target.value)}
-            className="pl-9 text-sm h-9"
+            className="pl-9 text-base h-9"
           />
         </div>
 
         {/* Status Filter */}
         <Select value={status || 'ALL'} onValueChange={handleStatus}>
-          <SelectTrigger id="occupancy-status-filter" className="w-[150px] h-9 text-sm">
+          <SelectTrigger id="occupancy-status-filter" className="w-[150px] h-9 text-base">
             <SelectValue placeholder="All Statuses" />
           </SelectTrigger>
           <SelectContent>
@@ -190,7 +190,7 @@ export function OccupanciesTableClient({
 
         {/* Housing Type Filter */}
         <Select value={housingTypeId || 'ALL'} onValueChange={handleHousingType}>
-          <SelectTrigger id="occupancy-type-filter" className="w-[180px] h-9 text-sm">
+          <SelectTrigger id="occupancy-type-filter" className="w-[180px] h-9 text-base">
             <SelectValue placeholder="All Housing Types" />
           </SelectTrigger>
           <SelectContent>
@@ -208,25 +208,25 @@ export function OccupanciesTableClient({
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-base">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">
+              <th className="text-left px-4 py-3 font-semibold text-gray-600 text-sm uppercase tracking-wide">
                 Occupant
               </th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">
+              <th className="text-left px-4 py-3 font-semibold text-gray-600 text-sm uppercase tracking-wide">
                 Housing Unit
               </th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">
+              <th className="text-left px-4 py-3 font-semibold text-gray-600 text-sm uppercase tracking-wide">
                 Housing Type
               </th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">
+              <th className="text-left px-4 py-3 font-semibold text-gray-600 text-sm uppercase tracking-wide">
                 Check-in Date
               </th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">
+              <th className="text-left px-4 py-3 font-semibold text-gray-600 text-sm uppercase tracking-wide">
                 Tenancy Agreement
               </th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600 text-xs uppercase tracking-wide">
+              <th className="text-left px-4 py-3 font-semibold text-gray-600 text-sm uppercase tracking-wide">
                 Status
               </th>
               <th className="px-4 py-3" />
@@ -238,8 +238,8 @@ export function OccupanciesTableClient({
                 <td colSpan={7} className="py-16 text-center">
                   <div className="flex flex-col items-center gap-3 text-gray-400">
                     <Users2 className="h-10 w-10 opacity-30" />
-                    <p className="text-sm font-medium">No occupancies found</p>
-                    <p className="text-xs">Try adjusting your search or filters</p>
+                    <p className="text-base font-medium">No occupancies found</p>
+                    <p className="text-sm">Try adjusting your search or filters</p>
                   </div>
                 </td>
               </tr>
@@ -254,10 +254,10 @@ export function OccupanciesTableClient({
 
       {/* Pagination Footer */}
       <div className="px-4 py-3 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-xs text-gray-500">
+        <div className="flex items-center gap-2 text-sm text-gray-500">
           <span>Rows per page:</span>
           <Select value={String(limit)} onValueChange={handleLimit}>
-            <SelectTrigger className="h-7 w-[70px] text-xs">
+            <SelectTrigger className="h-7 w-[70px] text-sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -294,7 +294,7 @@ export function OccupanciesTableClient({
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="text-xs text-gray-500 px-2">
+          <span className="text-sm text-gray-500 px-2">
             Page {page} of {totalPages}
           </span>
           <Button
@@ -358,24 +358,24 @@ function OccupancyTableRow({ row }: { row: OccupancyRow }) {
       onClick={handleClick}
     >
       <td className="px-4 py-3">
-        <p className="font-semibold text-gray-900 text-xs">{fullName}</p>
+        <p className="font-semibold text-gray-900 text-sm">{fullName}</p>
         <p className="text-[11px] text-gray-500 mt-0.5">{staffId} · {department}</p>
       </td>
       <td className="px-4 py-3">
-        <p className="text-xs font-medium text-gray-800">{row.unit?.name ?? '—'}</p>
+        <p className="text-sm font-medium text-gray-800">{row.unit?.name ?? '—'}</p>
         <p className="text-[11px] text-gray-500 mt-0.5">
           {[row.unit?.houseNumber, row.unit?.roadNumber].filter(Boolean).join(', ') || '—'}
         </p>
       </td>
       <td className="px-4 py-3">
-        <p className="text-xs text-gray-700">{row.housingType?.name ?? '—'}</p>
+        <p className="text-sm text-gray-700">{row.housingType?.name ?? '—'}</p>
         {row.housingType && (
           <p className="text-[11px] text-gray-400 mt-0.5">
             {row.housingType.numberOfBedrooms}BR · {row.housingType.buildingType === 'BUNGALOW' ? 'Bungalow' : 'Storey'}
           </p>
         )}
       </td>
-      <td className="px-4 py-3 text-xs text-gray-700">{checkIn}</td>
+      <td className="px-4 py-3 text-sm text-gray-700">{checkIn}</td>
       <td className="px-4 py-3">
         <TenancyBadge signed={row.tenancyAgreement?.signed} />
       </td>
@@ -383,7 +383,7 @@ function OccupancyTableRow({ row }: { row: OccupancyRow }) {
         <OccupancyStatusBadge status={row.occupancy.status} />
       </td>
       <td className="px-4 py-3">
-        <span className="flex items-center justify-end gap-1 text-blue-600 text-xs font-medium group-hover:gap-2 transition-all">
+        <span className="flex items-center justify-end gap-1 text-blue-600 text-sm font-medium group-hover:gap-2 transition-all">
           {isPending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (

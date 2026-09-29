@@ -47,7 +47,7 @@ export function AdminTerminateButton({ entityId, entityType }: AdminTerminateBut
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="text-xs font-semibold px-3 py-1.5 rounded-lg border bg-background text-red-700 border-red-200 hover:bg-red-50 transition-colors flex items-center gap-1.5"
+        className="text-sm font-semibold px-3 py-1.5 rounded-lg border bg-background text-red-700 border-red-200 hover:bg-red-50 transition-colors flex items-center gap-1.5"
       >
         <ShieldAlert className="h-3.5 w-3.5" /> Terminate Administratively
       </button>
@@ -61,25 +61,25 @@ export function AdminTerminateButton({ entityId, entityType }: AdminTerminateBut
           <h3 className="text-lg font-bold text-red-800 flex items-center gap-2">
             <ShieldAlert className="h-5 w-5" /> Administrative Termination
           </h3>
-          <p className="text-sm text-red-700 mt-1">
+          <p className="text-base text-red-700 mt-1">
             You are about to forcibly terminate this {entityType === 'HousingApplication' ? 'application' : 'exit notice'}. This action cannot be undone.
           </p>
         </div>
         
         <form onSubmit={form.handleSubmit(onSubmit)} className="p-5 space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-semibold">Reason for Termination</label>
+            <label className="text-base font-semibold">Reason for Termination</label>
             <textarea
               {...form.register('reason')}
               rows={4}
               placeholder="State the reason for this administrative action..."
               className={cn(
-                'w-full text-sm px-3 py-2 rounded-xl border bg-background resize-none',
+                'w-full text-base px-3 py-2 rounded-xl border bg-background resize-none',
                 'focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 transition'
               )}
             />
             {form.formState.errors.reason && (
-              <p className="text-xs text-destructive">{form.formState.errors.reason.message}</p>
+              <p className="text-sm text-destructive">{form.formState.errors.reason.message}</p>
             )}
           </div>
 
@@ -91,14 +91,14 @@ export function AdminTerminateButton({ entityId, entityType }: AdminTerminateBut
                 form.reset();
               }}
               disabled={isPending}
-              className="flex-1 py-2.5 rounded-xl font-semibold text-sm border hover:bg-muted transition-colors disabled:opacity-50"
+              className="flex-1 py-2.5 rounded-xl font-semibold text-base border hover:bg-muted transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-sm bg-red-600 text-white hover:bg-red-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-base bg-red-600 text-white hover:bg-red-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               Confirm Termination

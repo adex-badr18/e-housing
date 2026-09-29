@@ -44,7 +44,7 @@ export default async function NewHousingApplicationPage() {
     <div className="space-y-6 w-full">
       <Link
         href="/staff/applications"
-        className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-fit"
+        className="inline-flex items-center gap-2 text-base font-medium text-muted-foreground hover:text-foreground transition-colors w-fit"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to My Applications

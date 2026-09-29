@@ -39,7 +39,7 @@ export default async function StaffApplicationDetailPage({
       <div className="flex flex-col gap-4">
         <Link
           href="/staff/applications"
-          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-fit"
+          className="inline-flex items-center gap-2 text-base font-medium text-muted-foreground hover:text-foreground transition-colors w-fit"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to My Applications
@@ -47,7 +47,7 @@ export default async function StaffApplicationDetailPage({
 
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-oau-navy">Application Details</h1>
-          <p className="text-muted-foreground text-sm mt-1">
+          <p className="text-muted-foreground text-base mt-1">
             Submitted on {format(new Date(application.submittedAt), 'dd MMMM yyyy, HH:mm')}
           </p>
         </div>

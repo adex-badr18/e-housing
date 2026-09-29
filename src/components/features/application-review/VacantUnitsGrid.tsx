@@ -44,8 +44,8 @@ export function UnitCard({ data, isSelected, onSelect }: UnitCardProps) {
               <Home className={cn('h-4 w-4', isSelected ? 'text-primary' : 'text-muted-foreground')} />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="font-semibold text-sm truncate leading-tight">{unit.name}</p>
-              <p className="text-xs text-muted-foreground mt-0.5 truncate">
+              <p className="font-semibold text-base truncate leading-tight">{unit.name}</p>
+              <p className="text-sm text-muted-foreground mt-0.5 truncate">
                 {housingType?.name ?? 'Unknown Type'}
               </p>
             </div>
@@ -86,9 +86,9 @@ export function UnitCard({ data, isSelected, onSelect }: UnitCardProps) {
       </div>
 
       {/* Footer: Preference Matcher & Selection State */}
-      <div className="mt-3 pt-2.5 border-t border-border/40 flex items-center justify-between w-full text-xs">
+      <div className="mt-3 pt-2.5 border-t border-border/40 flex items-center justify-between w-full text-sm">
         {matchesPreference ? (
-          <div className="flex items-center gap-1 text-primary font-medium text-xs">
+          <div className="flex items-center gap-1 text-primary font-medium text-sm">
             <Star className="h-3 w-3 fill-primary/20" /> Matches Preference
           </div>
         ) : (
@@ -97,7 +97,7 @@ export function UnitCard({ data, isSelected, onSelect }: UnitCardProps) {
 
         <span
           className={cn(
-            'text-xs font-semibold px-2 py-0.5 rounded-md transition-colors',
+            'text-sm font-semibold px-2 py-0.5 rounded-md transition-colors',
             isSelected
               ? 'bg-primary text-primary-foreground'
               : 'text-muted-foreground group-hover:text-foreground'
@@ -140,7 +140,7 @@ export function VacantUnitsGrid({
     <div className="space-y-6 max-h-[480px] overflow-y-auto pr-1">
       {/* Optional Clear Selection Button Banner */}
       {allowClear && selectedUnitId && selectedUnitData && (
-        <div className="flex items-center justify-between bg-primary/5 border border-primary/20 p-2.5 rounded-xl text-xs">
+        <div className="flex items-center justify-between bg-primary/5 border border-primary/20 p-2.5 rounded-xl text-sm">
           <span className="text-foreground font-medium flex items-center gap-1.5">
             <Home className="h-3.5 w-3.5 text-primary" />
             Unit selected: <strong className="text-primary">{selectedUnitData.unit.name}</strong>
@@ -148,7 +148,7 @@ export function VacantUnitsGrid({
           <button
             type="button"
             onClick={() => onSelectUnit(null)}
-            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive font-semibold px-2 py-1 rounded-md hover:bg-destructive/10 transition"
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-destructive font-semibold px-2 py-1 rounded-md hover:bg-destructive/10 transition"
           >
             <X className="h-3 w-3" /> Clear selection
           </button>
@@ -158,7 +158,7 @@ export function VacantUnitsGrid({
       {/* Eligible Units Section */}
       {eligibleUnits.length > 0 && (
         <div className="space-y-3">
-          <h5 className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+          <h5 className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
             Eligible Vacant Units ({eligibleUnits.length})
           </h5>
@@ -178,7 +178,7 @@ export function VacantUnitsGrid({
       {/* Other Vacant Units Section */}
       {otherUnits.length > 0 && (
         <div className="space-y-3">
-          <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 pt-2 border-t">
+          <h5 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 pt-2 border-t">
             Other Vacant Units ({otherUnits.length})
           </h5>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">

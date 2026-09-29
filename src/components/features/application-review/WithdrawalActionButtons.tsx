@@ -44,7 +44,7 @@ export function WithdrawalActionButtons({ quitRequestId }: WithdrawalActionButto
       <button
         onClick={() => onReview('REJECTED')}
         disabled={isProcessing}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border border-orange-300 text-orange-800 hover:bg-orange-100 transition-colors disabled:opacity-50"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-base font-medium border border-orange-300 text-orange-800 hover:bg-orange-100 transition-colors disabled:opacity-50"
       >
         {isProcessing && decision === 'REJECTED' ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -56,7 +56,7 @@ export function WithdrawalActionButtons({ quitRequestId }: WithdrawalActionButto
       <button
         onClick={() => onReview('APPROVED')}
         disabled={isProcessing}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-orange-600 hover:bg-orange-700 text-white transition-colors disabled:opacity-50 shadow-sm"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-base font-medium bg-orange-600 hover:bg-orange-700 text-white transition-colors disabled:opacity-50 shadow-sm"
       >
         {isProcessing && decision === 'APPROVED' ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin" />

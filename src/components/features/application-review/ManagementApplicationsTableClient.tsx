@@ -29,7 +29,7 @@ function StageBadge({ stage }: { stage: ApplicationStage }) {
   const cfg = STAGE_CONFIG[stage] || STAGE_CONFIG.HOUSING;
   const Icon = cfg.Icon;
   return (
-    <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${cfg.className}`}>
+    <span className={`inline-flex items-center gap-1.5 text-sm font-semibold px-2.5 py-1 rounded-full border ${cfg.className}`}>
       <Icon className="h-3 w-3" />
       {cfg.label}
     </span>
@@ -108,7 +108,7 @@ export function ManagementApplicationsTableClient({ userRole }: ManagementApplic
               setQueueMode('MY_QUEUE');
               setPage(1);
             }}
-            className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+            className={`px-3.5 py-1.5 text-sm font-semibold rounded-lg transition-all ${
               queueMode === 'MY_QUEUE'
                 ? 'bg-background text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
@@ -122,7 +122,7 @@ export function ManagementApplicationsTableClient({ userRole }: ManagementApplic
               setQueueMode('ALL_APPLICATIONS');
               setPage(1);
             }}
-            className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+            className={`px-3.5 py-1.5 text-sm font-semibold rounded-lg transition-all ${
               queueMode === 'ALL_APPLICATIONS'
                 ? 'bg-background text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
@@ -141,7 +141,7 @@ export function ManagementApplicationsTableClient({ userRole }: ManagementApplic
               placeholder="Search applicant, staff ID, app ID..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="pl-9 h-9 text-xs rounded-xl"
+              className="pl-9 h-9 text-sm rounded-xl"
             />
           </div>
 
@@ -152,7 +152,7 @@ export function ManagementApplicationsTableClient({ userRole }: ManagementApplic
               setStageFilter(e.target.value);
               setPage(1);
             }}
-            className="h-9 px-3 text-xs bg-background border rounded-xl text-foreground"
+            className="h-9 px-3 text-sm bg-background border rounded-xl text-foreground"
           >
             <option value="ALL">All Stages</option>
             <option value="HOUSING">Stage 1 — Housing</option>
@@ -168,7 +168,7 @@ export function ManagementApplicationsTableClient({ userRole }: ManagementApplic
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="h-9 px-3 text-xs bg-background border rounded-xl text-foreground"
+            className="h-9 px-3 text-sm bg-background border rounded-xl text-foreground"
           >
             <option value="ALL">All Statuses</option>
             <option value="PENDING">PENDING</option>
@@ -197,42 +197,42 @@ export function ManagementApplicationsTableClient({ userRole }: ManagementApplic
         {loading ? (
           <div className="flex items-center justify-center py-20 gap-3 text-muted-foreground">
             <RefreshCw className="h-5 w-5 animate-spin" />
-            <span className="text-sm font-medium">Loading applications...</span>
+            <span className="text-base font-medium">Loading applications...</span>
           </div>
         ) : apps.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
             <Inbox className="h-12 w-12 text-muted-foreground/40" />
             <div>
               <p className="font-semibold text-muted-foreground">No applications found</p>
-              <p className="text-xs text-muted-foreground/70 mt-1">
+              <p className="text-sm text-muted-foreground/70 mt-1">
                 Try adjusting your search terms or filters.
               </p>
             </div>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-base">
               <thead>
                 <tr className="border-b bg-muted/40">
-                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-sm uppercase tracking-wide">
                     Application & Applicant
                   </th>
-                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-sm uppercase tracking-wide">
                     Current Stage
                   </th>
-                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-sm uppercase tracking-wide">
                     Status
                   </th>
-                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-sm uppercase tracking-wide">
                     Score
                   </th>
-                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-sm uppercase tracking-wide">
                     Allocated / Proposed Unit
                   </th>
-                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-sm uppercase tracking-wide">
                     Submitted
                   </th>
-                  <th className="text-right px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">
+                  <th className="text-right px-4 py-3 font-semibold text-muted-foreground text-sm uppercase tracking-wide">
                     Action
                   </th>
                 </tr>
@@ -253,11 +253,11 @@ export function ManagementApplicationsTableClient({ userRole }: ManagementApplic
                     >
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
                             {applicantName.charAt(0)}
                           </div>
                           <div>
-                            <p className="font-semibold text-foreground text-sm flex items-center gap-1.5">
+                            <p className="font-semibold text-foreground text-base flex items-center gap-1.5">
                               {applicantName}
                               {staffId && (
                                 <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
@@ -265,7 +265,7 @@ export function ManagementApplicationsTableClient({ userRole }: ManagementApplic
                                 </span>
                               )}
                             </p>
-                            <p className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
+                            <p className="text-sm text-muted-foreground flex items-center gap-2 mt-0.5">
                               <span className="font-mono">{app.id}</span>
                               {dept && <span>• {dept}</span>}
                             </p>
@@ -282,23 +282,23 @@ export function ManagementApplicationsTableClient({ userRole }: ManagementApplic
                         {app.pointsBreakdown ? (
                           <span className="font-bold text-primary tabular-nums">
                             {app.pointsBreakdown.totalPoints}
-                            <span className="text-xs font-normal text-muted-foreground ml-1">pts</span>
+                            <span className="text-sm font-normal text-muted-foreground ml-1">pts</span>
                           </span>
                         ) : (
-                          <span className="text-xs text-muted-foreground/60 italic">Not scored</span>
+                          <span className="text-sm text-muted-foreground/60 italic">Not scored</span>
                         )}
                       </td>
                       <td className="px-4 py-3.5">
                         {app.allocatedUnit ? (
-                          <div className="text-xs">
+                          <div className="text-sm">
                             <p className="font-semibold text-foreground">{app.allocatedUnit.name}</p>
                             <p className="text-muted-foreground text-[11px]">{app.allocatedUnit.houseNumber}, {app.allocatedUnit.roadNumber}</p>
                           </div>
                         ) : (
-                          <span className="text-xs text-muted-foreground/60 italic">Unassigned</span>
+                          <span className="text-sm text-muted-foreground/60 italic">Unassigned</span>
                         )}
                       </td>
-                      <td className="px-4 py-3.5 text-muted-foreground text-xs">
+                      <td className="px-4 py-3.5 text-muted-foreground text-sm">
                         {format(new Date(app.submittedAt), 'dd MMM yyyy')}
                         <br />
                         <span className="text-muted-foreground/60">{format(new Date(app.submittedAt), 'HH:mm')}</span>
@@ -307,7 +307,7 @@ export function ManagementApplicationsTableClient({ userRole }: ManagementApplic
                         <Link
                           href={`/management/applications/${app.id}`}
                           id={`review-app-${app.id}`}
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline group-hover:gap-1.5 transition-all"
+                          className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline group-hover:gap-1.5 transition-all"
                         >
                           View / Review
                           <ArrowRight className="h-3.5 w-3.5" />
@@ -323,7 +323,7 @@ export function ManagementApplicationsTableClient({ userRole }: ManagementApplic
 
         {/* Pagination Footer */}
         {total > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t bg-muted/20 text-xs text-muted-foreground">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t bg-muted/20 text-sm text-muted-foreground">
             <div>
               Showing <span className="font-semibold text-foreground">{apps.length}</span> of{' '}
               <span className="font-semibold text-foreground">{total}</span> applications
@@ -335,7 +335,7 @@ export function ManagementApplicationsTableClient({ userRole }: ManagementApplic
                 size="sm"
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page <= 1 || loading}
-                className="h-8 px-3 text-xs gap-1 rounded-lg"
+                className="h-8 px-3 text-sm gap-1 rounded-lg"
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
                 Previous
@@ -350,7 +350,7 @@ export function ManagementApplicationsTableClient({ userRole }: ManagementApplic
                 size="sm"
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages || loading}
-                className="h-8 px-3 text-xs gap-1 rounded-lg"
+                className="h-8 px-3 text-sm gap-1 rounded-lg"
               >
                 Next
                 <ChevronRight className="h-3.5 w-3.5" />

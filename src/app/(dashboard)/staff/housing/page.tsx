@@ -30,7 +30,7 @@ export default async function StaffHousingPage() {
     return (
       <div className="w-full py-12 text-center space-y-3">
         <p className="text-destructive font-medium">{result.error}</p>
-        <Link href="/staff" className="text-sm text-primary hover:underline">← Back to Dashboard</Link>
+        <Link href="/staff" className="text-base text-primary hover:underline">← Back to Dashboard</Link>
       </div>
     );
   }
@@ -39,7 +39,7 @@ export default async function StaffHousingPage() {
     return (
       <div className="w-full space-y-6">
         <div>
-          <Link href="/staff" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1.5 mb-6 group">
+          <Link href="/staff" className="text-base text-muted-foreground hover:text-primary flex items-center gap-1.5 mb-6 group">
             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
             Back to Dashboard
           </Link>
@@ -49,13 +49,13 @@ export default async function StaffHousingPage() {
         <div className="rounded-2xl border-2 border-dashed border-border bg-secondary/30 p-12 text-center space-y-4">
           <CheckCircle2 className="h-14 w-14 text-muted-foreground/40 mx-auto" />
           <h2 className="text-xl font-semibold text-foreground">No Pending Offers</h2>
-          <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+          <p className="text-base text-muted-foreground max-w-sm mx-auto">
             You do not have any active housing allocation offers at this time. 
             Once the DVC approves your application, a unit will be assigned and you will see your offer here.
           </p>
           <Link
             href="/staff/applications"
-            className="inline-flex items-center gap-2 mt-4 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center gap-2 mt-4 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-base font-semibold hover:bg-primary/90 transition-colors"
           >
             View My Applications
           </Link>
@@ -77,7 +77,7 @@ export default async function StaffHousingPage() {
   return (
     <div className="w-full space-y-6">
       <div>
-        <Link href="/staff" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1.5 mb-6 group">
+        <Link href="/staff" className="text-base text-muted-foreground hover:text-primary flex items-center gap-1.5 mb-6 group">
           <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
           Back to Dashboard
         </Link>

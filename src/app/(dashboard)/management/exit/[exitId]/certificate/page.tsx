@@ -55,7 +55,7 @@ export default async function ClearanceCertificatePage({ params }: Props) {
       <div className="print:hidden flex items-center justify-between gap-4 mb-8 w-full">
         <Link
           href={`/management/exit/${exitId}`}
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition"
+          className="inline-flex items-center gap-2 text-base text-muted-foreground hover:text-foreground transition"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Exit Notice
@@ -63,7 +63,7 @@ export default async function ClearanceCertificatePage({ params }: Props) {
         <button
           onClick={() => { if (typeof window !== 'undefined') window.print(); }}
           suppressHydrationWarning
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-oau-navy text-oau-cream text-sm font-semibold hover:bg-oau-navy/90 transition shadow-md"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-oau-navy text-oau-cream text-base font-semibold hover:bg-oau-navy/90 transition shadow-md"
         >
           <Printer className="h-4 w-4" />
           Print Certificate
@@ -84,15 +84,15 @@ export default async function ClearanceCertificatePage({ params }: Props) {
             <img src="/oaulogo.png" alt="OAU Logo" width={64} height={64} className="object-contain" />
             <div className="text-left">
               <p className="text-oau-gold font-bold text-lg leading-tight">Obafemi Awolowo University</p>
-              <p className="text-oau-cream/80 text-sm">Ile-Ife, Osun State, Nigeria</p>
-              <p className="text-oau-cream/60 text-xs">Housing Management Division — E-Housing Portal</p>
+              <p className="text-oau-cream/80 text-base">Ile-Ife, Osun State, Nigeria</p>
+              <p className="text-oau-cream/60 text-sm">Housing Management Division — E-Housing Portal</p>
             </div>
           </div>
           <div className="border-t border-oau-gold/30 pt-4">
             <h1 className="text-2xl font-extrabold text-oau-gold tracking-wide uppercase">
               Housing Clearance Certificate
             </h1>
-            <p className="text-oau-cream/70 text-xs mt-1 tracking-widest">
+            <p className="text-oau-cream/70 text-sm mt-1 tracking-widest">
               CERT. NO: {certNumber}
             </p>
           </div>
@@ -105,7 +105,7 @@ export default async function ClearanceCertificatePage({ params }: Props) {
         <div className="px-12 py-10 space-y-8">
 
           {/* Preamble */}
-          <div className="text-center text-sm leading-relaxed text-gray-600 border-b pb-6">
+          <div className="text-center text-base leading-relaxed text-gray-600 border-b pb-6">
             <p>
               This is to certify that the staff member named herein has satisfactorily completed
               all required departure inspections and has been granted full clearance from university
@@ -115,12 +115,12 @@ export default async function ClearanceCertificatePage({ params }: Props) {
 
           {/* Staff Details */}
           <div>
-            <h2 className="text-xs font-bold uppercase tracking-widest text-oau-navy mb-4 flex items-center gap-2">
+            <h2 className="text-sm font-bold uppercase tracking-widest text-oau-navy mb-4 flex items-center gap-2">
               <span className="h-px flex-1 bg-border" />
               Staff Information
               <span className="h-px flex-1 bg-border" />
             </h2>
-            <div className="grid grid-cols-2 gap-5 text-sm">
+            <div className="grid grid-cols-2 gap-5 text-base">
               {[
                 { label: 'Full Name', value: staff ? `${staff.firstName} ${staff.lastName}` : '—' },
                 { label: 'Email Address', value: staff?.email ?? '—' },
@@ -130,7 +130,7 @@ export default async function ClearanceCertificatePage({ params }: Props) {
                 { label: 'Department', value: staffProfile?.department ?? '—' },
               ].map(row => (
                 <div key={row.label} className="border-b border-dashed pb-2">
-                  <p className="text-xs text-gray-400 uppercase tracking-wide">{row.label}</p>
+                  <p className="text-sm text-gray-400 uppercase tracking-wide">{row.label}</p>
                   <p className="font-semibold text-gray-800 mt-0.5">{row.value}</p>
                 </div>
               ))}
@@ -139,12 +139,12 @@ export default async function ClearanceCertificatePage({ params }: Props) {
 
           {/* Property Details */}
           <div>
-            <h2 className="text-xs font-bold uppercase tracking-widest text-oau-navy mb-4 flex items-center gap-2">
+            <h2 className="text-sm font-bold uppercase tracking-widest text-oau-navy mb-4 flex items-center gap-2">
               <span className="h-px flex-1 bg-border" />
               Property Details
               <span className="h-px flex-1 bg-border" />
             </h2>
-            <div className="grid grid-cols-2 gap-5 text-sm">
+            <div className="grid grid-cols-2 gap-5 text-base">
               {[
                 { label: 'Housing Unit', value: unit?.name ?? '—' },
                 { label: 'Housing Type', value: housingType?.name ?? '—' },
@@ -154,7 +154,7 @@ export default async function ClearanceCertificatePage({ params }: Props) {
                 { label: 'Clearance Date', value: fmt(notice.clearedAt) },
               ].map(row => (
                 <div key={row.label} className="border-b border-dashed pb-2">
-                  <p className="text-xs text-gray-400 uppercase tracking-wide">{row.label}</p>
+                  <p className="text-sm text-gray-400 uppercase tracking-wide">{row.label}</p>
                   <p className="font-semibold text-gray-800 mt-0.5 capitalize">{row.value}</p>
                 </div>
               ))}
@@ -163,12 +163,12 @@ export default async function ClearanceCertificatePage({ params }: Props) {
 
           {/* Inspection Sign-offs */}
           <div>
-            <h2 className="text-xs font-bold uppercase tracking-widest text-oau-navy mb-4 flex items-center gap-2">
+            <h2 className="text-sm font-bold uppercase tracking-widest text-oau-navy mb-4 flex items-center gap-2">
               <span className="h-px flex-1 bg-border" />
               Inspection Sign-offs
               <span className="h-px flex-1 bg-border" />
             </h2>
-            <div className="grid grid-cols-3 gap-4 text-sm">
+            <div className="grid grid-cols-3 gap-4 text-base">
               {[
                 {
                   stage: 'Housing Unit',
@@ -195,13 +195,13 @@ export default async function ClearanceCertificatePage({ params }: Props) {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <p className="text-xs font-bold text-emerald-800 uppercase tracking-wide">{sig.stage}</p>
-                  <p className="font-semibold text-gray-800 text-sm mt-2">{sig.inspector}</p>
-                  <p className="text-xs text-gray-500">{sig.role}</p>
-                  <p className="text-xs text-emerald-600 font-medium mt-1">{sig.date}</p>
+                  <p className="text-sm font-bold text-emerald-800 uppercase tracking-wide">{sig.stage}</p>
+                  <p className="font-semibold text-gray-800 text-base mt-2">{sig.inspector}</p>
+                  <p className="text-sm text-gray-500">{sig.role}</p>
+                  <p className="text-sm text-emerald-600 font-medium mt-1">{sig.date}</p>
                   {/* Signature line */}
                   <div className="mt-4 border-t-2 border-dashed border-emerald-300 pt-1">
-                    <p className="text-xs text-gray-400">Signature / Seal</p>
+                    <p className="text-sm text-gray-400">Signature / Seal</p>
                   </div>
                 </div>
               ))}
@@ -210,22 +210,22 @@ export default async function ClearanceCertificatePage({ params }: Props) {
 
           {/* Official seal / footer */}
           <div className="border-t pt-6 mt-6 grid grid-cols-2 gap-6 items-end">
-            <div className="text-xs text-gray-400 space-y-1">
+            <div className="text-sm text-gray-400 space-y-1">
               <p>Certificate No: <span className="font-mono font-bold text-gray-600">{certNumber}</span></p>
               <p>Issue Date: <span className="font-semibold text-gray-600">{fmt(notice.clearedAt)}</span></p>
               <p>Generated by: OAU E-Housing Digital Platform</p>
             </div>
             <div className="text-right">
               <div className="inline-block border-2 border-oau-navy rounded-xl px-6 py-3 text-center">
-                <p className="text-xs text-oau-navy font-bold uppercase tracking-widest mb-1">Official Stamp</p>
-                <p className="text-xs text-muted-foreground">Housing Management Division</p>
-                <p className="text-xs font-semibold text-oau-navy mt-1">OAU, Ile-Ife</p>
+                <p className="text-sm text-oau-navy font-bold uppercase tracking-widest mb-1">Official Stamp</p>
+                <p className="text-sm text-muted-foreground">Housing Management Division</p>
+                <p className="text-sm font-semibold text-oau-navy mt-1">OAU, Ile-Ife</p>
               </div>
             </div>
           </div>
 
           {/* Legal note */}
-          <div className="rounded-lg bg-gray-50 border border-gray-200 p-4 text-xs text-gray-500 text-center">
+          <div className="rounded-lg bg-gray-50 border border-gray-200 p-4 text-sm text-gray-500 text-center">
             This certificate is digitally generated and is valid without a physical signature unless otherwise requested.
             For verification, contact the Housing Management Division at housing@oauife.edu.ng
           </div>

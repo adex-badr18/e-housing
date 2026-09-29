@@ -29,14 +29,14 @@ export function HousingAllocationDetails({
               <KeyRound className="h-5 w-5 text-oau-gold" />
               Approved Allocation Details
             </CardTitle>
-            <CardDescription className="text-sm mt-1">
+            <CardDescription className="text-base mt-1">
               Housing unit offered by the Vice Chancellor
             </CardDescription>
           </div>
           <Badge
             variant="outline"
             className={cn(
-              'px-3 py-1 font-semibold text-xs',
+              'px-3 py-1 font-semibold text-sm',
               isAccepted && 'bg-emerald-50 text-emerald-700 border-emerald-200',
               isRejected && 'bg-red-50 text-red-700 border-red-200',
               isPending && 'bg-amber-50 text-amber-700 border-amber-200'
@@ -56,9 +56,9 @@ export function HousingAllocationDetails({
             <Building className="h-5 w-5 text-blue-600" />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground font-medium mb-1">Assigned Unit</p>
+            <p className="text-sm text-muted-foreground font-medium mb-1">Assigned Unit</p>
             <p className="font-bold text-oau-navy">{housingUnit.name}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{housingType.name}</p>
+            <p className="text-sm text-muted-foreground mt-0.5">{housingType.name}</p>
           </div>
         </div>
 
@@ -67,11 +67,11 @@ export function HousingAllocationDetails({
             <MapPin className="h-5 w-5 text-emerald-600" />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground font-medium mb-1">Location</p>
+            <p className="text-sm text-muted-foreground font-medium mb-1">Location</p>
             <p className="font-semibold text-foreground">
               Road {housingUnit.roadNumber || 'N/A'}
             </p>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-sm text-muted-foreground mt-0.5">
               House {housingUnit.houseNumber || 'N/A'}
             </p>
           </div>
@@ -82,17 +82,17 @@ export function HousingAllocationDetails({
             <Clock className="h-5 w-5 text-purple-600" />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground font-medium mb-1">Timeline</p>
-            <p className="text-sm font-medium">
+            <p className="text-sm text-muted-foreground font-medium mb-1">Timeline</p>
+            <p className="text-base font-medium">
               Offered: {format(new Date(allocation.allocatedAt), 'dd MMM yyyy')}
             </p>
             {allocation.respondedAt && (
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-sm text-muted-foreground mt-0.5">
                 Responded: {format(new Date(allocation.respondedAt), 'dd MMM yyyy')}
               </p>
             )}
             {!allocation.respondedAt && allocation.expiresAt && (
-              <p className="text-xs text-amber-600 font-medium mt-0.5">
+              <p className="text-sm text-amber-600 font-medium mt-0.5">
                 Expires: {format(new Date(allocation.expiresAt), 'dd MMM yyyy')}
               </p>
             )}

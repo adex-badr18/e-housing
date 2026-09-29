@@ -104,7 +104,7 @@ function TimeBox({ value, label, urgent }: { value: number; label: string; urgen
 function FeatureChip({ icon: Icon, label, active }: { icon: React.ElementType; label: string; active: boolean }) {
   return (
     <div className={cn(
-      'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
+      'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-all',
       active
         ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
         : 'bg-muted/50 border-border text-muted-foreground line-through opacity-50'
@@ -158,7 +158,7 @@ export function AllocationResponseCard({ allocation, unit, housingType }: Props)
       <div className="rounded-2xl border-2 border-amber-200 bg-amber-50/60 p-8 text-center space-y-3">
         <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto" />
         <h2 className="text-xl font-bold text-amber-700">Offer Expired</h2>
-        <p className="text-sm text-amber-600 max-w-sm mx-auto">
+        <p className="text-base text-amber-600 max-w-sm mx-auto">
           Your allocation offer for <strong>{unit.name}</strong> has expired because it was not responded to within the required window.
           Please contact the Housing Secretariat for reassignment.
         </p>
@@ -183,7 +183,7 @@ export function AllocationResponseCard({ allocation, unit, housingType }: Props)
         <h2 className="text-2xl font-bold">
           {responded === 'ACCEPTED' ? 'Offer Accepted!' : 'Offer Declined'}
         </h2>
-        <p className="text-sm text-muted-foreground">Redirecting you…</p>
+        <p className="text-base text-muted-foreground">Redirecting you…</p>
         <Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" />
       </div>
     );
@@ -193,7 +193,7 @@ export function AllocationResponseCard({ allocation, unit, housingType }: Props)
     <div className="space-y-6">
       {/* Alert banner */}
       <div className={cn(
-        'rounded-xl px-5 py-3.5 flex items-center gap-3 font-medium text-sm border-l-4',
+        'rounded-xl px-5 py-3.5 flex items-center gap-3 font-medium text-base border-l-4',
         isUrgent
           ? 'bg-red-50 border-red-500 text-red-700'
           : 'bg-amber-50 border-amber-400 text-amber-700'
@@ -210,16 +210,16 @@ export function AllocationResponseCard({ allocation, unit, housingType }: Props)
         <div className="bg-gradient-to-r from-primary via-primary/90 to-primary/80 text-primary-foreground px-8 py-6">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-primary-foreground/60 text-xs font-semibold uppercase tracking-widest mb-1">
+              <p className="text-primary-foreground/60 text-sm font-semibold uppercase tracking-widest mb-1">
                 Housing Unit Offer
               </p>
               <h1 className="text-3xl font-extrabold tracking-tight">{unit.name}</h1>
-              <p className="text-primary-foreground/80 text-sm mt-1 flex items-center gap-1.5">
+              <p className="text-primary-foreground/80 text-base mt-1 flex items-center gap-1.5">
                 <Building2 className="h-4 w-4" />
                 {housingType.name}
               </p>
             </div>
-            <div className="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide border bg-white/20 text-white border-white/30">
+            <div className="px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wide border bg-white/20 text-white border-white/30">
               {housingType.buildingType}
             </div>
           </div>
@@ -232,30 +232,30 @@ export function AllocationResponseCard({ allocation, unit, housingType }: Props)
             <div className="flex flex-col items-center gap-1.5 rounded-xl bg-secondary/50 py-4 px-3">
               <Bed className="h-5 w-5 text-primary/70" />
               <span className="text-2xl font-extrabold">{housingType.numberOfBedrooms}</span>
-              <span className="text-xs text-muted-foreground font-medium">Bedrooms</span>
+              <span className="text-sm text-muted-foreground font-medium">Bedrooms</span>
             </div>
             <div className="flex flex-col items-center gap-1.5 rounded-xl bg-secondary/50 py-4 px-3">
               <Bath className="h-5 w-5 text-primary/70" />
               <span className="text-2xl font-extrabold">{housingType.numberOfBathrooms}</span>
-              <span className="text-xs text-muted-foreground font-medium">Bathrooms</span>
+              <span className="text-sm text-muted-foreground font-medium">Bathrooms</span>
             </div>
             <div className="flex flex-col items-center gap-1.5 rounded-xl bg-secondary/50 py-4 px-3">
               <Home className="h-5 w-5 text-primary/70" />
               <span className="text-2xl font-extrabold">{housingType.hasBQ ? 1 : 0}</span>
-              <span className="text-xs text-muted-foreground font-medium">BQ Units</span>
+              <span className="text-sm text-muted-foreground font-medium">BQ Units</span>
             </div>
             <div className="flex flex-col items-center gap-1.5 rounded-xl bg-secondary/50 py-4 px-3">
               <BadgeDollarSign className="h-5 w-5 text-accent" />
               <span className="text-xl font-extrabold text-accent">
                 ₦{housingType.annualRent.toLocaleString()}
               </span>
-              <span className="text-xs text-muted-foreground font-medium">Annual Rent</span>
+              <span className="text-sm text-muted-foreground font-medium">Annual Rent</span>
             </div>
           </div>
 
           {/* Features */}
           <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+            <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
               Amenities & Features
             </p>
             <div className="flex flex-wrap gap-2">
@@ -275,7 +275,7 @@ export function AllocationResponseCard({ allocation, unit, housingType }: Props)
           )}>
             <div className="flex items-center gap-2">
               <Clock className={cn('h-5 w-5', isUrgent ? 'text-red-500 animate-pulse' : 'text-primary/60')} />
-              <span className="text-sm font-semibold">
+              <span className="text-base font-semibold">
                 {isUrgent ? '⚠ Response deadline approaching' : 'Time remaining to respond'}
               </span>
             </div>
@@ -288,7 +288,7 @@ export function AllocationResponseCard({ allocation, unit, housingType }: Props)
               <span className={cn('text-2xl font-bold', isUrgent ? 'text-red-500' : 'text-muted-foreground')}>:</span>
               <TimeBox value={countdown.seconds} label="Secs" urgent={isUrgent} />
             </div>
-            <p className="text-xs text-center text-muted-foreground">
+            <p className="text-sm text-center text-muted-foreground">
               Offer expires: <strong>{new Date(allocation.expiresAt ?? '').toLocaleString('en-NG', {
                 dateStyle: 'full', timeStyle: 'short'
               })}</strong>
@@ -340,7 +340,7 @@ export function AllocationResponseCard({ allocation, unit, housingType }: Props)
             </button>
           </div>
 
-          <p className="text-xs text-muted-foreground text-center">
+          <p className="text-sm text-muted-foreground text-center">
             Accepting this offer will activate your tenancy and generate your Tenancy Agreement.
             Declining will release the unit back to inventory.
           </p>

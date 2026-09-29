@@ -53,8 +53,8 @@ export function QuitRequestHistorySection({
       {/* Section heading */}
       <div className="flex items-center gap-2">
         <FileX2 className="h-4 w-4 text-muted-foreground" />
-        <h3 className="text-sm font-semibold text-foreground">Withdrawal Request History</h3>
-        <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-200">
+        <h3 className="text-base font-semibold text-foreground">Withdrawal Request History</h3>
+        <span className="text-sm font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-200">
           {requests.length}
         </span>
       </div>
@@ -62,9 +62,9 @@ export function QuitRequestHistorySection({
       {/* Table wrapper */}
       <div className="rounded-xl border overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-base">
             <thead>
-              <tr className="bg-muted/60 border-b text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <tr className="bg-muted/60 border-b text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                 <th className="px-4 py-3 text-left whitespace-nowrap">Date Requested</th>
                 <th className="px-4 py-3 text-left">Reason</th>
                 <th className="px-4 py-3 text-left whitespace-nowrap">Outcome</th>
@@ -84,7 +84,7 @@ export function QuitRequestHistorySection({
                     className="hover:bg-muted/30 transition-colors align-top"
                   >
                     {/* Date requested */}
-                    <td className="px-4 py-3 whitespace-nowrap text-muted-foreground text-xs">
+                    <td className="px-4 py-3 whitespace-nowrap text-muted-foreground text-sm">
                       {format(new Date(req.createdAt), 'dd MMM yyyy')}
                       <br />
                       <span className="text-[10px]">{format(new Date(req.createdAt), 'HH:mm')}</span>
@@ -99,7 +99,7 @@ export function QuitRequestHistorySection({
                     <td className="px-4 py-3 whitespace-nowrap">
                       <span
                         className={cn(
-                          'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border',
+                          'inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-semibold border',
                           cfg.cls
                         )}
                       >
@@ -108,7 +108,7 @@ export function QuitRequestHistorySection({
                     </td>
 
                     {/* Reviewed on */}
-                    <td className="px-4 py-3 whitespace-nowrap text-muted-foreground text-xs">
+                    <td className="px-4 py-3 whitespace-nowrap text-muted-foreground text-sm">
                       {req.reviewedAt ? (
                         <>
                           {format(new Date(req.reviewedAt), 'dd MMM yyyy')}
@@ -122,7 +122,7 @@ export function QuitRequestHistorySection({
 
                     {/* Reviewed by — management only */}
                     {isManagement && (
-                      <td className="px-4 py-3 whitespace-nowrap text-xs text-foreground/80">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-foreground/80">
                         {req.reviewerName ?? (
                           <span className="italic text-muted-foreground/60">—</span>
                         )}
@@ -130,7 +130,7 @@ export function QuitRequestHistorySection({
                     )}
 
                     {/* Reviewer notes */}
-                    <td className="px-4 py-3 text-xs text-muted-foreground max-w-xs">
+                    <td className="px-4 py-3 text-sm text-muted-foreground max-w-xs">
                       {req.reviewNotes ? (
                         <span className="italic">&ldquo;{req.reviewNotes}&rdquo;</span>
                       ) : (

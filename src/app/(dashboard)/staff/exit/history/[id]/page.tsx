@@ -28,7 +28,7 @@ export default async function StaffExitHistoryDetailPage({
       <div className="flex flex-col gap-4">
         <Link
           href="/staff/exit/history"
-          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-fit"
+          className="inline-flex items-center gap-2 text-base font-medium text-muted-foreground hover:text-foreground transition-colors w-fit"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to History
@@ -36,7 +36,7 @@ export default async function StaffExitHistoryDetailPage({
 
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-oau-navy">Exit Notice Details</h1>
-          <p className="text-muted-foreground text-sm mt-1">
+          <p className="text-muted-foreground text-base mt-1">
             Review your exit notice progression.
           </p>
         </div>
@@ -49,7 +49,7 @@ export default async function StaffExitHistoryDetailPage({
           </div>
           <div>
             <h2 className="font-semibold text-lg">{unit ? unit.name : 'Unknown Unit'}</h2>
-            <p className="text-muted-foreground text-sm">Housing Unit ID: {notice.housingUnitId}</p>
+            <p className="text-muted-foreground text-base">Housing Unit ID: {notice.housingUnitId}</p>
           </div>
         </div>
       </div>

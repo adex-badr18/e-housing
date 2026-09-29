@@ -32,7 +32,7 @@ export default async function StaffExitHistoryPage() {
           </Link>
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-oau-navy">Exit Notice History</h1>
-            <p className="text-muted-foreground mt-1 text-sm">
+            <p className="text-muted-foreground mt-1 text-base">
               View your past and present housing exit notices.
             </p>
           </div>

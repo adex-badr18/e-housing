@@ -62,7 +62,7 @@ export function ViolationTracker({ logs, users }: ViolationTrackerProps) {
           </svg>
         </div>
         <p className="font-semibold text-emerald-800">No Violations Detected</p>
-        <p className="text-sm text-emerald-600">All system actions have completed successfully.</p>
+        <p className="text-base text-emerald-600">All system actions have completed successfully.</p>
       </div>
     );
   }
@@ -73,15 +73,15 @@ export function ViolationTracker({ logs, users }: ViolationTrackerProps) {
       <div className="rounded-xl border border-red-200 bg-red-50 p-4 flex items-center gap-3">
         <AlertTriangle className="h-6 w-6 text-red-600 shrink-0" />
         <div>
-          <p className="font-semibold text-red-800 text-sm">
+          <p className="font-semibold text-red-800 text-base">
             {failures.length} Failed Action{failures.length !== 1 ? 's' : ''} Detected
           </p>
-          <p className="text-xs text-red-600 mt-0.5">
+          <p className="text-sm text-red-600 mt-0.5">
             Grouped across {grouped.length} entity type{grouped.length !== 1 ? 's' : ''}.
             Review and remediate below.
           </p>
         </div>
-        <Badge className="ml-auto bg-red-600 text-white text-sm font-bold px-3">{failures.length}</Badge>
+        <Badge className="ml-auto bg-red-600 text-white text-base font-bold px-3">{failures.length}</Badge>
       </div>
 
       {/* Grouped entity sections */}
@@ -96,14 +96,14 @@ export function ViolationTracker({ logs, users }: ViolationTrackerProps) {
               <div className="flex items-center gap-3">
                 <XCircle className="h-5 w-5 text-red-500" />
                 <div>
-                  <p className="font-semibold text-sm">{group.entityType}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="font-semibold text-base">{group.entityType}</p>
+                  <p className="text-sm text-muted-foreground">
                     {group.count} failure{group.count !== 1 ? 's' : ''}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Badge className="bg-red-100 text-red-700 border-red-200 border text-xs font-bold">
+                <Badge className="bg-red-100 text-red-700 border-red-200 border text-sm font-bold">
                   {group.count}
                 </Badge>
                 {isExpanded
@@ -122,12 +122,12 @@ export function ViolationTracker({ logs, users }: ViolationTrackerProps) {
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <code className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded font-mono">
+                            <code className="text-sm bg-red-100 text-red-800 px-2 py-0.5 rounded font-mono">
                               {log.action}
                             </code>
-                            <span className="text-xs text-muted-foreground font-mono">{log.entityId}</span>
+                            <span className="text-sm text-muted-foreground font-mono">{log.entityId}</span>
                           </div>
-                          <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground flex-wrap">
+                          <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground flex-wrap">
                             <span className="flex items-center gap-1">
                               <User className="h-3 w-3" />
                               {actor ? `${actor.firstName} ${actor.lastName}` : log.actorId}
@@ -143,7 +143,7 @@ export function ViolationTracker({ logs, users }: ViolationTrackerProps) {
                           {/* Error metadata */}
                           {log.metadata && typeof log.metadata.error !== 'undefined' && (
                             <div className={cn(
-                              'mt-2 rounded-lg bg-red-100 border border-red-200 px-3 py-2 text-xs text-red-700 font-mono'
+                              'mt-2 rounded-lg bg-red-100 border border-red-200 px-3 py-2 text-sm text-red-700 font-mono'
                             )}>
                               {String(log.metadata.error)}
                             </div>

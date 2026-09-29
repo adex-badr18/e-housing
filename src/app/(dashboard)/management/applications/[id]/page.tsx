@@ -50,10 +50,10 @@ export default async function ApplicationReviewPage({
     return (
       <div className="flex h-[50vh] flex-col items-center justify-center gap-3 text-center">
         <h1 className="text-2xl font-bold text-destructive">Access Denied</h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-base text-muted-foreground">
           You do not have permission to access the review pipeline.
         </p>
-        <Link href="/management" className="text-sm text-primary hover:underline">
+        <Link href="/management" className="text-base text-primary hover:underline">
           ← Return to Management Portal
         </Link>
       </div>
@@ -94,7 +94,7 @@ export default async function ApplicationReviewPage({
       {/* Back link */}
       <Link
         href="/management/applications"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        className="inline-flex items-center gap-1.5 text-base text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to Application Queue
@@ -109,12 +109,12 @@ export default async function ApplicationReviewPage({
               <h1 className="text-xl font-bold text-oau-navy tracking-tight">
                 Housing Application
               </h1>
-              <span className="font-mono text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
+              <span className="font-mono text-sm text-muted-foreground bg-muted px-2 py-0.5 rounded">
                 {application.id}
               </span>
             </div>
             {applicantUser && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-base text-muted-foreground">
                 Applicant:{' '}
                 <strong className="text-foreground">
                   {applicantUser.firstName} {applicantUser.lastName}
@@ -136,7 +136,7 @@ export default async function ApplicationReviewPage({
         </div>
 
         {/* Meta strip */}
-        <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
+        <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
           <span className="flex items-center gap-1">
             <Calendar className="h-3.5 w-3.5" />
             Submitted {format(new Date(application.submittedAt), 'dd MMM yyyy, HH:mm')}
@@ -154,13 +154,13 @@ export default async function ApplicationReviewPage({
         {/* Preferred housing types */}
         {application.preferredHousingTypeIds.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
-            <span className="text-xs text-muted-foreground">Preferences:</span>
+            <span className="text-sm text-muted-foreground">Preferences:</span>
             {application.preferredHousingTypeIds.map(htId => {
               const ht = mockDB.housingTypes.find(h => h.id === htId);
               return ht ? (
                 <span
                   key={htId}
-                  className="text-xs font-medium px-2 py-0.5 rounded-full bg-secondary border text-foreground"
+                  className="text-sm font-medium px-2 py-0.5 rounded-full bg-secondary border text-foreground"
                 >
                   {ht.name}
                 </span>

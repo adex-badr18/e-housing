@@ -44,8 +44,8 @@ export function FinalizeApplicationButton({ applicationId }: FinalizeApplication
       <div className="flex items-start gap-3">
         <FileCheck2 className="h-5 w-5 text-teal-600 mt-0.5 shrink-0" />
         <div>
-          <p className="font-semibold text-teal-900 text-sm">Tenancy Agreement Submitted</p>
-          <p className="text-xs text-teal-700/80 mt-0.5">
+          <p className="font-semibold text-teal-900 text-base">Tenancy Agreement Submitted</p>
+          <p className="text-sm text-teal-700/80 mt-0.5">
             Confirm that the stamped, signed copy of the Tenancy Agreement has been received and submitted 
             by the applicant. This will create the occupancy record and mark the housing unit as occupied.
           </p>
@@ -55,7 +55,7 @@ export function FinalizeApplicationButton({ applicationId }: FinalizeApplication
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger
           id="finalize-application-btn"
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all bg-teal-700 hover:bg-teal-800 text-white"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-base font-semibold transition-all bg-teal-700 hover:bg-teal-800 text-white"
         >
           <FileCheck2 className="h-4 w-4" />
           Mark Agreement as Submitted
@@ -72,7 +72,7 @@ export function FinalizeApplicationButton({ applicationId }: FinalizeApplication
           </DialogHeader>
           <DialogFooter className="mt-4 gap-2 sm:gap-0">
             <DialogClose
-              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-[color,box-shadow] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-base font-medium transition-[color,box-shadow] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
               disabled={isPending}
             >
               Cancel

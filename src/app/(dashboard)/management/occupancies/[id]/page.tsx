@@ -59,14 +59,14 @@ function fmt(dateStr: string | null | undefined, fallback = '—') {
 function OccupancyStatusBadge({ status }: { status: OccupancyStatus }) {
   if (status === 'ACTIVE') {
     return (
-      <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 border font-semibold text-sm px-3 py-1 gap-1.5">
+      <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 border font-semibold text-base px-3 py-1 gap-1.5">
         <CheckCircle2 className="h-4 w-4" />
         Active
       </Badge>
     );
   }
   return (
-    <Badge className="bg-rose-100 text-rose-800 border-rose-200 border font-semibold text-sm px-3 py-1 gap-1.5">
+    <Badge className="bg-rose-100 text-rose-800 border-rose-200 border font-semibold text-base px-3 py-1 gap-1.5">
       <LogOutIcon className="h-4 w-4" />
       Exited
     </Badge>
@@ -76,8 +76,8 @@ function OccupancyStatusBadge({ status }: { status: OccupancyStatus }) {
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-start justify-between py-2 border-b border-gray-50 last:border-0 gap-4">
-      <span className="text-xs font-medium text-gray-500 shrink-0 min-w-[140px]">{label}</span>
-      <span className="text-xs text-gray-900 text-right">{value ?? '—'}</span>
+      <span className="text-sm font-medium text-gray-500 shrink-0 min-w-[140px]">{label}</span>
+      <span className="text-sm text-gray-900 text-right">{value ?? '—'}</span>
     </div>
   );
 }
@@ -99,7 +99,7 @@ function SectionCard({
         <div className={cn('p-2 rounded-lg', iconColor)}>
           <Icon className="h-4 w-4" />
         </div>
-        <h2 className="text-sm font-semibold text-gray-800">{title}</h2>
+        <h2 className="text-base font-semibold text-gray-800">{title}</h2>
       </div>
       <div className="px-5 py-4">{children}</div>
     </div>
@@ -114,7 +114,7 @@ function InspectionStatusBadge({ status }: { status: string }) {
   }[status] ?? 'bg-gray-100 text-gray-600 border-gray-200';
 
   return (
-    <Badge className={cn('border text-xs font-medium px-2 py-0.5', config)}>
+    <Badge className={cn('border text-sm font-medium px-2 py-0.5', config)}>
       {status}
     </Badge>
   );
@@ -138,10 +138,10 @@ export default async function OccupancyDetailsPage({
     return (
       <div className="flex h-[50vh] flex-col items-center justify-center gap-3 text-center">
         <h1 className="text-2xl font-bold text-destructive">Access Denied</h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-base text-muted-foreground">
           You do not have permission to view occupancy details.
         </p>
-        <Link href="/management/occupancies" className="text-sm text-primary hover:underline">
+        <Link href="/management/occupancies" className="text-base text-primary hover:underline">
           ← Return to Occupancies
         </Link>
       </div>
@@ -178,7 +178,7 @@ export default async function OccupancyDetailsPage({
       {/* Back link */}
       <Link
         href="/management/occupancies"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        className="inline-flex items-center gap-1.5 text-base text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to Housing Occupancies
@@ -197,7 +197,7 @@ export default async function OccupancyDetailsPage({
               <h1 className="text-xl font-bold text-gray-900">{fullName}</h1>
               <OccupancyStatusBadge status={occupancy.status} />
             </div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-xs text-gray-500">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-sm text-gray-500">
               {profile?.staffId && <span>Staff ID: <strong className="text-gray-700">{profile.staffId}</strong></span>}
               {profile?.department && <span>Dept: <strong className="text-gray-700">{profile.department}</strong></span>}
               {unit && <span>Unit: <strong className="text-gray-700">{unit.name}</strong></span>}
@@ -213,7 +213,7 @@ export default async function OccupancyDetailsPage({
                 target="_blank"
                 rel="noopener noreferrer"
                 id="btn-view-tenancy"
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 <ScrollText className="h-4 w-4 text-blue-600" />
                 Tenancy Agreement
@@ -290,7 +290,7 @@ export default async function OccupancyDetailsPage({
               <InfoRow label="House Number" value={unit.houseNumber} />
               <InfoRow label="Road / Street" value={unit.roadNumber} />
               <InfoRow label="Unit Status" value={
-                <Badge className={cn('border text-xs font-medium px-2 py-0.5',
+                <Badge className={cn('border text-sm font-medium px-2 py-0.5',
                   unit.status === 'VACANT' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' :
                     unit.status === 'OCCUPIED' ? 'bg-blue-100 text-blue-800 border-blue-200' :
                       'bg-amber-100 text-amber-800 border-amber-200'
@@ -370,7 +370,7 @@ export default async function OccupancyDetailsPage({
               )}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground py-4 text-center">Housing unit information unavailable.</p>
+            <p className="text-base text-muted-foreground py-4 text-center">Housing unit information unavailable.</p>
           )}
         </SectionCard>
 
@@ -421,7 +421,7 @@ export default async function OccupancyDetailsPage({
                     : 'bg-white border-gray-300'
                 )} />
                 <div>
-                  <p className="text-xs font-medium text-gray-700">{label}</p>
+                  <p className="text-sm font-medium text-gray-700">{label}</p>
                   {date ? (
                     <p className="text-[11px] text-gray-500 mt-0.5">{fmt(date)}</p>
                   ) : note ? (
@@ -447,9 +447,9 @@ export default async function OccupancyDetailsPage({
                 return (
                   <div key={bq.id} className="rounded-xl border border-gray-100 bg-gray-50 p-3">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs font-semibold text-gray-700">{bq.label}</p>
+                      <p className="text-sm font-semibold text-gray-700">{bq.label}</p>
                       <Badge className={cn(
-                        'border text-xs font-medium px-2 py-0.5',
+                        'border text-sm font-medium px-2 py-0.5',
                         bq.status === 'VACANT'
                           ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
                           : 'bg-blue-100 text-blue-700 border-blue-200'
@@ -480,7 +480,7 @@ export default async function OccupancyDetailsPage({
         {(exitNotices.length > 0 || activeExitNotice) && (
           <SectionCard title="Exit Pipeline Status" icon={LogOutIcon} iconColor="bg-rose-100 text-rose-600">
             {exitNotices.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No exit notices recorded.</p>
+              <p className="text-base text-muted-foreground text-center py-4">No exit notices recorded.</p>
             ) : (
               <div className="space-y-4">
                 {exitNotices.map(notice => (
@@ -488,13 +488,13 @@ export default async function OccupancyDetailsPage({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <AlertCircle className="h-4 w-4 text-rose-500" />
-                        <p className="text-xs font-semibold text-gray-700">
+                        <p className="text-sm font-semibold text-gray-700">
                           Exit Reason: {notice.reason}
                           {notice.reason === 'OTHER' && notice.customReason ? ` — ${notice.customReason}` : ''}
                         </p>
                       </div>
                       {notice.isCleared && (
-                        <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 border text-xs">Cleared</Badge>
+                        <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 border text-sm">Cleared</Badge>
                       )}
                     </div>
 
@@ -528,7 +528,7 @@ export default async function OccupancyDetailsPage({
                         href={notice.clearanceCertificateUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:underline"
+                        className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
                       >
                         <FileText className="h-3.5 w-3.5" />
                         View Clearance Certificate

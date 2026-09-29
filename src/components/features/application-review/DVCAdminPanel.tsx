@@ -122,9 +122,9 @@ const METRIC_CATEGORIES: Record<string, string> = {
 function StatCard({ label, value, sub }: { label: string; value: React.ReactNode; sub?: string }) {
   return (
     <div className="rounded-xl border bg-card p-4 space-y-1">
-      <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">{label}</p>
+      <p className="text-sm text-muted-foreground uppercase tracking-wide font-medium">{label}</p>
       <p className="text-xl font-bold text-foreground">{value}</p>
-      {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
+      {sub && <p className="text-sm text-muted-foreground">{sub}</p>}
     </div>
   );
 }
@@ -163,8 +163,8 @@ function InspectionScoreCard({
         <div className="flex items-center gap-2 min-w-0">
           <Home className="h-4 w-4 text-primary shrink-0" />
           <div className="min-w-0">
-            <p className="text-sm font-semibold truncate">{unit?.name ?? unitId}</p>
-            <p className="text-xs text-muted-foreground truncate">{housingType?.name ?? 'Unknown type'}</p>
+            <p className="text-base font-semibold truncate">{unit?.name ?? unitId}</p>
+            <p className="text-sm text-muted-foreground truncate">{housingType?.name ?? 'Unknown type'}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -200,7 +200,7 @@ function InspectionScoreCard({
                 {catMetrics.map(metricId => {
                   const rating = scores[metricId];
                   return (
-                    <div key={metricId} className="flex items-center justify-between text-xs">
+                    <div key={metricId} className="flex items-center justify-between text-sm">
                       <span className="text-foreground/80">{METRIC_LABELS[metricId]}</span>
                       {rating ? (
                         <span className={cn(
@@ -354,7 +354,7 @@ export function DVCAdminPanel({
         <Crown className="h-6 w-6 text-primary shrink-0" />
         <div>
           <p className="font-bold text-foreground">Final Authority Review</p>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-sm text-muted-foreground mt-0.5">
             Review the inspection scores for proposed units and select the final housing unit to allocate. You can approve, reject, save draft, or return for modification.
           </p>
         </div>
@@ -387,11 +387,11 @@ export function DVCAdminPanel({
       {/* Score breakdown */}
       {application.pointsBreakdown && (
         <div className="rounded-xl border bg-card p-5 space-y-3">
-          <h3 className="text-sm font-semibold flex items-center gap-2">
+          <h3 className="text-base font-semibold flex items-center gap-2">
             <Award className="h-4 w-4 text-primary" />
             Score Breakdown (Housing Secretary)
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-base">
             {[
               { label: 'Rank + Grade', value: application.pointsBreakdown.baseTypePoints },
               { label: 'Seniority',    value: application.pointsBreakdown.seniorityBonus },
@@ -400,7 +400,7 @@ export function DVCAdminPanel({
             ].map(item => (
               <div key={item.label} className="rounded-lg bg-muted/40 px-3 py-2 text-center">
                 <p className="text-lg font-bold tabular-nums text-foreground">{item.value}</p>
-                <p className="text-xs text-muted-foreground">{item.label}</p>
+                <p className="text-sm text-muted-foreground">{item.label}</p>
               </div>
             ))}
           </div>
@@ -419,12 +419,12 @@ export function DVCAdminPanel({
           )}>
             <AlertCircle className={cn('h-5 w-5 shrink-0 mt-0.5', isSameUnit ? 'text-emerald-600' : 'text-blue-600')} />
             <div>
-              <p className={cn('text-sm font-semibold', isSameUnit ? 'text-emerald-800 dark:text-emerald-300' : 'text-blue-800 dark:text-blue-300')}>
+              <p className={cn('text-base font-semibold', isSameUnit ? 'text-emerald-800 dark:text-emerald-300' : 'text-blue-800 dark:text-blue-300')}>
                 {isSameUnit
                   ? 'Both reviewers agreed on the same unit'
                   : 'Reviewers suggested different units'}
               </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-sm text-muted-foreground mt-0.5">
                 {isSameUnit
                   ? `Housing Secretary and Estate Officer both proposed ${hsUnit?.name ?? hsUnitId}. This unit has been automatically selected for allocation.`
                   : `Housing Secretary suggested ${hsUnit?.name ?? hsUnitId ?? 'no unit'}, Estate Officer selected ${eoUnit?.name ?? eoUnitId ?? 'no unit'}. Inspection reports for both units are shown below. You must select your preferred unit before approving.`
@@ -447,7 +447,7 @@ export function DVCAdminPanel({
                   badgeColor="bg-emerald-100 text-emerald-800 border-emerald-300"
                   scores={inspectionData[eoUnitId]}
                   actionButton={
-                    <div className="flex items-center justify-center p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-semibold mt-4">
+                    <div className="flex items-center justify-center p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-base font-semibold mt-4">
                       <CheckCircle2 className="h-4 w-4 mr-2" /> Auto-Selected for Allocation
                     </div>
                   }
@@ -509,12 +509,12 @@ export function DVCAdminPanel({
           ) : (
             <div className="flex items-center gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-800">
               <AlertCircle className="h-5 w-5 shrink-0" />
-              <p className="text-sm">No physical inspection data recorded yet for this application.</p>
+              <p className="text-base">No physical inspection data recorded yet for this application.</p>
             </div>
           )}
 
           {form.formState.errors.finalAllocatedUnitId && (
-            <p className="text-xs text-destructive flex items-center gap-1.5 mt-2">
+            <p className="text-sm text-destructive flex items-center gap-1.5 mt-2">
               <AlertCircle className="h-3.5 w-3.5" />
               {form.formState.errors.finalAllocatedUnitId.message}
             </p>
@@ -524,15 +524,15 @@ export function DVCAdminPanel({
         <div className="flex items-center gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-800">
           <AlertCircle className="h-5 w-5 shrink-0" />
           <div>
-            <p className="text-sm font-medium">No housing unit has been proposed yet</p>
-            <p className="text-xs mt-0.5">Neither the Housing Secretary nor the Estate Officer has suggested a unit. Return the application for unit selection.</p>
+            <p className="text-base font-medium">No housing unit has been proposed yet</p>
+            <p className="text-sm mt-0.5">Neither the Housing Secretary nor the Estate Officer has suggested a unit. Return the application for unit selection.</p>
           </div>
         </div>
       )}
 
       {/* Review history */}
       <div className="rounded-xl border bg-card p-5 space-y-3">
-        <h3 className="text-sm font-semibold flex items-center gap-2">
+        <h3 className="text-base font-semibold flex items-center gap-2">
           <ClipboardList className="h-4 w-4 text-muted-foreground" />
           Review Trail
         </h3>
@@ -542,21 +542,21 @@ export function DVCAdminPanel({
               <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide">{review.stage} stage</span>
-                  <span className="text-xs text-muted-foreground">·</span>
-                  <span className="text-xs text-muted-foreground">{reviewerNames[review.reviewerId] ?? review.reviewerId}</span>
-                  <span className="text-xs text-muted-foreground">·</span>
-                  <span className="text-xs font-semibold text-primary">{review.decision}</span>
-                  <span className="text-xs text-muted-foreground">·</span>
-                  <span className="text-xs text-muted-foreground">{format(new Date(review.reviewedAt), 'dd MMM yyyy')}</span>
+                  <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide">{review.stage} stage</span>
+                  <span className="text-sm text-muted-foreground">·</span>
+                  <span className="text-sm text-muted-foreground">{reviewerNames[review.reviewerId] ?? review.reviewerId}</span>
+                  <span className="text-sm text-muted-foreground">·</span>
+                  <span className="text-sm font-semibold text-primary">{review.decision}</span>
+                  <span className="text-sm text-muted-foreground">·</span>
+                  <span className="text-sm text-muted-foreground">{format(new Date(review.reviewedAt), 'dd MMM yyyy')}</span>
                 </div>
                 {review.comments?.trim() ? (
-                  <p className="text-xs text-foreground/70 mt-1 italic">&quot;{review.comments}&quot;</p>
+                  <p className="text-sm text-foreground/70 mt-1 italic">&quot;{review.comments}&quot;</p>
                 ) : (
-                  <p className="text-xs text-muted-foreground mt-1 italic">No remarks provided</p>
+                  <p className="text-sm text-muted-foreground mt-1 italic">No remarks provided</p>
                 )}
                 {review.suggestedUnitId && (
-                  <p className="text-xs text-primary font-medium mt-1">
+                  <p className="text-sm text-primary font-medium mt-1">
                     Unit proposed: {review.suggestedUnitId}
                   </p>
                 )}
@@ -569,10 +569,10 @@ export function DVCAdminPanel({
       {/* Applicant notes */}
       {application.additionalNotes && (
         <div className="rounded-xl border bg-card p-4 space-y-1.5">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
             <User className="h-3.5 w-3.5" /> Applicant Notes
           </h3>
-          <p className="text-sm text-foreground/80 italic">&quot;{application.additionalNotes}&quot;</p>
+          <p className="text-base text-foreground/80 italic">&quot;{application.additionalNotes}&quot;</p>
         </div>
       )}
 
@@ -580,7 +580,7 @@ export function DVCAdminPanel({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
         {/* Rationale / Instructions */}
         <div className="space-y-2">
-          <label className="text-sm font-semibold">
+          <label className="text-base font-semibold">
             Decision Rationale / Instructions
           </label>
           <textarea
@@ -588,12 +588,12 @@ export function DVCAdminPanel({
             rows={4}
             placeholder="Provide the official rationale for your decision, or specify what needs to change if returning..."
             className={cn(
-              'w-full text-sm px-3 py-2 rounded-xl border bg-background resize-none',
+              'w-full text-base px-3 py-2 rounded-xl border bg-background resize-none',
               'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition'
             )}
           />
           {form.formState.errors.comments && (
-            <p className="text-xs text-destructive">{form.formState.errors.comments.message}</p>
+            <p className="text-sm text-destructive">{form.formState.errors.comments.message}</p>
           )}
         </div>
 

@@ -46,14 +46,14 @@ function fmt(dateStr: string | null | undefined, fallback = '—') {
 function OccupancyStatusBadge({ status }: { status: OccupancyStatus }) {
   if (status === 'ACTIVE') {
     return (
-      <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 border font-semibold text-sm px-3 py-1 gap-1.5">
+      <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 border font-semibold text-base px-3 py-1 gap-1.5">
         <CheckCircle2 className="h-4 w-4" />
         Active
       </Badge>
     );
   }
   return (
-    <Badge className="bg-rose-100 text-rose-800 border-rose-200 border font-semibold text-sm px-3 py-1 gap-1.5">
+    <Badge className="bg-rose-100 text-rose-800 border-rose-200 border font-semibold text-base px-3 py-1 gap-1.5">
       <LogOutIcon className="h-4 w-4" />
       Exited
     </Badge>
@@ -63,8 +63,8 @@ function OccupancyStatusBadge({ status }: { status: OccupancyStatus }) {
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-start justify-between py-3 border-b border-gray-50 last:border-0 gap-4">
-      <span className="text-sm font-medium text-gray-500 shrink-0 min-w-[140px]">{label}</span>
-      <span className="text-sm text-gray-900 text-right">{value ?? '—'}</span>
+      <span className="text-base font-medium text-gray-500 shrink-0 min-w-[140px]">{label}</span>
+      <span className="text-base text-gray-900 text-right">{value ?? '—'}</span>
     </div>
   );
 }
@@ -102,7 +102,7 @@ export default async function StaffOccupancyPage() {
     return (
       <div className="flex h-[50vh] flex-col items-center justify-center gap-3 text-center">
         <h1 className="text-2xl font-bold text-destructive">Access Denied</h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-base text-muted-foreground">
           Only staff members can view their own occupancy.
         </p>
       </div>
@@ -121,7 +121,7 @@ export default async function StaffOccupancyPage() {
           </div>
           <div className="space-y-1">
             <h3 className="font-bold text-gray-900 text-lg">No Active Housing Occupancy</h3>
-            <p className="text-sm text-gray-500 max-w-md mx-auto">
+            <p className="text-base text-gray-500 max-w-md mx-auto">
               You do not currently occupy any housing unit. Submit a housing application to begin the allocation process.
             </p>
           </div>
@@ -165,7 +165,7 @@ export default async function StaffOccupancyPage() {
       {/* Back link */}
       <Link
         href="/staff"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        className="inline-flex items-center gap-1.5 text-base text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to Dashboard
@@ -183,7 +183,7 @@ export default async function StaffOccupancyPage() {
               <h1 className="text-xl font-bold text-gray-900">My Housing Allocation</h1>
               <OccupancyStatusBadge status={occupancy.status} />
             </div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-sm text-gray-500">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-base text-gray-500">
               {unit && <span>Unit: <strong className="text-gray-700">{unit.name}</strong></span>}
               <span>Check-in: <strong className="text-gray-700">{fmt(occupancy.checkInDate)}</strong></span>
             </div>
@@ -195,7 +195,7 @@ export default async function StaffOccupancyPage() {
                 href={tenancyAgreement.documentUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-base font-medium text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 <ScrollText className="h-4 w-4 text-blue-600" />
                 View Agreement
@@ -232,7 +232,7 @@ export default async function StaffOccupancyPage() {
             <InfoRow label="Annual Rent" value={housingType?.annualRent ? `₦${housingType.annualRent.toLocaleString()}` : '—'} />
 
             <div className="pt-4 mt-4 border-t border-gray-100">
-              <div className="grid grid-cols-2 gap-3 text-sm text-gray-500">
+              <div className="grid grid-cols-2 gap-3 text-base text-gray-500">
                 <span className="flex items-center gap-1.5"><BedDouble className="h-4 w-4 shrink-0 text-gray-400" /> {housingType?.numberOfBedrooms} Bedrooms</span>
                 <span className="flex items-center gap-1.5"><Bath className="h-4 w-4 shrink-0 text-gray-400" /> {housingType?.numberOfBathrooms} Bathrooms</span>
                 <span className="flex items-center gap-1.5"><Bath className="h-4 w-4 shrink-0 text-gray-400" /> {housingType?.numberOfToilets} Toilets</span>

@@ -107,10 +107,10 @@ export async function AdminDashboard() {
                 header: 'Applicant',
                 render: r => (
                   <div>
-                    <p className="font-medium text-xs">
+                    <p className="font-medium text-sm">
                       {r.applicantUser ? `${r.applicantUser.firstName} ${r.applicantUser.lastName}` : r.userId}
                     </p>
-                    <p className="text-muted-foreground text-xs">
+                    <p className="text-muted-foreground text-sm">
                       {r.applicantProfile?.rank ?? '—'}
                     </p>
                   </div>
@@ -120,7 +120,7 @@ export async function AdminDashboard() {
                 key: 'stage',
                 header: 'Stage',
                 render: r => (
-                  <Badge variant="outline" className="text-xs font-mono">
+                  <Badge variant="outline" className="text-sm font-mono">
                     {r.currentStage}
                   </Badge>
                 ),
@@ -133,7 +133,7 @@ export async function AdminDashboard() {
               {
                 key: 'submitted',
                 header: 'Submitted',
-                render: r => <span className="text-xs text-muted-foreground">{formatDate(r.submittedAt)}</span>,
+                render: r => <span className="text-sm text-muted-foreground">{formatDate(r.submittedAt)}</span>,
               },
             ]}
           />
@@ -155,14 +155,14 @@ export async function AdminDashboard() {
                 key: 'title',
                 header: 'Title',
                 render: r => (
-                  <p className="font-medium text-xs line-clamp-1">{r.title}</p>
+                  <p className="font-medium text-sm line-clamp-1">{r.title}</p>
                 ),
               },
               {
                 key: 'reporter',
                 header: 'Reported By',
                 render: r => (
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     {r.reporterUser ? `${r.reporterUser.firstName} ${r.reporterUser.lastName}` : r.userId}
                   </span>
                 ),
@@ -177,7 +177,7 @@ export async function AdminDashboard() {
                     RESOLVED: 'bg-emerald-100 text-emerald-700',
                   };
                   return (
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${map[r.status] ?? ''}`}>
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-sm font-medium ${map[r.status] ?? ''}`}>
                       {r.status.replace('_', ' ')}
                     </span>
                   );
@@ -204,7 +204,7 @@ export async function AdminDashboard() {
               key: 'timestamp',
               header: 'Timestamp',
               render: r => (
-                <span className="text-xs font-mono text-muted-foreground">
+                <span className="text-sm font-mono text-muted-foreground">
                   {new Date(r.createdAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                 </span>
               ),
@@ -214,11 +214,11 @@ export async function AdminDashboard() {
               header: 'Actor',
               render: r => (
                 <div>
-                  <p className="text-xs font-medium">
+                  <p className="text-sm font-medium">
                     {r.actorUser ? `${r.actorUser.firstName} ${r.actorUser.lastName}` : r.actorId}
                   </p>
                   {r.actorUser && (
-                    <p className="text-xs text-muted-foreground">{r.actorUser.role.replace(/_/g, ' ')}</p>
+                    <p className="text-sm text-muted-foreground">{r.actorUser.role.replace(/_/g, ' ')}</p>
                   )}
                 </div>
               ),
@@ -227,19 +227,19 @@ export async function AdminDashboard() {
               key: 'action',
               header: 'Action',
               render: r => (
-                <code className="text-xs bg-muted px-2 py-0.5 rounded font-mono">{r.action}</code>
+                <code className="text-sm bg-muted px-2 py-0.5 rounded font-mono">{r.action}</code>
               ),
             },
             {
               key: 'entity',
               header: 'Entity',
-              render: r => <span className="text-xs text-muted-foreground">{r.entityType}</span>,
+              render: r => <span className="text-sm text-muted-foreground">{r.entityType}</span>,
             },
             {
               key: 'status',
               header: 'Status',
               render: r => (
-                <span className={`inline-flex items-center gap-1 text-xs font-medium ${r.status === 'SUCCESS' ? 'text-emerald-600' : 'text-red-600'}`}>
+                <span className={`inline-flex items-center gap-1 text-sm font-medium ${r.status === 'SUCCESS' ? 'text-emerald-600' : 'text-red-600'}`}>
                   <CheckCircle2 className="h-3 w-3" />
                   {r.status}
                 </span>
@@ -255,7 +255,7 @@ export async function AdminDashboard() {
           {Object.entries(data.usersByRole).map(([role, count]) => (
             <div key={role} className="rounded-xl border border-border/60 p-4 bg-muted/10 text-center">
               <p className="text-2xl font-bold text-oau-navy">{count as number}</p>
-              <p className="text-xs text-muted-foreground mt-1">{role.replace(/_/g, ' ')}</p>
+              <p className="text-sm text-muted-foreground mt-1">{role.replace(/_/g, ' ')}</p>
             </div>
           ))}
         </div>

@@ -24,8 +24,8 @@ interface StepReviewProps {
 function ReviewRow({ label, value }: { label: string; value?: string | number | null }) {
   return (
     <div className="flex justify-between items-start gap-4 py-1.5 border-b border-border/50 last:border-0">
-      <span className="text-muted-foreground text-sm shrink-0">{label}</span>
-      <span className="text-sm font-medium text-right">{value ?? '—'}</span>
+      <span className="text-muted-foreground text-base shrink-0">{label}</span>
+      <span className="text-base font-medium text-right">{value ?? '—'}</span>
     </div>
   );
 }
@@ -46,7 +46,7 @@ export function StepReview({ form, housingTypes }: StepReviewProps) {
         </div>
         <div>
           <h2 className="text-lg font-semibold">Review & Submit</h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-base text-muted-foreground">
             Confirm your details before submitting. You can go back to any step to make changes.
           </p>
         </div>
@@ -56,7 +56,7 @@ export function StepReview({ form, housingTypes }: StepReviewProps) {
       <div className="rounded-xl border border-border overflow-hidden">
         <div className="flex items-center gap-2 px-4 py-3 bg-muted/40 border-b border-border">
           <GraduationCap className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-semibold">Professional Profile</h3>
+          <h3 className="text-base font-semibold">Professional Profile</h3>
         </div>
         <div className="px-4 py-3 space-y-0.5">
           <ReviewRow label="Rank" value={values.rank} />
@@ -74,24 +74,24 @@ export function StepReview({ form, housingTypes }: StepReviewProps) {
       <div className="rounded-xl border border-border overflow-hidden">
         <div className="flex items-center gap-2 px-4 py-3 bg-muted/40 border-b border-border">
           <Home className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-semibold">Housing Preferences</h3>
+          <h3 className="text-base font-semibold">Housing Preferences</h3>
         </div>
         <div className="px-4 py-3 space-y-3">
           {selectedTypes.length === 0 ? (
-            <p className="text-sm text-destructive">No housing types selected.</p>
+            <p className="text-base text-destructive">No housing types selected.</p>
           ) : (
             selectedTypes.map(({ rank, type }) => (
               <div key={type!.id} className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shrink-0">
+                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shrink-0">
                   {rank}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{type!.name}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-base font-medium truncate">{type!.name}</p>
+                  <p className="text-sm text-muted-foreground">
                     {type!.numberOfBedrooms} bed · {type!.allocationPoints} pts · ₦{type!.annualRent.toLocaleString()}/yr
                   </p>
                 </div>
-                <Badge variant="outline" className="capitalize text-xs">
+                <Badge variant="outline" className="capitalize text-sm">
                   {type!.buildingType.charAt(0) + type!.buildingType.slice(1).toLowerCase()}
                 </Badge>
               </div>
@@ -105,11 +105,11 @@ export function StepReview({ form, housingTypes }: StepReviewProps) {
         <div className="rounded-xl border border-border overflow-hidden">
           <div className="flex items-center gap-2 px-4 py-3 bg-muted/40 border-b border-border">
             <Users className="h-4 w-4 text-muted-foreground" />
-            <h3 className="text-sm font-semibold">Dependents ({values.dependents!.length})</h3>
+            <h3 className="text-base font-semibold">Dependents ({values.dependents!.length})</h3>
           </div>
           <div className="px-4 py-3 space-y-1.5">
             {values.dependents!.map((dep, i) => (
-              <div key={i} className="flex items-center gap-2 text-sm">
+              <div key={i} className="flex items-center gap-2 text-base">
                 <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
                 <span className="font-medium">{dep.name}</span>
                 <span className="text-muted-foreground">— {dep.relationship}</span>
@@ -126,7 +126,7 @@ export function StepReview({ form, housingTypes }: StepReviewProps) {
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <MessageSquare className="h-4 w-4 text-muted-foreground" />
-          <Label htmlFor="wiz-notes" className="text-sm font-semibold">
+          <Label htmlFor="wiz-notes" className="text-base font-semibold">
             Additional Notes <span className="text-muted-foreground font-normal">(optional)</span>
           </Label>
         </div>
@@ -140,16 +140,16 @@ export function StepReview({ form, housingTypes }: StepReviewProps) {
         />
         <div className="flex justify-between">
           {errors.additionalNotes && (
-            <p className="text-xs text-destructive">{errors.additionalNotes.message}</p>
+            <p className="text-sm text-destructive">{errors.additionalNotes.message}</p>
           )}
-          <p className="text-xs text-muted-foreground ml-auto">
+          <p className="text-sm text-muted-foreground ml-auto">
             {(watch('additionalNotes') ?? '').length} / 500
           </p>
         </div>
       </div>
 
       {/* Declaration */}
-      <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm text-emerald-800 space-y-1">
+      <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-base text-emerald-800 space-y-1">
         <p className="font-semibold flex items-center gap-2">
           <CheckCircle2 className="h-4 w-4" />
           Declaration

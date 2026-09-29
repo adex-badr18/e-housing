@@ -66,23 +66,23 @@ export async function ElectricalOfficerDashboard() {
                 header: 'Occupant',
                 render: r => (
                   <div>
-                    <p className="font-medium text-xs font-semibold">
+                    <p className="font-medium text-sm font-semibold">
                       {r.occupantUser ? `${r.occupantUser.firstName} ${r.occupantUser.lastName}` : r.userId}
                     </p>
-                    <p className="text-muted-foreground text-xs">{r.housingUnit?.name ?? '—'}</p>
+                    <p className="text-muted-foreground text-sm">{r.housingUnit?.name ?? '—'}</p>
                   </div>
                 ),
               },
               {
                 key: 'reason',
                 header: 'Reason',
-                render: r => <Badge variant="outline" className="text-xs">{r.reason}</Badge>,
+                render: r => <Badge variant="outline" className="text-sm">{r.reason}</Badge>,
               },
               {
                 key: 'housingCleared',
                 header: 'Housing Cleared Date',
                 render: r => (
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     {r.housingInspectionDate ? formatDate(r.housingInspectionDate) : '—'}
                   </span>
                 ),
@@ -90,7 +90,7 @@ export async function ElectricalOfficerDashboard() {
               {
                 key: 'submitted',
                 header: 'Submitted',
-                render: r => <span className="text-xs text-muted-foreground">{formatDate(r.submittedAt)}</span>,
+                render: r => <span className="text-sm text-muted-foreground">{formatDate(r.submittedAt)}</span>,
               },
             ]}
           />
@@ -113,10 +113,10 @@ export async function ElectricalOfficerDashboard() {
                 header: 'Occupant',
                 render: r => (
                   <div>
-                    <p className="font-medium text-xs font-semibold">
+                    <p className="font-medium text-sm font-semibold">
                       {r.occupantUser ? `${r.occupantUser.firstName} ${r.occupantUser.lastName}` : r.userId}
                     </p>
-                    <p className="text-muted-foreground text-xs">{r.housingUnit?.name ?? '—'}</p>
+                    <p className="text-muted-foreground text-sm">{r.housingUnit?.name ?? '—'}</p>
                   </div>
                 ),
               },
@@ -124,7 +124,7 @@ export async function ElectricalOfficerDashboard() {
                 key: 'verifiedDate',
                 header: 'Verified Date',
                 render: r => (
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     {r.electricalInspectionDate ? formatDate(r.electricalInspectionDate) : '—'}
                   </span>
                 ),
@@ -133,7 +133,7 @@ export async function ElectricalOfficerDashboard() {
                 key: 'status',
                 header: 'Status',
                 render: () => (
-                  <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
+                  <span className="inline-flex px-2 py-0.5 rounded-full text-sm font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
                     PASSED
                   </span>
                 ),

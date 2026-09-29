@@ -114,7 +114,7 @@ function OccupantForm({ bqId, existing, onClose, onSaved }: OccupantFormProps) {
   return (
     <div className="mt-4 rounded-xl border-2 border-primary/20 bg-primary/5 p-5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
       <div className="flex items-center justify-between">
-        <h4 className="font-semibold text-sm flex items-center gap-2">
+        <h4 className="font-semibold text-base flex items-center gap-2">
           {isEditing ? (
             <><Pencil className="h-4 w-4 text-primary" /> Edit Sub-Occupant</>
           ) : (
@@ -137,7 +137,7 @@ function OccupantForm({ bqId, existing, onClose, onSaved }: OccupantFormProps) {
 
         {/* Full Name */}
         <div className="space-y-1.5">
-          <label htmlFor={`fullName-${bqId}`} className="text-xs font-semibold text-foreground/80 uppercase tracking-wider">
+          <label htmlFor={`fullName-${bqId}`} className="text-sm font-semibold text-foreground/80 uppercase tracking-wider">
             Full Name <span className="text-destructive">*</span>
           </label>
           <input
@@ -146,19 +146,19 @@ function OccupantForm({ bqId, existing, onClose, onSaved }: OccupantFormProps) {
             placeholder="e.g. Emmanuel Afolabi"
             {...form.register('fullName')}
             className={cn(
-              'w-full text-sm px-3.5 py-2.5 rounded-xl border bg-background',
+              'w-full text-base px-3.5 py-2.5 rounded-xl border bg-background',
               'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition',
               form.formState.errors.fullName && 'border-destructive focus:ring-destructive/30'
             )}
           />
           {form.formState.errors.fullName && (
-            <p className="text-xs text-destructive">{form.formState.errors.fullName.message}</p>
+            <p className="text-sm text-destructive">{form.formState.errors.fullName.message}</p>
           )}
         </div>
 
         {/* Phone */}
         <div className="space-y-1.5">
-          <label htmlFor={`phone-${bqId}`} className="text-xs font-semibold text-foreground/80 uppercase tracking-wider">
+          <label htmlFor={`phone-${bqId}`} className="text-sm font-semibold text-foreground/80 uppercase tracking-wider">
             Phone Number <span className="text-destructive">*</span>
           </label>
           <input
@@ -167,20 +167,20 @@ function OccupantForm({ bqId, existing, onClose, onSaved }: OccupantFormProps) {
             placeholder="e.g. 08012345678"
             {...form.register('phoneNumber')}
             className={cn(
-              'w-full text-sm px-3.5 py-2.5 rounded-xl border bg-background',
+              'w-full text-base px-3.5 py-2.5 rounded-xl border bg-background',
               'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition',
               form.formState.errors.phoneNumber && 'border-destructive focus:ring-destructive/30'
             )}
           />
           {form.formState.errors.phoneNumber && (
-            <p className="text-xs text-destructive">{form.formState.errors.phoneNumber.message}</p>
+            <p className="text-sm text-destructive">{form.formState.errors.phoneNumber.message}</p>
           )}
         </div>
 
         {/* Email */}
         <div className="space-y-1.5">
-          <label htmlFor={`email-${bqId}`} className="text-xs font-semibold text-foreground/80 uppercase tracking-wider">
-            Email Address <span className="text-muted-foreground text-xs font-normal">(optional)</span>
+          <label htmlFor={`email-${bqId}`} className="text-sm font-semibold text-foreground/80 uppercase tracking-wider">
+            Email Address <span className="text-muted-foreground text-sm font-normal">(optional)</span>
           </label>
           <input
             id={`email-${bqId}`}
@@ -188,26 +188,26 @@ function OccupantForm({ bqId, existing, onClose, onSaved }: OccupantFormProps) {
             placeholder="e.g. person@example.com"
             {...form.register('email')}
             className={cn(
-              'w-full text-sm px-3.5 py-2.5 rounded-xl border bg-background',
+              'w-full text-base px-3.5 py-2.5 rounded-xl border bg-background',
               'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition',
               form.formState.errors.email && 'border-destructive focus:ring-destructive/30'
             )}
           />
           {form.formState.errors.email && (
-            <p className="text-xs text-destructive">{form.formState.errors.email.message}</p>
+            <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
           )}
         </div>
 
         {/* Relationship */}
         <div className="space-y-1.5">
-          <label htmlFor={`relationship-${bqId}`} className="text-xs font-semibold text-foreground/80 uppercase tracking-wider">
+          <label htmlFor={`relationship-${bqId}`} className="text-sm font-semibold text-foreground/80 uppercase tracking-wider">
             Relationship / Role <span className="text-destructive">*</span>
           </label>
           <select
             id={`relationship-${bqId}`}
             {...form.register('relationship')}
             className={cn(
-              'w-full text-sm px-3.5 py-2.5 rounded-xl border bg-background',
+              'w-full text-base px-3.5 py-2.5 rounded-xl border bg-background',
               'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition',
               form.formState.errors.relationship && 'border-destructive focus:ring-destructive/30'
             )}
@@ -220,12 +220,12 @@ function OccupantForm({ bqId, existing, onClose, onSaved }: OccupantFormProps) {
             <option value="Other">Other</option>
           </select>
           {form.formState.errors.relationship && (
-            <p className="text-xs text-destructive">{form.formState.errors.relationship.message}</p>
+            <p className="text-sm text-destructive">{form.formState.errors.relationship.message}</p>
           )}
         </div>
 
         {/* Policy note */}
-        <div className="flex items-start gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
+        <div className="flex items-start gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
           <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
           <span>
             BQ sub-occupants must be domestic staff or immediate family members only. 
@@ -239,7 +239,7 @@ function OccupantForm({ bqId, existing, onClose, onSaved }: OccupantFormProps) {
             type="submit"
             disabled={isPending}
             className={cn(
-              'flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-sm transition-all',
+              'flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-base transition-all',
               'bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm'
             )}
           >
@@ -250,7 +250,7 @@ function OccupantForm({ bqId, existing, onClose, onSaved }: OccupantFormProps) {
             type="button"
             onClick={onClose}
             disabled={isPending}
-            className="px-5 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors disabled:opacity-50"
+            className="px-5 py-2.5 rounded-xl border border-border text-base font-medium hover:bg-muted transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
@@ -277,8 +277,8 @@ function RemoveDialog({ occupant, onConfirm, onCancel, isPending }: RemoveDialog
       <div className="flex items-center gap-3">
         <AlertTriangle className="h-5 w-5 text-red-500 shrink-0" />
         <div>
-          <p className="font-semibold text-sm text-red-700">Remove Sub-Occupant?</p>
-          <p className="text-xs text-red-600 mt-0.5">
+          <p className="font-semibold text-base text-red-700">Remove Sub-Occupant?</p>
+          <p className="text-sm text-red-600 mt-0.5">
             This will remove <strong>{occupant.fullName}</strong> and free up this BQ unit.
           </p>
         </div>
@@ -287,7 +287,7 @@ function RemoveDialog({ occupant, onConfirm, onCancel, isPending }: RemoveDialog
         <button
           onClick={onConfirm}
           disabled={isPending}
-          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-sm bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-base bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
         >
           {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
           <Trash2 className="h-4 w-4" />
@@ -296,7 +296,7 @@ function RemoveDialog({ occupant, onConfirm, onCancel, isPending }: RemoveDialog
         <button
           onClick={onCancel}
           disabled={isPending}
-          className="px-5 py-2.5 rounded-xl border text-sm font-medium hover:bg-muted transition-colors disabled:opacity-50"
+          className="px-5 py-2.5 rounded-xl border text-base font-medium hover:bg-muted transition-colors disabled:opacity-50"
         >
           Cancel
         </button>
@@ -349,18 +349,18 @@ function BQCard({ bq, index, onBQUpdated }: BQCardProps) {
       )}>
         <div className="flex items-center gap-3">
           <div className={cn(
-            'w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm',
+            'w-10 h-10 rounded-xl flex items-center justify-center font-bold text-base',
             isOccupied ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
           )}>
             {index + 1}
           </div>
           <div>
-            <p className="font-bold text-sm">{bq.label}</p>
-            <p className="text-xs text-muted-foreground">Housing Sub-Unit</p>
+            <p className="font-bold text-base">{bq.label}</p>
+            <p className="text-sm text-muted-foreground">Housing Sub-Unit</p>
           </div>
         </div>
         <div className={cn(
-          'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide',
+          'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold uppercase tracking-wide',
           isOccupied
             ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
             : 'bg-muted text-muted-foreground border border-border'
@@ -382,24 +382,24 @@ function BQCard({ bq, index, onBQUpdated }: BQCardProps) {
               <div className="flex items-center gap-2.5">
                 <UserCheck className="h-4 w-4 text-primary shrink-0" />
                 <div>
-                  <p className="text-xs text-muted-foreground">Sub-Occupant</p>
-                  <p className="font-semibold text-sm">{bq.occupant.fullName}</p>
+                  <p className="text-sm text-muted-foreground">Sub-Occupant</p>
+                  <p className="font-semibold text-base">{bq.occupant.fullName}</p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="flex items-center gap-2 text-xs">
+              <div className="grid grid-cols-2 gap-3 text-base">
+                <div className="flex items-center gap-2 text-sm">
                   <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                   <span className="text-muted-foreground">{bq.occupant.phoneNumber}</span>
                 </div>
                 {bq.occupant.email && (
-                  <div className="flex items-center gap-2 text-xs">
+                  <div className="flex items-center gap-2 text-sm">
                     <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     <span className="text-muted-foreground truncate">{bq.occupant.email}</span>
                   </div>
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold border border-primary/20">
+                <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-sm font-semibold border border-primary/20">
                   {bq.occupant.relationship}
                 </span>
               </div>
@@ -411,7 +411,7 @@ function BQCard({ bq, index, onBQUpdated }: BQCardProps) {
                 <button
                   id={`edit-bq-${bq.id}`}
                   onClick={() => setMode('edit')}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold hover:bg-muted transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm font-semibold hover:bg-muted transition-colors"
                 >
                   <Pencil className="h-3.5 w-3.5" />
                   Edit
@@ -419,7 +419,7 @@ function BQCard({ bq, index, onBQUpdated }: BQCardProps) {
                 <button
                   id={`remove-bq-${bq.id}`}
                   onClick={() => setMode('remove')}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-200 text-red-600 text-xs font-semibold hover:bg-red-50 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-50 transition-colors"
                 >
                   <UserX className="h-3.5 w-3.5" />
                   Remove
@@ -456,8 +456,8 @@ function BQCard({ bq, index, onBQUpdated }: BQCardProps) {
                 <Home className="h-5 w-5 text-muted-foreground" />
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground/70">BQ Vacant</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-base font-medium text-foreground/70">BQ Vacant</p>
+                <p className="text-sm text-muted-foreground mt-0.5">
                   No sub-occupant registered in this unit.
                 </p>
               </div>
@@ -468,7 +468,7 @@ function BQCard({ bq, index, onBQUpdated }: BQCardProps) {
                 id={`add-bq-${bq.id}`}
                 onClick={() => setMode('add')}
                 className={cn(
-                  'w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all',
+                  'w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-base font-semibold transition-all',
                   'border-2 border-dashed border-primary/30 text-primary hover:bg-primary/5 hover:border-primary/50'
                 )}
               >
@@ -517,7 +517,7 @@ export function BQPortal({ bqs: initialBqs, maxBQs }: Props) {
         <Home className="h-14 w-14 text-muted-foreground/30 mx-auto" />
         <div>
           <h2 className="text-xl font-semibold">No BQ Units Available</h2>
-          <p className="text-sm text-muted-foreground max-w-sm mx-auto mt-1">
+          <p className="text-base text-muted-foreground max-w-sm mx-auto mt-1">
             Your current housing unit does not include any Boys Quarters (BQ) sub-units.
           </p>
         </div>
@@ -531,24 +531,24 @@ export function BQPortal({ bqs: initialBqs, maxBQs }: Props) {
       <div className="grid grid-cols-3 gap-4">
         <div className="rounded-xl border bg-card p-4 text-center space-y-1">
           <p className="text-2xl font-extrabold">{maxBQs}</p>
-          <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Total BQ Units</p>
+          <p className="text-sm text-muted-foreground font-medium uppercase tracking-wide">Total BQ Units</p>
         </div>
         <div className="rounded-xl border bg-emerald-50 border-emerald-200 p-4 text-center space-y-1">
           <p className="text-2xl font-extrabold text-emerald-700">{occupiedCount}</p>
-          <p className="text-xs text-emerald-600 font-medium uppercase tracking-wide">Occupied</p>
+          <p className="text-sm text-emerald-600 font-medium uppercase tracking-wide">Occupied</p>
         </div>
         <div className="rounded-xl border bg-secondary/50 p-4 text-center space-y-1">
           <p className="text-2xl font-extrabold text-muted-foreground">{vacantCount}</p>
-          <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Vacant</p>
+          <p className="text-sm text-muted-foreground font-medium uppercase tracking-wide">Vacant</p>
         </div>
       </div>
 
       {/* Policy banner */}
-      <div className="flex items-start gap-3 rounded-xl border bg-primary/5 border-primary/20 px-5 py-3.5 text-sm">
+      <div className="flex items-start gap-3 rounded-xl border bg-primary/5 border-primary/20 px-5 py-3.5 text-base">
         <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
         <div className="space-y-0.5">
           <p className="font-semibold text-primary/90">Occupancy Policy</p>
-          <p className="text-xs text-primary/70">
+          <p className="text-sm text-primary/70">
             Maximum <strong>{maxBQs} sub-occupant{maxBQs !== 1 ? 's' : ''}</strong> allowed across your {maxBQs} BQ unit{maxBQs !== 1 ? 's' : ''}.
             Each BQ accommodates exactly one registered person. Sub-occupants must be domestic staff or immediate family members only.
           </p>

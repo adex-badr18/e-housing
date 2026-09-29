@@ -86,7 +86,7 @@ export function TenancyAgreementView({ agreement }: Props) {
         </div>
         <div className="flex items-center gap-3">
           {agreement?.signed && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-semibold">
               <CheckCircle2 className="h-3.5 w-3.5" />
               Digitally Signed
             </div>
@@ -94,7 +94,7 @@ export function TenancyAgreementView({ agreement }: Props) {
           <button
             id="save-pdf-btn"
             onClick={handleSavePDF}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-primary/30 text-primary hover:bg-primary/5 font-semibold text-sm transition-all"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-primary/30 text-primary hover:bg-primary/5 font-semibold text-base transition-all"
           >
             <Download className="h-4 w-4" />
             Save as PDF
@@ -102,7 +102,7 @@ export function TenancyAgreementView({ agreement }: Props) {
           <button
             id="print-agreement-btn"
             onClick={handlePrint}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-sm transition-all shadow-md shadow-primary/20"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-base transition-all shadow-md shadow-primary/20"
           >
             <Printer className="h-4 w-4" />
             Print Agreement
@@ -115,7 +115,7 @@ export function TenancyAgreementView({ agreement }: Props) {
         id="print-root"
         className="print-doc bg-white rounded-2xl border shadow-xl overflow-hidden font-serif"
       >
-        <div className="px-10 py-12 print:px-0 print:py-0 print:m-0 text-sm leading-relaxed text-black">
+        <div className="px-10 py-12 print:px-0 print:py-0 print:m-0 text-base leading-relaxed text-black">
           <div className="text-center font-bold mb-8 space-y-1">
             <h1 className="text-xl underline uppercase">OBAFEMI AWOLOWO UNIVERSITY, ILE-IFE</h1>
             <h2 className="text-lg">TENANCY AGREEMENT (2017)</h2>
@@ -200,7 +200,7 @@ export function TenancyAgreementView({ agreement }: Props) {
             IN WITNESS WHEREOF THE PARTIES hereto have set their hands and seals the day and year first above-written.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-12 text-sm pb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-12 text-base pb-8">
             <div className="space-y-6">
               <div className="space-y-2">
                 <p className="font-bold">SIGNED, STAMPED AND DELIVERED by the</p>

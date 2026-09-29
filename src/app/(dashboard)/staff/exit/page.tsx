@@ -36,7 +36,7 @@ export default async function StaffExitPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-oau-navy">Housing Exit</h1>
-            <p className="text-muted-foreground text-sm mt-1">
+            <p className="text-muted-foreground text-base mt-1">
               Initiate your departure from university housing and track your clearance progress.
             </p>
           </div>
@@ -53,7 +53,7 @@ export default async function StaffExitPage() {
         <div className="rounded-xl border border-border bg-card p-8 text-center flex flex-col items-center gap-3">
           <Home className="h-10 w-10 text-muted-foreground" />
           <h2 className="font-semibold text-lg">No Active Occupancy</h2>
-          <p className="text-sm text-muted-foreground max-w-sm">
+          <p className="text-base text-muted-foreground max-w-sm">
             You do not currently have an active housing allocation. There is nothing to exit from.
           </p>
           <Link href="/staff" className={buttonVariants({ variant: 'outline' })}>
@@ -66,8 +66,8 @@ export default async function StaffExitPage() {
           <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-primary mt-0.5 shrink-0" />
             <div>
-              <p className="font-semibold text-sm text-primary">Exit Notice Active</p>
-              <p className="text-xs text-primary/80 mt-1">
+              <p className="font-semibold text-base text-primary">Exit Notice Active</p>
+              <p className="text-sm text-primary/80 mt-1">
                 Your exit notice has been submitted. Track your clearance progress below.
                 The certificate will be available once all stages pass.
               </p>
@@ -80,7 +80,7 @@ export default async function StaffExitPage() {
         <div className="rounded-xl border bg-card shadow-sm">
           <div className="p-6 border-b border-border">
             <h2 className="font-semibold">Submit Exit Notice</h2>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-base text-muted-foreground mt-1">
               Currently occupying: <strong>{currentUnit.name}</strong>
             </p>
           </div>

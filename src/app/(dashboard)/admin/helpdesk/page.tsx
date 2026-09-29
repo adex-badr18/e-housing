@@ -30,7 +30,7 @@ export default async function HelpdeskPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-oau-navy">Helpdesk & Complaints</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-base text-muted-foreground mt-1">
             Manage and resolve staff housing complaints and incident reports.
           </p>
         </div>
@@ -41,10 +41,10 @@ export default async function HelpdeskPage() {
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 shrink-0" />
           <div>
-            <p className="font-semibold text-red-800 text-sm">
+            <p className="font-semibold text-red-800 text-base">
               {openCount} Open Ticket{openCount !== 1 ? 's' : ''} Require Attention
             </p>
-            <p className="text-xs text-red-600 mt-0.5">
+            <p className="text-sm text-red-600 mt-0.5">
               Staff have reported issues that are yet to be picked up. Please assign and action them promptly.
             </p>
           </div>
@@ -66,7 +66,7 @@ export default async function HelpdeskPage() {
               </div>
               <div>
                 <p className="text-2xl font-extrabold">{stat.value}</p>
-                <p className="text-xs text-muted-foreground">{stat.label}</p>
+                <p className="text-sm text-muted-foreground">{stat.label}</p>
               </div>
             </div>
           );

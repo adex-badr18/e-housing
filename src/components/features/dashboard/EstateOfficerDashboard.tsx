@@ -22,7 +22,7 @@ function UnitStatusPill({ status }: { status: string }) {
     UNDER_MAINTENANCE:'bg-amber-100 text-amber-700 border-amber-200',
   };
   return (
-    <span className={cn('inline-flex px-2 py-0.5 rounded-full text-xs font-medium border', map[status] ?? 'bg-muted text-muted-foreground')}>
+    <span className={cn('inline-flex px-2 py-0.5 rounded-full text-sm font-medium border', map[status] ?? 'bg-muted text-muted-foreground')}>
       {status.replace('_', ' ')}
     </span>
   );
@@ -89,10 +89,10 @@ export async function EstateOfficerDashboard() {
                 header: 'Applicant',
                 render: r => (
                   <div>
-                    <p className="font-medium text-xs">
+                    <p className="font-medium text-sm">
                       {r.applicantUser ? `${r.applicantUser.firstName} ${r.applicantUser.lastName}` : r.userId}
                     </p>
-                    <p className="text-muted-foreground text-xs">{r.applicantProfile?.department ?? '—'}</p>
+                    <p className="text-muted-foreground text-sm">{r.applicantProfile?.department ?? '—'}</p>
                   </div>
                 ),
               },
@@ -100,7 +100,7 @@ export async function EstateOfficerDashboard() {
                 key: 'score',
                 header: 'Score',
                 render: r => (
-                  <span className="text-sm font-bold text-oau-navy">
+                  <span className="text-base font-bold text-oau-navy">
                     {r.pointsBreakdown?.totalPoints ?? '—'}
                   </span>
                 ),
@@ -113,7 +113,7 @@ export async function EstateOfficerDashboard() {
               {
                 key: 'submitted',
                 header: 'Submitted',
-                render: r => <span className="text-xs text-muted-foreground">{formatDate(r.submittedAt)}</span>,
+                render: r => <span className="text-sm text-muted-foreground">{formatDate(r.submittedAt)}</span>,
               },
             ]}
           />
@@ -136,22 +136,22 @@ export async function EstateOfficerDashboard() {
                 header: 'Occupant',
                 render: r => (
                   <div>
-                    <p className="font-medium text-xs">
+                    <p className="font-medium text-sm">
                       {r.occupantUser ? `${r.occupantUser.firstName} ${r.occupantUser.lastName}` : r.userId}
                     </p>
-                    <p className="text-muted-foreground text-xs">{r.housingUnit?.name ?? '—'}</p>
+                    <p className="text-muted-foreground text-sm">{r.housingUnit?.name ?? '—'}</p>
                   </div>
                 ),
               },
               {
                 key: 'reason',
                 header: 'Reason',
-                render: r => <Badge variant="outline" className="text-xs">{r.reason}</Badge>,
+                render: r => <Badge variant="outline" className="text-sm">{r.reason}</Badge>,
               },
               {
                 key: 'submitted',
                 header: 'Submitted',
-                render: r => <span className="text-xs text-muted-foreground">{formatDate(r.submittedAt)}</span>,
+                render: r => <span className="text-sm text-muted-foreground">{formatDate(r.submittedAt)}</span>,
               },
             ]}
           />
@@ -173,12 +173,12 @@ export async function EstateOfficerDashboard() {
             {
               key: 'unit',
               header: 'Unit',
-              render: r => <span className="font-medium text-xs">{r.name}</span>,
+              render: r => <span className="font-medium text-sm">{r.name}</span>,
             },
             {
               key: 'type',
               header: 'Housing Type',
-              render: r => <span className="text-xs text-muted-foreground">{r.housingType?.name ?? '—'}</span>,
+              render: r => <span className="text-sm text-muted-foreground">{r.housingType?.name ?? '—'}</span>,
             },
 
             {
@@ -190,7 +190,7 @@ export async function EstateOfficerDashboard() {
               key: 'occupant',
               header: 'Occupant',
               render: r => (
-                <span className="text-xs text-muted-foreground">
+                <span className="text-sm text-muted-foreground">
                   {r.occupantUser ? `${r.occupantUser.firstName} ${r.occupantUser.lastName}` : '—'}
                 </span>
               ),

@@ -94,8 +94,8 @@ export default async function StaffDashboardPage() {
               <AlertCircle className="h-5 w-5" />
             </div>
             <div>
-              <p className="font-semibold text-sm">Housing Allocation Offer Issued!</p>
-              <p className="text-xs text-amber-700">
+              <p className="font-semibold text-base">Housing Allocation Offer Issued!</p>
+              <p className="text-sm text-amber-700">
                 You have been offered <strong className="text-oau-navy font-semibold">{allocationOfferUnit?.name}</strong>.
                 Please respond before it expires on <strong className="font-semibold">{allocationOffer.expiresAt ? formatDate(allocationOffer.expiresAt) : 'soon'}</strong>.
               </p>
@@ -103,7 +103,7 @@ export default async function StaffDashboardPage() {
           </div>
           <Link
             href="/staff/housing"
-            className={cn(buttonVariants({ size: 'sm', className: 'bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs rounded-lg' }))}
+            className={cn(buttonVariants({ size: 'sm', className: 'bg-amber-600 hover:bg-amber-700 text-white font-medium text-sm rounded-lg' }))}
           >
             Review Offer
           </Link>
@@ -148,31 +148,31 @@ export default async function StaffDashboardPage() {
         <Card className="border-t-4 border-t-oau-gold shadow-md">
           <CardHeader className="pb-3">
             <CardTitle className="text-oau-navy text-base">Quick Actions</CardTitle>
-            <CardDescription className="text-xs">Access portal operations</CardDescription>
+            <CardDescription className="text-sm">Access portal operations</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
-            <Link href="/staff/profile" className={cn(buttonVariants({ variant: 'outline', className: 'w-full justify-start text-xs font-semibold' }))}>
+            <Link href="/staff/profile" className={cn(buttonVariants({ variant: 'outline', className: 'w-full justify-start text-sm font-semibold' }))}>
               <DoorOpen className="mr-2 h-4 w-4" /> Update Profile
             </Link>
             <Link
               href="/staff/applications"
-              className={cn(buttonVariants({ className: 'w-full justify-start bg-oau-navy text-oau-cream hover:bg-oau-navy/90 text-xs font-semibold' }))}
+              className={cn(buttonVariants({ className: 'w-full justify-start bg-oau-navy text-oau-cream hover:bg-oau-navy/90 text-sm font-semibold' }))}
             >
               <FileText className="mr-2 h-4 w-4" /> Apply for Housing
             </Link>
-            <Link href="/staff/housing" className={cn(buttonVariants({ variant: 'outline', className: 'w-full justify-start text-xs font-semibold' }))}>
+            <Link href="/staff/housing" className={cn(buttonVariants({ variant: 'outline', className: 'w-full justify-start text-sm font-semibold' }))}>
               <KeyRound className="mr-2 h-4 w-4" /> My Housing Offer
             </Link>
             {/* Tenancy Agreement link: only shown while in OFFER_ACCEPTED phase */}
             {hasOfferAcceptedApp && (
-              <Link href="/staff/tenancy" className={cn(buttonVariants({ variant: 'outline', className: 'w-full justify-start text-xs font-semibold text-teal-700 border-teal-300 hover:bg-teal-50' }))}>
+              <Link href="/staff/tenancy" className={cn(buttonVariants({ variant: 'outline', className: 'w-full justify-start text-sm font-semibold text-teal-700 border-teal-300 hover:bg-teal-50' }))}>
                 <Scroll className="mr-2 h-4 w-4" /> Tenancy Agreement
               </Link>
             )}
-            <Link href="/staff/bq" className={cn(buttonVariants({ variant: 'outline', className: 'w-full justify-start text-xs font-semibold' }))}>
+            <Link href="/staff/bq" className={cn(buttonVariants({ variant: 'outline', className: 'w-full justify-start text-sm font-semibold' }))}>
               <Building className="mr-2 h-4 w-4" /> BQ Management
             </Link>
-            <Link href="/staff/exit" className={cn(buttonVariants({ variant: 'outline', className: 'w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-200 mt-2 text-xs font-semibold' }))}>
+            <Link href="/staff/exit" className={cn(buttonVariants({ variant: 'outline', className: 'w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-200 mt-2 text-sm font-semibold' }))}>
               <LogOut className="mr-2 h-4 w-4" /> Initiate Housing Exit
             </Link>
           </CardContent>
@@ -182,9 +182,9 @@ export default async function StaffDashboardPage() {
         <Card className="shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-oau-navy text-base">Basic Information</CardTitle>
-            <CardDescription className="text-xs">Personal profile info</CardDescription>
+            <CardDescription className="text-sm">Personal profile info</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3 text-xs leading-relaxed">
+          <CardContent className="space-y-3 text-sm leading-relaxed">
             <div className="flex justify-between border-b pb-1.5 border-border/40">
               <span className="text-muted-foreground">Full Name:</span>
               <span className="font-semibold text-oau-navy">{user?.firstName} {user?.lastName}</span>
@@ -210,9 +210,9 @@ export default async function StaffDashboardPage() {
         <Card className="shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-oau-navy text-base">Professional Profile</CardTitle>
-            <CardDescription className="text-xs">Employment and ranking</CardDescription>
+            <CardDescription className="text-sm">Employment and ranking</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3 text-xs leading-relaxed">
+          <CardContent className="space-y-3 text-sm leading-relaxed">
             {!profile ? (
               <div className="text-destructive font-medium text-center py-4">
                 Profile incomplete. Please update.
@@ -253,12 +253,12 @@ export default async function StaffDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-oau-navy text-base">Current Allocation Details</CardTitle>
-                  <CardDescription className="text-xs">Unit details and linked Boys Quarters occupants</CardDescription>
+                  <CardDescription className="text-sm">Unit details and linked Boys Quarters occupants</CardDescription>
                 </div>
                 {activeOccupancy && (
                   <Link
                     href={`/staff/occupancy`}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
                   >
                     <MapPin className="h-3.5 w-3.5" />
                     View Full Details <ArrowRight className="h-3 w-3" />
@@ -267,14 +267,14 @@ export default async function StaffDashboardPage() {
               </div>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
-              <div className="grid gap-4 sm:grid-cols-3 text-xs">
+              <div className="grid gap-4 sm:grid-cols-3 text-sm">
                 <div className="rounded-xl border border-border/40 p-3 bg-muted/5">
                   <p className="text-muted-foreground mb-1">Unit Assigned</p>
-                  <p className="text-sm font-bold text-oau-navy">{currentUnit.name}</p>
+                  <p className="text-base font-bold text-oau-navy">{currentUnit.name}</p>
                 </div>
                 <div className="rounded-xl border border-border/40 p-3 bg-muted/5">
                   <p className="text-muted-foreground mb-1">Tenancy Agreement</p>
-                  <p className="text-xs">
+                  <p className="text-sm">
                     {tenancyAgreement?.signed ? (
                       <span className="text-emerald-600 font-semibold flex items-center gap-1">
                         <CheckCircle className="h-3 w-3" /> Signed & Active
@@ -288,7 +288,7 @@ export default async function StaffDashboardPage() {
                 </div>
                 <div className="rounded-xl border border-border/40 p-3 bg-muted/5">
                   <p className="text-muted-foreground mb-1">BQ Allocations</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     {currentUnitBQs && currentUnitBQs.length > 0 ? (
                       <span>{currentUnitBQs.filter(b => b.status === 'OCCUPIED').length} of {currentUnitBQs.length} occupied</span>
                     ) : (
@@ -300,7 +300,7 @@ export default async function StaffDashboardPage() {
 
               {currentUnitBQs && currentUnitBQs.length > 0 && (
                 <div className="flex flex-col gap-2">
-                  <p className="text-xs font-semibold text-oau-navy">BQ Occupants</p>
+                  <p className="text-sm font-semibold text-oau-navy">BQ Occupants</p>
                   <SnapshotTable
                     rows={currentUnitBQs}
                     getRowKey={r => r.id}
@@ -316,7 +316,7 @@ export default async function StaffDashboardPage() {
                         key: 'status',
                         header: 'Status',
                         render: r => (
-                          <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium border ${r.status === 'OCCUPIED' ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-muted text-muted-foreground'}`}>
+                          <span className={`inline-flex px-2 py-0.5 rounded-full text-sm font-medium border ${r.status === 'OCCUPIED' ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-muted text-muted-foreground'}`}>
                             {r.status}
                           </span>
                         ),
@@ -325,7 +325,7 @@ export default async function StaffDashboardPage() {
                         key: 'occupant',
                         header: 'Occupant Name',
                         render: r => (
-                          <span className="text-xs font-medium">
+                          <span className="text-sm font-medium">
                             {r.occupant ? r.occupant.fullName : '—'}
                           </span>
                         ),
@@ -334,7 +334,7 @@ export default async function StaffDashboardPage() {
                         key: 'relationship',
                         header: 'Relationship',
                         render: r => (
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-sm text-muted-foreground">
                             {r.occupant ? r.occupant.relationship : '—'}
                           </span>
                         ),
@@ -354,10 +354,10 @@ export default async function StaffDashboardPage() {
                   <ShieldAlert className="h-5 w-5 text-red-500" />
                   Exit Clearance Progress
                 </CardTitle>
-                <CardDescription className="text-xs">Visual pipeline of exit inspections</CardDescription>
+                <CardDescription className="text-sm">Visual pipeline of exit inspections</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
-                <div className="flex flex-col gap-3.5 text-xs">
+                <div className="flex flex-col gap-3.5 text-sm">
                   {/* Housing */}
                   <div className="flex justify-between items-center border-b pb-2 border-border/40">
                     <div>
@@ -403,7 +403,7 @@ export default async function StaffDashboardPage() {
                 </div>
                 <Link
                   href="/staff/exit"
-                  className={cn(buttonVariants({ size: 'sm', className: 'w-full text-xs font-semibold mt-2' }))}
+                  className={cn(buttonVariants({ size: 'sm', className: 'w-full text-sm font-semibold mt-2' }))}
                 >
                   View Clearance Pipeline
                 </Link>
@@ -420,13 +420,13 @@ export default async function StaffDashboardPage() {
             </div>
             <div className="space-y-1">
               <h3 className="font-semibold text-oau-navy text-base">No Active Housing Occupancy</h3>
-              <p className="text-sm text-muted-foreground max-w-sm">
+              <p className="text-base text-muted-foreground max-w-sm">
                 You do not currently occupy any housing unit. Submit a housing application to begin the allocation process.
               </p>
             </div>
             <Link
               href="/staff/applications/new"
-              className={cn(buttonVariants({ className: 'bg-oau-navy text-oau-cream hover:bg-oau-navy/90 text-xs font-semibold gap-2' }))}
+              className={cn(buttonVariants({ className: 'bg-oau-navy text-oau-cream hover:bg-oau-navy/90 text-sm font-semibold gap-2' }))}
             >
               <FileText className="h-4 w-4" />
               Apply for Housing
@@ -450,13 +450,13 @@ export default async function StaffDashboardPage() {
             {
               key: 'submitted',
               header: 'Submitted Date',
-              render: r => <span className="text-xs font-medium">{formatDate(r.submittedAt)}</span>,
+              render: r => <span className="text-sm font-medium">{formatDate(r.submittedAt)}</span>,
             },
             {
               key: 'stage',
               header: 'Workflow Stage',
               render: r => (
-                <Badge variant="outline" className="text-xs font-mono">
+                <Badge variant="outline" className="text-sm font-mono">
                   {r.currentStage}
                 </Badge>
               ),
@@ -465,7 +465,7 @@ export default async function StaffDashboardPage() {
               key: 'score',
               header: 'Formula Score',
               render: r => (
-                <span className="text-xs font-bold text-oau-navy">
+                <span className="text-sm font-bold text-oau-navy">
                   {r.pointsBreakdown?.totalPoints ?? '—'}
                 </span>
               ),

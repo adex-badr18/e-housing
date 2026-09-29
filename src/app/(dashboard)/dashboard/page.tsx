@@ -91,7 +91,7 @@ export default async function DashboardPage() {
                 <CardDescription>System Overview</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-base text-muted-foreground">
                   You are logged in as <strong className="text-oau-navy">{(role as string)?.replace('_', ' ')}</strong>.
                 </p>
               </CardContent>

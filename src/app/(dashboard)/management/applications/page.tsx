@@ -66,7 +66,7 @@ export default async function ManagementApplicationsPage() {
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-oau-navy">{heading.title}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">{heading.subtitle}</p>
+          <p className="text-muted-foreground mt-1 text-base">{heading.subtitle}</p>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/management/applications/history" className={buttonVariants({ variant: 'outline', className: 'gap-2 rounded-xl text-muted-foreground' })}>

@@ -73,7 +73,7 @@ export function QuitRequestsPanel({ requests }: QuitRequestsPanelProps) {
       {/* Section header */}
       <div className="flex items-center gap-2">
         <h2 className="text-lg font-bold text-oau-navy">Pending Withdrawal Requests</h2>
-        <span className="bg-orange-100 text-orange-800 text-xs font-bold px-2 py-0.5 rounded-full border border-orange-200">
+        <span className="bg-orange-100 text-orange-800 text-sm font-bold px-2 py-0.5 rounded-full border border-orange-200">
           {pendingRequests.length}
         </span>
       </div>
@@ -99,12 +99,12 @@ export function QuitRequestsPanel({ requests }: QuitRequestsPanelProps) {
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <FileX2 className="h-4 w-4 text-orange-600 shrink-0" />
-                    <span className="text-sm font-semibold text-orange-900">
+                    <span className="text-base font-semibold text-orange-900">
                       {req.entityType === 'HousingApplication' ? 'Housing Application' : 'Exit Notice'} · Withdrawal Request
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <span className="text-xs text-orange-600/80 font-medium">
+                    <span className="text-sm text-orange-600/80 font-medium">
                       {format(new Date(req.createdAt), 'dd MMM yyyy')}
                     </span>
                     <ChevronRight className="h-4 w-4 text-orange-400 group-hover:text-orange-600 group-hover:translate-x-0.5 transition-all" />
@@ -118,14 +118,14 @@ export function QuitRequestsPanel({ requests }: QuitRequestsPanelProps) {
                       <User className="h-4 w-4 text-orange-700" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-bold text-orange-950 leading-tight">
+                      <p className="text-base font-bold text-orange-950 leading-tight">
                         {applicantUser
                           ? `${applicantUser.firstName} ${applicantUser.lastName}`
                           : <span className="italic font-normal text-orange-600">Unknown applicant</span>
                         }
                       </p>
                       {applicantProfile && (
-                        <p className="text-xs text-orange-700 mt-0.5 flex items-center gap-1 flex-wrap">
+                        <p className="text-sm text-orange-700 mt-0.5 flex items-center gap-1 flex-wrap">
                           <GraduationCap className="h-3 w-3 shrink-0" />
                           <span>{applicantProfile.rank}</span>
                           {(applicantProfile.salaryLevel || applicantProfile.salaryGradeLevel) && (
@@ -160,7 +160,7 @@ export function QuitRequestsPanel({ requests }: QuitRequestsPanelProps) {
 
                 {/* Application context row */}
                 {application && (
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-orange-700">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-orange-700">
                     {preferredHousingTypeNames.length > 0 && (
                       <span className="flex items-center gap-1">
                         <Home className="h-3 w-3 shrink-0" />
@@ -176,9 +176,9 @@ export function QuitRequestsPanel({ requests }: QuitRequestsPanelProps) {
                 )}
 
                 {/* Reason box */}
-                <div className="text-sm bg-white border border-orange-100 rounded-lg p-3 text-orange-950">
-                  <span className="font-semibold block mb-1 text-xs uppercase tracking-wide text-orange-600">Reason</span>
-                  <span className="opacity-90 text-sm">{req.reason}</span>
+                <div className="text-base bg-white border border-orange-100 rounded-lg p-3 text-orange-950">
+                  <span className="font-semibold block mb-1 text-sm uppercase tracking-wide text-orange-600">Reason</span>
+                  <span className="opacity-90 text-base">{req.reason}</span>
                 </div>
               </Link>
 
@@ -187,7 +187,7 @@ export function QuitRequestsPanel({ requests }: QuitRequestsPanelProps) {
                 <button
                   onClick={() => onReview(req.id, 'REJECTED')}
                   disabled={isPending}
-                  className="flex-1 py-1.5 px-3 rounded-lg text-sm font-medium border border-orange-300 text-orange-800 hover:bg-orange-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+                  className="flex-1 py-1.5 px-3 rounded-lg text-base font-medium border border-orange-300 text-orange-800 hover:bg-orange-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
                 >
                   {isProcessing ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -199,7 +199,7 @@ export function QuitRequestsPanel({ requests }: QuitRequestsPanelProps) {
                 <button
                   onClick={() => onReview(req.id, 'APPROVED')}
                   disabled={isPending}
-                  className="flex-1 py-1.5 px-3 rounded-lg text-sm font-medium bg-orange-600 hover:bg-orange-700 text-white transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-sm"
+                  className="flex-1 py-1.5 px-3 rounded-lg text-base font-medium bg-orange-600 hover:bg-orange-700 text-white transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-sm"
                 >
                   {isProcessing ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />

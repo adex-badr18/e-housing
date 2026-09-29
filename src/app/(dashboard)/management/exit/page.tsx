@@ -21,9 +21,9 @@ const MANAGEMENT_ROLES = [
 type ManagementRole = typeof MANAGEMENT_ROLES[number];
 
 function StatusBadge({ status }: { status: 'PENDING' | 'PASSED' | 'FAILED' }) {
-  if (status === 'PASSED') return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 text-xs font-medium border">Passed</Badge>;
-  if (status === 'FAILED') return <Badge className="bg-red-100 text-red-700 border-red-200 text-xs font-medium border">Failed</Badge>;
-  return <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-xs font-medium border">Pending</Badge>;
+  if (status === 'PASSED') return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 text-sm font-medium border">Passed</Badge>;
+  if (status === 'FAILED') return <Badge className="bg-red-100 text-red-700 border-red-200 text-sm font-medium border">Failed</Badge>;
+  return <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-sm font-medium border">Pending</Badge>;
 }
 
 function PipelineMini({ notice }: { notice: ExitNotice }) {
@@ -40,7 +40,7 @@ function PipelineMini({ notice }: { notice: ExitNotice }) {
         return (
           <div key={i} className="flex items-center gap-1">
             <div className={cn(
-              'w-7 h-7 rounded-full flex items-center justify-center border text-xs font-bold',
+              'w-7 h-7 rounded-full flex items-center justify-center border text-sm font-bold',
               stage.status === 'PASSED' ? 'bg-emerald-100 border-emerald-300 text-emerald-700' :
               stage.status === 'FAILED' ? 'bg-red-100 border-red-300 text-red-700' :
               'bg-muted border-border text-muted-foreground'
@@ -85,7 +85,7 @@ export default async function ExitPipelinePage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-oau-navy">Exit Clearance Pipeline</h1>
-            <p className="text-sm text-muted-foreground mt-1">{roleLabel}</p>
+            <p className="text-base text-muted-foreground mt-1">{roleLabel}</p>
           </div>
         </div>
         <Link href="/management/exit/history" className={buttonVariants({ variant: 'outline', size: 'sm', className: 'gap-2 rounded-xl text-muted-foreground' })}>
@@ -113,7 +113,7 @@ export default async function ExitPipelinePage() {
               <Icon className={cn('h-8 w-8', stat.color)} />
               <div>
                 <p className="text-2xl font-extrabold">{stat.value}</p>
-                <p className="text-xs text-muted-foreground">{stat.label}</p>
+                <p className="text-sm text-muted-foreground">{stat.label}</p>
               </div>
             </div>
           );
@@ -124,14 +124,14 @@ export default async function ExitPipelinePage() {
       <div className="rounded-xl border bg-card overflow-hidden">
         <div className="p-4 border-b bg-muted/30 flex items-center gap-2">
           <Clock className="h-4 w-4 text-amber-600" />
-          <h2 className="font-semibold text-sm">Active Notices ({active.length})</h2>
+          <h2 className="font-semibold text-base">Active Notices ({active.length})</h2>
         </div>
 
         {active.length === 0 ? (
           <div className="p-12 text-center text-muted-foreground">
             <CheckCircle2 className="h-10 w-10 mx-auto mb-3 opacity-30" />
             <p className="font-medium">Queue is clear</p>
-            <p className="text-sm mt-1">No exit notices require your attention right now.</p>
+            <p className="text-base mt-1">No exit notices require your attention right now.</p>
           </div>
         ) : (
           <div className="divide-y">
@@ -146,14 +146,14 @@ export default async function ExitPipelinePage() {
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="font-semibold text-sm truncate">
+                      <p className="font-semibold text-base truncate">
                         {staff ? `${staff.firstName} ${staff.lastName}` : notice.userId}
                       </p>
-                      <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full capitalize">
+                      <span className="text-sm text-muted-foreground bg-muted px-2 py-0.5 rounded-full capitalize">
                         {notice.reason.toLowerCase().replace('_', ' ')}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                    <p className="text-sm text-muted-foreground mt-0.5">
                       Unit: {unit?.name ?? notice.housingUnitId} ·{' '}
                       Submitted {new Date(notice.submittedAt).toLocaleDateString('en-GB', {
                         day: '2-digit', month: 'short', year: 'numeric'
@@ -174,7 +174,7 @@ export default async function ExitPipelinePage() {
         <div className="rounded-xl border bg-card overflow-hidden">
           <div className="p-4 border-b bg-emerald-50 flex items-center gap-2">
             <Shield className="h-4 w-4 text-emerald-600" />
-            <h2 className="font-semibold text-sm text-emerald-800">Cleared ({cleared.length})</h2>
+            <h2 className="font-semibold text-base text-emerald-800">Cleared ({cleared.length})</h2>
           </div>
           <div className="divide-y">
             {cleared.map(notice => {
@@ -187,16 +187,16 @@ export default async function ExitPipelinePage() {
                   className="flex items-center gap-4 p-4 hover:bg-muted/30 transition group opacity-70 hover:opacity-100"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm truncate">
+                    <p className="font-semibold text-base truncate">
                       {staff ? `${staff.firstName} ${staff.lastName}` : notice.userId}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                       {unit?.name} · Cleared {notice.clearedAt ? new Date(notice.clearedAt).toLocaleDateString('en-GB', {
                         day: '2-digit', month: 'short', year: 'numeric'
                       }) : '—'}
                     </p>
                   </div>
-                  <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 border text-xs">
+                  <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 border text-sm">
                     <Shield className="h-3 w-3 mr-1" /> Cleared
                   </Badge>
                   <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition" />

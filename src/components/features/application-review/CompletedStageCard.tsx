@@ -58,17 +58,17 @@ export function CompletedStageCard({ review, reviewerName }: CompletedStageCardP
     <div className="rounded-xl border bg-card p-5 space-y-3 shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+        <p className="text-base font-semibold text-muted-foreground uppercase tracking-wide">
           {STAGE_LABELS[review.stage]}
         </p>
-        <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${cfg.cls}`}>
+        <span className={`inline-flex items-center gap-1.5 text-sm font-semibold px-2.5 py-1 rounded-full border ${cfg.cls}`}>
           <Icon className={`h-3.5 w-3.5 ${cfg.iconCls}`} />
           {cfg.label}
         </span>
       </div>
 
       {/* Reviewer & date */}
-      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+      <div className="flex items-center gap-4 text-sm text-muted-foreground">
         <span>Reviewed by <strong className="text-foreground">{reviewerName}</strong></span>
         <span>·</span>
         <span>{format(new Date(review.reviewedAt), 'dd MMM yyyy, HH:mm')}</span>
@@ -82,11 +82,11 @@ export function CompletedStageCard({ review, reviewerName }: CompletedStageCardP
 
       {/* Comments */}
       {review.comments && review.comments.trim() ? (
-        <p className="text-sm text-foreground/80 border-l-2 border-muted pl-3 italic">
+        <p className="text-base text-foreground/80 border-l-2 border-muted pl-3 italic">
           {review.comments}
         </p>
       ) : (
-        <p className="text-xs text-muted-foreground italic pl-3">
+        <p className="text-sm text-muted-foreground italic pl-3">
           No remarks provided.
         </p>
       )}

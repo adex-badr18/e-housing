@@ -90,7 +90,7 @@ function StatusSelect({
         onChange={e => handleChange(e.target.value as TicketStatus)}
         disabled={isPending}
         onClick={e => e.stopPropagation()}
-        className="appearance-none text-xs border border-border rounded-lg px-3 py-1.5 pr-7 bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer disabled:opacity-50"
+        className="appearance-none text-sm border border-border rounded-lg px-3 py-1.5 pr-7 bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer disabled:opacity-50"
       >
         <option value="OPEN">Open</option>
         <option value="IN_PROGRESS">In Progress</option>
@@ -137,13 +137,13 @@ function TicketCard({
       >
         <Icon className={cn('h-5 w-5 mt-0.5 shrink-0', config.iconCls)} />
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-sm leading-tight line-clamp-2">{ticket.title}</p>
+          <p className="font-semibold text-base leading-tight line-clamp-2">{ticket.title}</p>
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
+            <span className="text-sm text-muted-foreground flex items-center gap-1">
               <User className="h-3 w-3" />
               {user ? `${user.firstName} ${user.lastName}` : ticket.userId}
             </span>
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
+            <span className="text-sm text-muted-foreground flex items-center gap-1">
               <Calendar className="h-3 w-3" />
               {ticket.createdAt ? new Date(ticket.createdAt).toLocaleDateString('en-GB', {
                 day: '2-digit', month: 'short',
@@ -156,9 +156,9 @@ function TicketCard({
       {/* Expanded body */}
       {expanded && (
         <div className="border-t px-4 pb-4 pt-3 space-y-3">
-          <p className="text-sm text-muted-foreground leading-relaxed">{ticket.description}</p>
+          <p className="text-base text-muted-foreground leading-relaxed">{ticket.description}</p>
 
-          <div className="text-xs text-muted-foreground space-y-1">
+          <div className="text-sm text-muted-foreground space-y-1">
             <div className="flex gap-2">
               <span className="font-medium w-20">Ticket ID:</span>
               <code className="font-mono">{ticket.id}</code>
@@ -177,7 +177,7 @@ function TicketCard({
 
           {/* Status control */}
           <div className="flex items-center gap-2 pt-1">
-            <span className="text-xs text-muted-foreground">Move to:</span>
+            <span className="text-sm text-muted-foreground">Move to:</span>
             <StatusSelect
               ticketId={ticket.id}
               currentStatus={ticket.status as TicketStatus}
@@ -219,14 +219,14 @@ export function HelpdeskPanel({ tickets: initialTickets, users }: HelpdeskPanelP
           return (
             <div
               key={status}
-              className={cn('flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold', cfg.badgeCls)}
+              className={cn('flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-semibold', cfg.badgeCls)}
             >
               <Icon className="h-3.5 w-3.5" />
               {cfg.label}: {count}
             </div>
           );
         })}
-        <span className="text-xs text-muted-foreground ml-auto">{tickets.length} total tickets</span>
+        <span className="text-sm text-muted-foreground ml-auto">{tickets.length} total tickets</span>
       </div>
 
       {/* Kanban columns */}
@@ -240,19 +240,19 @@ export function HelpdeskPanel({ tickets: initialTickets, users }: HelpdeskPanelP
             <div key={status} className="flex flex-col gap-3">
               {/* Column header */}
               <div className={cn(
-                'flex items-center justify-between px-4 py-2.5 rounded-xl border font-semibold text-sm',
+                'flex items-center justify-between px-4 py-2.5 rounded-xl border font-semibold text-base',
                 cfg.headerCls
               )}>
                 <div className="flex items-center gap-2">
                   <Icon className="h-4 w-4" />
                   {cfg.label}
                 </div>
-                <span className="text-xs font-bold">{col.length}</span>
+                <span className="text-sm font-bold">{col.length}</span>
               </div>
 
               {/* Cards */}
               {col.length === 0 ? (
-                <div className="rounded-xl border border-dashed bg-muted/10 p-6 text-center text-xs text-muted-foreground flex flex-col items-center gap-2">
+                <div className="rounded-xl border border-dashed bg-muted/10 p-6 text-center text-sm text-muted-foreground flex flex-col items-center gap-2">
                   <MessageSquare className="h-6 w-6 opacity-30" />
                   No {cfg.label.toLowerCase()} tickets
                 </div>

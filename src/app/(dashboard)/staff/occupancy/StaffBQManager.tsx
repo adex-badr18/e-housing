@@ -114,10 +114,10 @@ export function StaffBQManager({
           <div className="p-2 rounded-lg bg-indigo-100 text-indigo-600">
             <Home className="h-4 w-4" />
           </div>
-          <h2 className="text-sm font-semibold text-gray-800">Boys Quarters (BQ) Occupants</h2>
+          <h2 className="text-base font-semibold text-gray-800">Boys Quarters (BQ) Occupants</h2>
         </div>
         <div className="px-5 py-4">
-          <p className="text-xs text-gray-500 italic py-2 text-center">No BQs attached to this housing unit.</p>
+          <p className="text-base text-gray-500 italic py-2 text-center">No BQs attached to this housing unit.</p>
         </div>
       </div>
     );
@@ -133,7 +133,7 @@ export function StaffBQManager({
           <div className="p-2 rounded-lg bg-indigo-100 text-indigo-600">
             <Home className="h-4 w-4" />
           </div>
-          <h2 className="text-sm font-semibold text-gray-800">Boys Quarters (BQ) Occupants</h2>
+          <h2 className="text-base font-semibold text-gray-800">Boys Quarters (BQ) Occupants</h2>
         </div>
         <div className="px-5 py-4">
           <div className="grid gap-3 sm:grid-cols-2">
@@ -149,20 +149,20 @@ export function StaffBQManager({
                     </div>
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-gray-800">{bq.label}</span>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${bqOcc ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-200 text-gray-600'}`}>
+                        <span className="text-base font-semibold text-gray-800">{bq.label}</span>
+                        <span className={`text-sm font-bold px-2 py-0.5 rounded-full ${bqOcc ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-200 text-gray-600'}`}>
                           {bqOcc ? 'OCCUPIED' : 'VACANT'}
                         </span>
                       </div>
                       {bqOcc ? (
-                        <div className="text-xs text-gray-600 mt-1 space-y-0.5">
-                          <p className="font-semibold text-sm text-gray-900">{bqOcc.fullName}</p>
+                        <div className="text-base text-gray-600 mt-1 space-y-0.5">
+                          <p className="font-semibold text-base text-gray-900">{bqOcc.fullName}</p>
                           <p className="text-gray-500">Relationship: <span className="font-medium text-gray-700">{bqOcc.relationship}</span></p>
                           <p className="text-gray-500">Phone: <span className="font-medium text-gray-700">{bqOcc.phoneNumber}</span></p>
                           {bqOcc.email && <p className="text-gray-500">Email: <span className="font-medium text-gray-700">{bqOcc.email}</span></p>}
                         </div>
                       ) : (
-                        <p className="text-xs text-gray-400 italic mt-1">Available for allocation. Click "Add Occupant" to assign someone.</p>
+                        <p className="text-base text-gray-400 italic mt-1">Available for allocation. Click "Add Occupant" to assign someone.</p>
                       )}
                     </div>
                   </div>
@@ -174,21 +174,21 @@ export function StaffBQManager({
                         <Button 
                           size="sm" 
                           variant="outline" 
-                          className="h-8 text-xs flex-1 sm:flex-none justify-start"
+                          className="h-9 text-base flex-1 sm:flex-none justify-start"
                           onClick={() => openEditModal(bqOcc)}
                           disabled={isPending}
                         >
-                          <Edit2 className="h-3.5 w-3.5 mr-2 text-blue-600" />
+                          <Edit2 className="h-4 w-4 mr-2 text-blue-600" />
                           Update
                         </Button>
                         <Button 
                           size="sm" 
                           variant="outline" 
-                          className="h-8 text-xs flex-1 sm:flex-none justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="h-9 text-base flex-1 sm:flex-none justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
                           onClick={() => handleRemove(bqOcc.id, bqOcc.fullName)}
                           disabled={isPending}
                         >
-                          <Trash2 className="h-3.5 w-3.5 mr-2" />
+                          <Trash2 className="h-4 w-4 mr-2" />
                           Remove
                         </Button>
                       </>
@@ -196,11 +196,11 @@ export function StaffBQManager({
                       <Button 
                         size="sm" 
                         variant="default"
-                        className="h-8 text-xs w-full justify-start bg-indigo-600 hover:bg-indigo-700 text-white"
+                        className="h-9 text-base w-full justify-start bg-indigo-600 hover:bg-indigo-700 text-white"
                         onClick={() => openAddModal(bq.id)}
                         disabled={isPending}
                       >
-                        <Plus className="h-3.5 w-3.5 mr-2" />
+                        <Plus className="h-4 w-4 mr-2" />
                         Add Occupant
                       </Button>
                     )}
@@ -225,7 +225,7 @@ export function StaffBQManager({
           
           <form onSubmit={onSubmit} className="space-y-4 pt-4">
             <div>
-              <label className="text-sm font-medium mb-1 block">Full Name</label>
+              <label className="text-base font-medium mb-1 block">Full Name</label>
               <Input 
                 required 
                 placeholder="e.g. John Doe" 
@@ -236,7 +236,7 @@ export function StaffBQManager({
             
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium mb-1 block">Phone Number</label>
+                <label className="text-base font-medium mb-1 block">Phone Number</label>
                 <Input 
                   required 
                   placeholder="e.g. 08012345678" 
@@ -245,7 +245,7 @@ export function StaffBQManager({
                 />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Relationship</label>
+                <label className="text-base font-medium mb-1 block">Relationship</label>
                 <Input 
                   required 
                   placeholder="e.g. Domestic Staff" 
@@ -256,7 +256,7 @@ export function StaffBQManager({
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-1 block">Email (Optional)</label>
+              <label className="text-base font-medium mb-1 block">Email (Optional)</label>
               <Input 
                 type="email" 
                 placeholder="e.g. john@example.com" 

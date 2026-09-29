@@ -66,7 +66,7 @@ export function StageStepper({ currentStage }: StageStepperProps) {
               {/* Label */}
               <div className="mt-2 text-center max-w-[120px]">
                 <p className={cn(
-                  'text-xs font-semibold leading-tight',
+                  'text-sm font-semibold leading-tight',
                   state === 'completed' && 'text-emerald-600',
                   state === 'active'    && 'text-primary',
                   state === 'locked'    && 'text-muted-foreground/50'

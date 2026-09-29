@@ -42,7 +42,7 @@ export function WizardStepIndicator({ steps, currentStep }: WizardStepIndicatorP
                   {/* Step circle */}
                   <div
                     className={cn(
-                      'w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-all duration-300 border-2',
+                      'w-9 h-9 rounded-full flex items-center justify-center text-base font-bold shrink-0 transition-all duration-300 border-2',
                       isCompleted
                         ? 'bg-primary border-primary text-primary-foreground shadow-md shadow-primary/20'
                         : isActive
@@ -72,7 +72,7 @@ export function WizardStepIndicator({ steps, currentStep }: WizardStepIndicatorP
                 <div className="mt-2 text-center px-1">
                   <p
                     className={cn(
-                      'text-xs font-semibold transition-colors duration-200',
+                      'text-sm font-semibold transition-colors duration-200',
                       isActive ? 'text-primary' : isCompleted ? 'text-foreground' : 'text-muted-foreground'
                     )}
                   >
@@ -90,11 +90,11 @@ export function WizardStepIndicator({ steps, currentStep }: WizardStepIndicatorP
 
       {/* Mobile: compact progress bar */}
       <div className="sm:hidden space-y-2">
-        <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center justify-between text-base">
           <span className="font-semibold text-primary">
             Step {currentStep + 1} of {steps.length}: {steps[currentStep]?.label}
           </span>
-          <span className="text-muted-foreground text-xs">
+          <span className="text-muted-foreground text-sm">
             {Math.round(((currentStep + 1) / steps.length) * 100)}%
           </span>
         </div>

@@ -133,7 +133,7 @@ export function HousingTypeDialog({
               <DialogTitle className="text-lg">
                 {mode === 'create' ? 'Create Housing Type' : 'Edit Housing Type'}
               </DialogTitle>
-              <DialogDescription className="text-sm">
+              <DialogDescription className="text-base">
                 {mode === 'create'
                   ? 'Define a new housing type with amenities and allocation rules.'
                   : `Editing: ${existing?.name}`}
@@ -145,7 +145,7 @@ export function HousingTypeDialog({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-2">
           {/* Basic Info */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+            <h3 className="text-base font-semibold text-muted-foreground uppercase tracking-wider">
               Basic Information
             </h3>
             <div className="grid grid-cols-1 gap-4">
@@ -158,7 +158,7 @@ export function HousingTypeDialog({
                   className={errors.name ? 'border-destructive' : ''}
                 />
                 {errors.name && (
-                  <p className="text-xs text-destructive">{errors.name.message}</p>
+                  <p className="text-sm text-destructive">{errors.name.message}</p>
                 )}
               </div>
 
@@ -184,7 +184,7 @@ export function HousingTypeDialog({
 
           {/* Room Configuration */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+            <h3 className="text-base font-semibold text-muted-foreground uppercase tracking-wider">
               Room Configuration
             </h3>
             <div className="grid grid-cols-3 gap-4">
@@ -198,7 +198,7 @@ export function HousingTypeDialog({
                   className={errors.numberOfBedrooms ? 'border-destructive' : ''}
                 />
                 {errors.numberOfBedrooms && (
-                  <p className="text-xs text-destructive">{errors.numberOfBedrooms.message}</p>
+                  <p className="text-sm text-destructive">{errors.numberOfBedrooms.message}</p>
                 )}
               </div>
               <div className="space-y-1.5">
@@ -226,7 +226,7 @@ export function HousingTypeDialog({
 
           {/* Amenities */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+            <h3 className="text-base font-semibold text-muted-foreground uppercase tracking-wider">
               Amenities
             </h3>
             <div className="space-y-4">
@@ -266,7 +266,7 @@ export function HousingTypeDialog({
                   <Label htmlFor="ht-hasBQ" className="cursor-pointer">
                     Boys Quarters (BQ)
                   </Label>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="text-sm text-muted-foreground mt-0.5">
                     1 BQ unit will be auto-created with each housing unit of this type
                   </p>
                 </div>
@@ -283,7 +283,7 @@ export function HousingTypeDialog({
 
           {/* Allocation Rules */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+            <h3 className="text-base font-semibold text-muted-foreground uppercase tracking-wider">
               Allocation Rules
             </h3>
             <div className="grid grid-cols-2 gap-4">
@@ -295,11 +295,11 @@ export function HousingTypeDialog({
                   {...register('allocationPoints')}
                   className={errors.allocationPoints ? 'border-destructive' : ''}
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Base score used in the allocation ranking formula
                 </p>
                 {errors.allocationPoints && (
-                  <p className="text-xs text-destructive">{errors.allocationPoints.message}</p>
+                  <p className="text-sm text-destructive">{errors.allocationPoints.message}</p>
                 )}
               </div>
               <div className="space-y-1.5">
@@ -312,7 +312,7 @@ export function HousingTypeDialog({
                   className={errors.annualRent ? 'border-destructive' : ''}
                 />
                 {errors.annualRent && (
-                  <p className="text-xs text-destructive">{errors.annualRent.message}</p>
+                  <p className="text-sm text-destructive">{errors.annualRent.message}</p>
                 )}
               </div>
             </div>
@@ -322,7 +322,7 @@ export function HousingTypeDialog({
                 <Label htmlFor="ht-active" className="cursor-pointer font-medium">
                   Active Type
                 </Label>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-sm text-muted-foreground mt-0.5">
                   Only active types are visible to staff during application
                 </p>
               </div>

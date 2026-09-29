@@ -206,8 +206,8 @@ export function ReviewPipeline({
         <div className="flex items-center gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800">
           <span className="text-lg">✗</span>
           <div>
-            <p className="font-semibold text-sm">Application Rejected</p>
-            <p className="text-xs mt-0.5">
+            <p className="font-semibold text-base">Application Rejected</p>
+            <p className="text-sm mt-0.5">
               This application was rejected at the <strong>{currentStage}</strong> stage and is no longer active.
             </p>
           </div>
@@ -218,8 +218,8 @@ export function ReviewPipeline({
         <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800">
           <span className="text-lg">✓</span>
           <div>
-            <p className="font-semibold text-sm">Application Approved</p>
-            <p className="text-xs mt-0.5">DVC Admin has granted final approval. A housing unit allocation can now be assigned.</p>
+            <p className="font-semibold text-base">Application Approved</p>
+            <p className="text-sm mt-0.5">DVC Admin has granted final approval. A housing unit allocation can now be assigned.</p>
           </div>
         </div>
       )}
@@ -228,8 +228,8 @@ export function ReviewPipeline({
         <div className="flex items-center gap-3 p-4 rounded-xl bg-slate-100 border border-slate-300 text-slate-800">
           <FileX2 className="h-5 w-5 shrink-0" />
           <div>
-            <p className="font-semibold text-sm">Application Withdrawn</p>
-            <p className="text-xs mt-0.5">The applicant withdrew this application. It is no longer active.</p>
+            <p className="font-semibold text-base">Application Withdrawn</p>
+            <p className="text-sm mt-0.5">The applicant withdrew this application. It is no longer active.</p>
           </div>
         </div>
       )}
@@ -238,8 +238,8 @@ export function ReviewPipeline({
         <div className="flex items-center gap-3 p-4 rounded-xl bg-red-100 border border-red-300 text-red-900">
           <XCircle className="h-5 w-5 shrink-0" />
           <div>
-            <p className="font-semibold text-sm">Application Terminated</p>
-            <p className="text-xs mt-0.5">This application was administratively terminated and is no longer active.</p>
+            <p className="font-semibold text-base">Application Terminated</p>
+            <p className="text-sm mt-0.5">This application was administratively terminated and is no longer active.</p>
           </div>
         </div>
       )}
@@ -249,15 +249,15 @@ export function ReviewPipeline({
           <div className="flex items-center gap-3">
             <AlertTriangle className="h-5 w-5 shrink-0" />
             <div>
-              <p className="font-semibold text-sm">Withdrawal Requested</p>
-              <p className="text-xs mt-0.5">
+              <p className="font-semibold text-base">Withdrawal Requested</p>
+              <p className="text-sm mt-0.5">
                 The applicant has requested to withdraw this application. Pending review.
               </p>
             </div>
           </div>
           {isManagementRole && pendingQuitRequest && (
             <div className="mt-3 ml-8">
-              <p className="text-xs text-orange-700 mb-1">
+              <p className="text-sm text-orange-700 mb-1">
                 <span className="font-semibold">Reason: </span>{pendingQuitRequest.reason}
               </p>
               <WithdrawalActionButtons quitRequestId={pendingQuitRequest.id} />
@@ -271,8 +271,8 @@ export function ReviewPipeline({
         <div className="flex items-center gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800">
           <Clock className="h-5 w-5 shrink-0" />
           <div>
-            <p className="font-semibold text-sm">Application Queued</p>
-            <p className="text-xs mt-0.5">
+            <p className="font-semibold text-base">Application Queued</p>
+            <p className="text-sm mt-0.5">
               The Estate Officer placed this application in a waiting queue — no suitable unit was
               available at review time. It will be re-activated when a vacancy arises.
             </p>
@@ -285,8 +285,8 @@ export function ReviewPipeline({
         <div className="flex items-center gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800">
           <Lock className="h-5 w-5 shrink-0" />
           <div>
-            <p className="font-semibold text-sm">Not Your Stage Yet</p>
-            <p className="text-xs mt-0.5">
+            <p className="font-semibold text-base">Not Your Stage Yet</p>
+            <p className="text-sm mt-0.5">
               This application is currently at the <strong>{currentStage}</strong> stage. Your review will unlock once
               the preceding stage clears.
             </p>
@@ -298,14 +298,14 @@ export function ReviewPipeline({
       {isSuperAdmin && (
         <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20 text-primary">
           <Eye className="h-5 w-5 shrink-0" />
-          <p className="text-sm font-medium">Super Admin — read-only view of the full review trail</p>
+          <p className="text-base font-medium">Super Admin — read-only view of the full review trail</p>
         </div>
       )}
 
       {/* Completed stage cards */}
       {completedReviews.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground px-1">
+          <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground px-1">
             Completed Reviews
           </h3>
           {completedReviews.map(review => (
@@ -322,7 +322,7 @@ export function ReviewPipeline({
       {isMyTurn && (
         <div className="rounded-2xl border-2 border-primary/20 bg-card shadow-md overflow-hidden">
           <div className={`px-5 py-3.5 flex items-center gap-2 ${isQueued || isReturned ? 'bg-amber-500' : 'bg-primary'} text-white`}>
-            <span className="text-sm font-semibold">
+            <span className="text-base font-semibold">
               {/* Housing Secretary at HOUSING stage (initial review) */}
               {sessionRole === 'HOUSING_SECRETARY' && currentStage === 'HOUSING' && !isReturned && '📋 Stage 1 — Verification & Scoring'}
               {/* Housing Secretary at ESTATE stage (extended edit window) */}
@@ -364,7 +364,7 @@ export function ReviewPipeline({
 
       {/* Already reviewed by this role */}
       {hasActed && !isTerminalStatus && (
-        <div className="flex items-center gap-3 p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 text-sm">
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 text-base">
           <span>✓</span>
           <p>You have already completed your review for this application. It has moved to the next stage.</p>
         </div>
@@ -374,8 +374,8 @@ export function ReviewPipeline({
       {sessionRole === 'STAFF' && !isTerminalStatus && (
         <div className="pt-6 border-t flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h4 className="font-semibold text-sm">Withdraw Application</h4>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <h4 className="font-semibold text-base">Withdraw Application</h4>
+            <p className="text-sm text-muted-foreground mt-0.5">
               {isQuitRequested
                 ? 'Your withdrawal request is pending management review.'
                 : 'You may request to withdraw this housing application at any time prior to approval.'}

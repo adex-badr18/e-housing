@@ -31,7 +31,7 @@ export default async function AuditLogsPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-oau-navy">System Audit Logs</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-base text-muted-foreground mt-1">
             Read-only log of all security-relevant and system actions. Super Admin access only.
           </p>
         </div>
@@ -53,7 +53,7 @@ export default async function AuditLogsPage() {
               </div>
               <div>
                 <p className="text-2xl font-extrabold">{stat.value}</p>
-                <p className="text-xs text-muted-foreground">{stat.label}</p>
+                <p className="text-sm text-muted-foreground">{stat.label}</p>
               </div>
             </div>
           );
@@ -66,7 +66,7 @@ export default async function AuditLogsPage() {
           <AlertTriangle className="h-5 w-5 text-red-500" />
           <h2 className="font-semibold">Violation Tracker</h2>
           {failureCount > 0 && (
-            <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-xs font-bold">
+            <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-sm font-bold">
               {failureCount}
             </span>
           )}

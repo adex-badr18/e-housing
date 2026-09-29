@@ -71,7 +71,7 @@ export function StaffProfileForm({ initialData }: StaffProfileFormProps) {
         <div className="space-y-2">
           <Label htmlFor="middleName">Middle Name</Label>
           <Input id="middleName" {...register('middleName')} />
-          {errors.middleName && <p className="text-xs text-destructive">{errors.middleName.message}</p>}
+          {errors.middleName && <p className="text-sm text-destructive">{errors.middleName.message}</p>}
         </div>
 
         <div className="space-y-2">
@@ -87,7 +87,7 @@ export function StaffProfileForm({ initialData }: StaffProfileFormProps) {
         <div className="space-y-2">
           <Label htmlFor="phoneNumber">Phone Number</Label>
           <Input id="phoneNumber" type="tel" {...register('phoneNumber')} />
-          {errors.phoneNumber && <p className="text-xs text-destructive">{errors.phoneNumber.message}</p>}
+          {errors.phoneNumber && <p className="text-sm text-destructive">{errors.phoneNumber.message}</p>}
         </div>
 
         <div className="space-y-2">
@@ -97,7 +97,7 @@ export function StaffProfileForm({ initialData }: StaffProfileFormProps) {
             <option value="FEMALE">Female</option>
             <option value="OTHER">Other</option>
           </select>
-          {errors.gender && <p className="text-xs text-destructive">{errors.gender.message}</p>}
+          {errors.gender && <p className="text-sm text-destructive">{errors.gender.message}</p>}
         </div>
       </div>
 
@@ -105,31 +105,31 @@ export function StaffProfileForm({ initialData }: StaffProfileFormProps) {
         <div className="space-y-2">
           <Label htmlFor="staffId">Staff ID</Label>
           <Input id="staffId" {...register('staffId')} />
-          {errors.staffId && <p className="text-xs text-destructive">{errors.staffId.message}</p>}
+          {errors.staffId && <p className="text-sm text-destructive">{errors.staffId.message}</p>}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="department">Department</Label>
           <Input id="department" {...register('department')} />
-          {errors.department && <p className="text-xs text-destructive">{errors.department.message}</p>}
+          {errors.department && <p className="text-sm text-destructive">{errors.department.message}</p>}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="faculty">Faculty</Label>
           <Input id="faculty" {...register('faculty')} />
-          {errors.faculty && <p className="text-xs text-destructive">{errors.faculty.message}</p>}
+          {errors.faculty && <p className="text-sm text-destructive">{errors.faculty.message}</p>}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="rank">Rank</Label>
           <Input id="rank" {...register('rank')} />
-          {errors.rank && <p className="text-xs text-destructive">{errors.rank.message}</p>}
+          {errors.rank && <p className="text-sm text-destructive">{errors.rank.message}</p>}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="salaryLevel">Salary Level / Grade</Label>
           <Input id="salaryLevel" placeholder="e.g. CONUASS 4" {...register('salaryLevel')} />
-          {(errors as any).salaryLevel && <p className="text-xs text-destructive">{(errors as any).salaryLevel.message}</p>}
+          {(errors as any).salaryLevel && <p className="text-sm text-destructive">{(errors as any).salaryLevel.message}</p>}
         </div>
 
         <div className="space-y-2">
@@ -139,13 +139,13 @@ export function StaffProfileForm({ initialData }: StaffProfileFormProps) {
               <option key={s} value={s}>{s}</option>
             ))}
           </select>
-          {(errors as any).salaryStep && <p className="text-xs text-destructive">{(errors as any).salaryStep.message}</p>}
+          {(errors as any).salaryStep && <p className="text-sm text-destructive">{(errors as any).salaryStep.message}</p>}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="employmentDate">Employment Date</Label>
           <Input id="employmentDate" type="date" {...register('employmentDate')} />
-          {errors.employmentDate && <p className="text-xs text-destructive">{errors.employmentDate.message}</p>}
+          {errors.employmentDate && <p className="text-sm text-destructive">{errors.employmentDate.message}</p>}
         </div>
 
         <div className="space-y-2">
@@ -156,7 +156,7 @@ export function StaffProfileForm({ initialData }: StaffProfileFormProps) {
             <option value="DIVORCED">Divorced</option>
             <option value="WIDOWED">Widowed</option>
           </select>
-          {errors.maritalStatus && <p className="text-xs text-destructive">{errors.maritalStatus.message}</p>}
+          {errors.maritalStatus && <p className="text-sm text-destructive">{errors.maritalStatus.message}</p>}
         </div>
 
         <div className="space-y-2">

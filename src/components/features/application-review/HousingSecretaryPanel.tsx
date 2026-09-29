@@ -87,7 +87,7 @@ function ScoreRow({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="flex-1 text-sm text-foreground/80">{label}</span>
+      <span className="flex-1 text-base text-foreground/80">{label}</span>
       <div className="flex items-center gap-2">
         <input
           type="number"
@@ -95,11 +95,11 @@ function ScoreRow({
           max={max}
           {...register(name)}
           className={cn(
-            'w-16 text-right text-sm font-semibold px-2 py-1 rounded-lg border bg-background',
+            'w-16 text-right text-base font-semibold px-2 py-1 rounded-lg border bg-background',
             'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition'
           )}
         />
-        <span className="text-xs text-muted-foreground w-14">/ {max} pts</span>
+        <span className="text-sm text-muted-foreground w-14">/ {max} pts</span>
         {/* Mini bar */}
         <div className="w-20 bg-muted rounded-full h-1.5 overflow-hidden">
           <div
@@ -254,16 +254,16 @@ export function HousingSecretaryPanel({
       {/* DVC Return Banner */}
       {application.status === 'RETURNED' && (
         <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-4 dark:bg-amber-950/40 dark:border-amber-800 space-y-2">
-          <div className="flex items-center gap-2 text-amber-900 dark:text-amber-300 font-bold text-sm">
+          <div className="flex items-center gap-2 text-amber-900 dark:text-amber-300 font-bold text-base">
             <AlertCircle className="h-5 w-5 text-amber-600" />
             Application Returned by DVC Admin for Modification
           </div>
           {application.dvcReturnNote && (
-            <p className="text-xs text-amber-800 dark:text-amber-400 bg-white/70 dark:bg-amber-900/40 p-2.5 rounded-lg font-mono">
+            <p className="text-sm text-amber-800 dark:text-amber-400 bg-white/70 dark:bg-amber-900/40 p-2.5 rounded-lg font-mono">
               &quot;{application.dvcReturnNote}&quot;
             </p>
           )}
-          <p className="text-xs text-amber-700 dark:text-amber-400">
+          <p className="text-sm text-amber-700 dark:text-amber-400">
             You and the Estate Officer can review this application together, adjust the score or select a different vacant housing unit as instructed by the DVC Admin, then resubmit it for final approval.
           </p>
         </div>
@@ -272,11 +272,11 @@ export function HousingSecretaryPanel({
       {/* Estate Stage Edit Banner — shown when application is with Estate Officer */}
       {isAtEstateStage && (
         <div className="rounded-xl border-2 border-blue-300 bg-blue-50 p-4 dark:bg-blue-950/40 dark:border-blue-800 space-y-1.5">
-          <div className="flex items-center gap-2 text-blue-900 dark:text-blue-300 font-bold text-sm">
+          <div className="flex items-center gap-2 text-blue-900 dark:text-blue-300 font-bold text-base">
             <AlertCircle className="h-5 w-5 text-blue-600" />
             Application Forwarded to Estate Officer
           </div>
-          <p className="text-xs text-blue-800 dark:text-blue-400">
+          <p className="text-sm text-blue-800 dark:text-blue-400">
             This application is currently with the Estate Officer for physical inspection and unit allocation.
             You can still update your verification score, scoring breakdown, unit suggestion, and remarks below.
             Your edits will be saved without changing the application&apos;s progress.
@@ -287,18 +287,18 @@ export function HousingSecretaryPanel({
 
       {/* Applicant info strip */}
       {applicantUser && applicantProfile && (
-        <div className="rounded-xl border bg-secondary/40 p-4 grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+        <div className="rounded-xl border bg-secondary/40 p-4 grid grid-cols-2 md:grid-cols-3 gap-3 text-base">
           <div className="flex items-center gap-2">
             <User className="h-4 w-4 text-muted-foreground" />
             <div>
-              <p className="text-xs text-muted-foreground">Applicant</p>
+              <p className="text-sm text-muted-foreground">Applicant</p>
               <p className="font-semibold">{applicantUser.firstName} {applicantUser.lastName}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <GraduationCap className="h-4 w-4 text-muted-foreground" />
             <div>
-              <p className="text-xs text-muted-foreground">Rank / Grade</p>
+              <p className="text-sm text-muted-foreground">Rank / Grade</p>
               <p className="font-semibold">
                 {applicantProfile.rank} · {applicantProfile.salaryLevel || applicantProfile.salaryGradeLevel} {applicantProfile.salaryStep ? `(${applicantProfile.salaryStep})` : ''}
               </p>
@@ -307,21 +307,21 @@ export function HousingSecretaryPanel({
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-muted-foreground" />
             <div>
-              <p className="text-xs text-muted-foreground">Employment Date</p>
+              <p className="text-sm text-muted-foreground">Employment Date</p>
               <p className="font-semibold">{applicantProfile.employmentDate}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-muted-foreground" />
             <div>
-              <p className="text-xs text-muted-foreground">Dependents</p>
+              <p className="text-sm text-muted-foreground">Dependents</p>
               <p className="font-semibold">{applicantProfile.numberOfDependents}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <Heart className="h-4 w-4 text-muted-foreground" />
             <div>
-              <p className="text-xs text-muted-foreground">Marital Status</p>
+              <p className="text-sm text-muted-foreground">Marital Status</p>
               <p className="font-semibold capitalize">{applicantProfile.maritalStatus.toLowerCase()}</p>
             </div>
           </div>
@@ -334,7 +334,7 @@ export function HousingSecretaryPanel({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
         <div className="rounded-xl border bg-card p-5 space-y-5">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-sm flex items-center gap-2">
+            <h3 className="font-semibold text-base flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
               Allocation Priority Score
             </h3>
@@ -343,7 +343,7 @@ export function HousingSecretaryPanel({
               onClick={handleAutoScore}
               disabled={autoScoring}
               className={cn(
-                'inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg',
+                'inline-flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-lg',
                 'bg-primary/10 text-primary hover:bg-primary/20 transition disabled:opacity-50'
               )}
             >
@@ -358,7 +358,7 @@ export function HousingSecretaryPanel({
 
           {/* Scoring engine summary */}
           {scoringDetails && (
-            <div className="text-xs bg-primary/5 text-primary/80 border border-primary/20 rounded-lg p-3">
+            <div className="text-sm bg-primary/5 text-primary/80 border border-primary/20 rounded-lg p-3">
               <strong>Engine reasoning: </strong>
               {scoringDetails.rankLabel} ({scoringDetails.rankPoints} pts) ·{' '}
               {scoringDetails.gradeLabel} ({scoringDetails.gradePoints} pts) ·{' '}
@@ -377,7 +377,7 @@ export function HousingSecretaryPanel({
 
           {/* Total */}
           <div className="flex items-center justify-between pt-2 border-t">
-            <span className="text-sm font-semibold">Total Score</span>
+            <span className="text-base font-semibold">Total Score</span>
             <span className={cn(
               'text-2xl font-extrabold tabular-nums',
               totalPoints >= 80 ? 'text-emerald-600'
@@ -385,7 +385,7 @@ export function HousingSecretaryPanel({
                 : 'text-amber-600'
             )}>
               {totalPoints}
-              <span className="text-sm font-medium text-muted-foreground ml-1">/ 120</span>
+              <span className="text-base font-medium text-muted-foreground ml-1">/ 120</span>
             </span>
           </div>
         </div>
@@ -393,30 +393,30 @@ export function HousingSecretaryPanel({
         {/* Optional Housing Unit Suggestion */}
         <div className="rounded-xl border bg-card p-5 space-y-4">
           <div>
-            <h3 className="font-semibold text-sm flex items-center gap-2">
+            <h3 className="font-semibold text-base flex items-center gap-2">
               <Home className="h-4 w-4 text-primary" />
               Suggest a Housing Unit
               <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 border border-blue-200">Optional</span>
             </h3>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Your suggestion is advisory — the Estate Officer can accept it or propose a different unit. Both will be inspected and scored before the DVC decides.
             </p>
           </div>
 
           {/* Previously suggested badge */}
           {application.secretarySuggestedUnitId && (
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 text-xs font-medium dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-300">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 text-sm font-medium dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-300">
               <Home className="h-3.5 w-3.5 shrink-0" />
               Previously suggested: <span className="font-bold ml-1">{application.secretarySuggestedUnitId}</span>
             </div>
           )}
 
           {loadingUnits ? (
-            <p className="text-xs text-muted-foreground py-2 flex items-center gap-2">
+            <p className="text-sm text-muted-foreground py-2 flex items-center gap-2">
               <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading vacant units...
             </p>
           ) : vacantUnits.length === 0 ? (
-            <p className="text-xs text-muted-foreground py-2 italic">
+            <p className="text-sm text-muted-foreground py-2 italic">
               No vacant units currently available. You may still forward without a suggestion.
             </p>
           ) : (
@@ -431,20 +431,20 @@ export function HousingSecretaryPanel({
 
         {/* Remarks */}
         <div className="space-y-2">
-          <label className="text-sm font-semibold">
-            Reviewer Remarks <span className="text-xs font-normal text-muted-foreground">(Optional)</span>
+          <label className="text-base font-semibold">
+            Reviewer Remarks <span className="text-sm font-normal text-muted-foreground">(Optional)</span>
           </label>
           <textarea
             {...form.register('comments')}
             rows={4}
             placeholder="Provide any remarks justifying your decision or instructions for Estate Officer (optional)..."
             className={cn(
-              'w-full text-sm px-3 py-2 rounded-xl border bg-background resize-none',
+              'w-full text-base px-3 py-2 rounded-xl border bg-background resize-none',
               'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition'
             )}
           />
           {form.formState.errors.comments && (
-            <p className="text-xs text-destructive">{form.formState.errors.comments.message}</p>
+            <p className="text-sm text-destructive">{form.formState.errors.comments.message}</p>
           )}
         </div>
 

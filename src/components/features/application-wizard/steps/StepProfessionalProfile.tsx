@@ -70,14 +70,14 @@ export function StepProfessionalProfile({
         </div>
         <div>
           <h2 className="text-lg font-semibold">Professional Profile</h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-base text-muted-foreground">
             Your rank and grade level determine which housing types you are eligible for.
           </p>
         </div>
       </div>
 
       {!isProfileComplete && (
-        <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+        <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-base">
           <Info className="h-4 w-4 mt-0.5 shrink-0" />
           <p>Your staff profile is incomplete. Please fill in the details below before applying.</p>
         </div>
@@ -85,7 +85,7 @@ export function StepProfessionalProfile({
 
       {/* Rank & Grade */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+        <h3 className="text-base font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
           <GraduationCap className="h-4 w-4" />
           Academic / Professional Details
         </h3>
@@ -109,7 +109,7 @@ export function StepProfessionalProfile({
                 </Select>
               )}
             />
-            {errors.rank && <p className="text-xs text-destructive">{errors.rank.message}</p>}
+            {errors.rank && <p className="text-sm text-destructive">{errors.rank.message}</p>}
           </div>
 
           <div className="space-y-1.5">
@@ -131,7 +131,7 @@ export function StepProfessionalProfile({
               )}
             />
             {errors.salaryLevel && (
-              <p className="text-xs text-destructive">{errors.salaryLevel.message}</p>
+              <p className="text-sm text-destructive">{errors.salaryLevel.message}</p>
             )}
           </div>
 
@@ -154,7 +154,7 @@ export function StepProfessionalProfile({
               )}
             />
             {errors.salaryStep && (
-              <p className="text-xs text-destructive">{errors.salaryStep.message}</p>
+              <p className="text-sm text-destructive">{errors.salaryStep.message}</p>
             )}
           </div>
 
@@ -167,7 +167,7 @@ export function StepProfessionalProfile({
               className={errors.department ? 'border-destructive' : ''}
             />
             {errors.department && (
-              <p className="text-xs text-destructive">{errors.department.message}</p>
+              <p className="text-sm text-destructive">{errors.department.message}</p>
             )}
           </div>
 
@@ -180,7 +180,7 @@ export function StepProfessionalProfile({
               className={errors.faculty ? 'border-destructive' : ''}
             />
             {errors.faculty && (
-              <p className="text-xs text-destructive">{errors.faculty.message}</p>
+              <p className="text-sm text-destructive">{errors.faculty.message}</p>
             )}
           </div>
 
@@ -193,7 +193,7 @@ export function StepProfessionalProfile({
               className={errors.employmentDate ? 'border-destructive' : ''}
             />
             {errors.employmentDate && (
-              <p className="text-xs text-destructive">{errors.employmentDate.message}</p>
+              <p className="text-sm text-destructive">{errors.employmentDate.message}</p>
             )}
           </div>
         </div>
@@ -203,7 +203,7 @@ export function StepProfessionalProfile({
 
       {/* Personal Details */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+        <h3 className="text-base font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
           <Users className="h-4 w-4" />
           Personal Details
         </h3>
@@ -228,7 +228,7 @@ export function StepProfessionalProfile({
               )}
             />
             {errors.maritalStatus && (
-              <p className="text-xs text-destructive">{errors.maritalStatus.message}</p>
+              <p className="text-sm text-destructive">{errors.maritalStatus.message}</p>
             )}
           </div>
 
@@ -246,7 +246,7 @@ export function StepProfessionalProfile({
       </div>
 
       {watch('salaryLevel') && (
-        <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-sm">
+        <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-base">
           <p className="font-medium text-primary">
             {(() => {
               const gl = watch('salaryLevel') || '';
@@ -257,7 +257,7 @@ export function StepProfessionalProfile({
                 : '✅ You are eligible for Junior Staff housing (CONUASS 1–3 / CONTISS 2–12)';
             })()}
           </p>
-          <p className="text-muted-foreground text-xs mt-1">
+          <p className="text-muted-foreground text-sm mt-1">
             Housing type options on the next step will be filtered to your eligible category.
           </p>
         </div>

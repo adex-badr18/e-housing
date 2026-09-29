@@ -102,7 +102,7 @@ export function RevokeAllocationModal({ occupancyId, occupantName, unitName }: R
             </div>
             <div>
               <DialogTitle>Revoke Occupancy Allocation</DialogTitle>
-              <DialogDescription className="mt-0.5 text-xs">
+              <DialogDescription className="mt-0.5 text-sm">
                 This will immediately free <strong>{unitName}</strong> and remove{' '}
                 <strong>{occupantName}</strong>&apos;s housing status.
               </DialogDescription>
@@ -114,21 +114,21 @@ export function RevokeAllocationModal({ occupancyId, occupantName, unitName }: R
           <input type="hidden" {...register('occupancyId')} />
 
           <div className="space-y-1.5">
-            <Label htmlFor="revoke-reason" className="text-xs font-semibold">
+            <Label htmlFor="revoke-reason" className="text-sm font-semibold">
               Reason for Revocation <span className="text-red-500">*</span>
             </Label>
             <Textarea
               id="revoke-reason"
               {...register('reason')}
               placeholder="Provide a clear reason for revoking this housing allocation..."
-              className="resize-none text-sm min-h-[100px]"
+              className="resize-none text-base min-h-[100px]"
             />
             {errors.reason && (
-              <p className="text-xs text-red-600">{errors.reason.message}</p>
+              <p className="text-sm text-red-600">{errors.reason.message}</p>
             )}
           </div>
 
-          <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
+          <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
             <strong>Warning:</strong> This action is irreversible. The occupant will need to
             reapply for housing through the standard application process.
           </div>
@@ -220,7 +220,7 @@ export function TriggerExitModal({ occupancyId, occupantName }: TriggerExitModal
             </div>
             <div>
               <DialogTitle>Trigger Occupant Exit</DialogTitle>
-              <DialogDescription className="mt-0.5 text-xs">
+              <DialogDescription className="mt-0.5 text-sm">
                 Initiate the exit clearance pipeline for <strong>{occupantName}</strong>. This
                 creates an Exit Notice that goes through Housing, Electrical, and Estate inspections.
               </DialogDescription>
@@ -232,14 +232,14 @@ export function TriggerExitModal({ occupancyId, occupantName }: TriggerExitModal
           <input type="hidden" {...register('occupancyId')} />
 
           <div className="space-y-1.5">
-            <Label htmlFor="trigger-reason" className="text-xs font-semibold">
+            <Label htmlFor="trigger-reason" className="text-sm font-semibold">
               Exit Reason <span className="text-red-500">*</span>
             </Label>
             <Select
               value={reason}
               onValueChange={val => setValue('reason', val as TriggerOccupantExitValues['reason'], { shouldValidate: true })}
             >
-              <SelectTrigger id="trigger-reason" className="text-sm">
+              <SelectTrigger id="trigger-reason" className="text-base">
                 <SelectValue placeholder="Select reason" />
               </SelectTrigger>
               <SelectContent>
@@ -251,39 +251,39 @@ export function TriggerExitModal({ occupancyId, occupantName }: TriggerExitModal
               </SelectContent>
             </Select>
             {errors.reason && (
-              <p className="text-xs text-red-600">{errors.reason.message}</p>
+              <p className="text-sm text-red-600">{errors.reason.message}</p>
             )}
           </div>
 
           {reason === 'OTHER' && (
             <div className="space-y-1.5">
-              <Label htmlFor="trigger-custom-reason" className="text-xs font-semibold">
+              <Label htmlFor="trigger-custom-reason" className="text-sm font-semibold">
                 Custom Reason <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="trigger-custom-reason"
                 {...register('customReason')}
                 placeholder="Describe the specific reason..."
-                className="text-sm"
+                className="text-base"
               />
               {errors.customReason && (
-                <p className="text-xs text-red-600">{errors.customReason.message}</p>
+                <p className="text-sm text-red-600">{errors.customReason.message}</p>
               )}
             </div>
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="trigger-notes" className="text-xs font-semibold">
+            <Label htmlFor="trigger-notes" className="text-sm font-semibold">
               Additional Notes <span className="text-gray-400">(optional)</span>
             </Label>
             <Textarea
               id="trigger-notes"
               {...register('additionalNotes')}
               placeholder="Any additional context or remarks..."
-              className="resize-none text-sm min-h-[80px]"
+              className="resize-none text-base min-h-[80px]"
             />
             {errors.additionalNotes && (
-              <p className="text-xs text-red-600">{errors.additionalNotes.message}</p>
+              <p className="text-sm text-red-600">{errors.additionalNotes.message}</p>
             )}
           </div>
 
@@ -372,7 +372,7 @@ export function UpdateOccupancyModal({
             </div>
             <div>
               <DialogTitle>Update Occupancy Information</DialogTitle>
-              <DialogDescription className="mt-0.5 text-xs">
+              <DialogDescription className="mt-0.5 text-sm">
                 Update check-in and check-out dates for this occupancy record.
               </DialogDescription>
             </div>
@@ -383,32 +383,32 @@ export function UpdateOccupancyModal({
           <input type="hidden" {...register('occupancyId')} />
 
           <div className="space-y-1.5">
-            <Label htmlFor="update-checkin" className="text-xs font-semibold">
+            <Label htmlFor="update-checkin" className="text-sm font-semibold">
               Check-in Date
             </Label>
             <Input
               id="update-checkin"
               type="date"
               {...register('checkInDate')}
-              className="text-sm"
+              className="text-base"
             />
             {errors.checkInDate && (
-              <p className="text-xs text-red-600">{errors.checkInDate.message}</p>
+              <p className="text-sm text-red-600">{errors.checkInDate.message}</p>
             )}
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="update-checkout" className="text-xs font-semibold">
+            <Label htmlFor="update-checkout" className="text-sm font-semibold">
               Check-out Date <span className="text-gray-400">(optional — for exited occupancies)</span>
             </Label>
             <Input
               id="update-checkout"
               type="date"
               {...register('checkOutDate')}
-              className="text-sm"
+              className="text-base"
             />
             {errors.checkOutDate && (
-              <p className="text-xs text-red-600">{String(errors.checkOutDate.message)}</p>
+              <p className="text-sm text-red-600">{String(errors.checkOutDate.message)}</p>
             )}
           </div>
 

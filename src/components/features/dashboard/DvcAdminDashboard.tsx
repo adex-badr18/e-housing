@@ -73,10 +73,10 @@ export async function DvcAdminDashboard() {
                   header: 'Applicant',
                   render: r => (
                     <div>
-                      <p className="font-medium text-xs font-semibold">
+                      <p className="font-medium text-sm font-semibold">
                         {r.applicantUser ? `${r.applicantUser.firstName} ${r.applicantUser.lastName}` : r.userId}
                       </p>
-                      <p className="text-muted-foreground text-xs">{r.applicantProfile?.rank ?? '—'}</p>
+                      <p className="text-muted-foreground text-sm">{r.applicantProfile?.rank ?? '—'}</p>
                     </div>
                   ),
                 },
@@ -84,7 +84,7 @@ export async function DvcAdminDashboard() {
                   key: 'points',
                   header: 'Scored Points',
                   render: r => (
-                    <span className="text-sm font-bold text-oau-navy">
+                    <span className="text-base font-bold text-oau-navy">
                       {r.pointsBreakdown?.totalPoints ?? '—'} pts
                     </span>
                   ),
@@ -93,7 +93,7 @@ export async function DvcAdminDashboard() {
                   key: 'estateOfficer',
                   header: 'Estate Verifier',
                   render: r => (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-sm text-muted-foreground">
                       {r.estateReviewer ? `${r.estateReviewer.firstName} ${r.estateReviewer.lastName}` : 'Estate Officer'}
                     </span>
                   ),
@@ -101,7 +101,7 @@ export async function DvcAdminDashboard() {
                 {
                   key: 'submitted',
                   header: 'Submitted',
-                  render: r => <span className="text-xs text-muted-foreground">{formatDate(r.submittedAt)}</span>,
+                  render: r => <span className="text-sm text-muted-foreground">{formatDate(r.submittedAt)}</span>,
                 },
               ]}
             />
@@ -123,7 +123,7 @@ export async function DvcAdminDashboard() {
 
                 return (
                   <div key={stage} className="flex flex-col gap-1.5">
-                    <div className="flex justify-between text-xs font-medium">
+                    <div className="flex justify-between text-sm font-medium">
                       <span className="text-oau-navy font-semibold">{stage.replace(/_/g, ' ')}</span>
                       <span className="text-muted-foreground">{count} ({percentage}%)</span>
                     </div>

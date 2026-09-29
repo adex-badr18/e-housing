@@ -50,7 +50,7 @@ export default async function ExitNoticeDetailPage({ params }: Props) {
   return (
     <div className="flex flex-col gap-8 w-full">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <div className="flex items-center gap-2 text-base text-muted-foreground">
         <Link href="/management/exit" className="hover:text-foreground transition flex items-center gap-1">
           <ArrowLeft className="h-3.5 w-3.5" /> Exit Pipeline
         </Link>
@@ -64,14 +64,14 @@ export default async function ExitNoticeDetailPage({ params }: Props) {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-oau-navy">Exit Notice Detail</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-base text-muted-foreground mt-1">
             Manage the 3-stage clearance inspection for this exit notice.
           </p>
         </div>
         {notice.isCleared && (
           <Link
             href={`/management/exit/${exitId}/certificate`}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition shadow-sm shrink-0"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white text-base font-semibold hover:bg-emerald-700 transition shadow-sm shrink-0"
           >
             <Shield className="h-4 w-4" />
             View Certificate
@@ -81,29 +81,29 @@ export default async function ExitNoticeDetailPage({ params }: Props) {
 
       {/* Applicant info card */}
       <div className="rounded-xl border bg-card p-5">
-        <h2 className="text-sm font-semibold mb-4 flex items-center gap-2">
+        <h2 className="text-base font-semibold mb-4 flex items-center gap-2">
           <User className="h-4 w-4 text-muted-foreground" />
           Staff & Property Information
         </h2>
-        <div className="grid sm:grid-cols-2 gap-4 text-sm">
+        <div className="grid sm:grid-cols-2 gap-4 text-base">
           <div className="space-y-3">
             <div className="flex items-start gap-3">
               <User className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
               <div>
-                <p className="text-xs text-muted-foreground">Staff Member</p>
+                <p className="text-sm text-muted-foreground">Staff Member</p>
                 <p className="font-semibold">
                   {staff ? `${staff.firstName} ${staff.lastName}` : notice.userId}
                 </p>
-                {staff && <p className="text-xs text-muted-foreground">{staff.email}</p>}
+                {staff && <p className="text-sm text-muted-foreground">{staff.email}</p>}
               </div>
             </div>
             {staffProfile && (
               <div className="flex items-start gap-3">
                 <FileText className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-xs text-muted-foreground">Department / Rank</p>
+                  <p className="text-sm text-muted-foreground">Department / Rank</p>
                   <p className="font-semibold">{staffProfile.department}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     {staffProfile.rank} · {staffProfile.salaryLevel || staffProfile.salaryGradeLevel || ''} {staffProfile.salaryStep ? `(${staffProfile.salaryStep})` : ''}
                   </p>
                 </div>
@@ -114,15 +114,15 @@ export default async function ExitNoticeDetailPage({ params }: Props) {
             <div className="flex items-start gap-3">
               <Home className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
               <div>
-                <p className="text-xs text-muted-foreground">Housing Unit</p>
+                <p className="text-sm text-muted-foreground">Housing Unit</p>
                 <p className="font-semibold">{unit?.name ?? notice.housingUnitId}</p>
-                {housingType && <p className="text-xs text-muted-foreground">{housingType.name}</p>}
+                {housingType && <p className="text-sm text-muted-foreground">{housingType.name}</p>}
               </div>
             </div>
             <div className="flex items-start gap-3">
               <Calendar className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
               <div>
-                <p className="text-xs text-muted-foreground">Submitted</p>
+                <p className="text-sm text-muted-foreground">Submitted</p>
                 <p className="font-semibold">
                   {new Date(notice.submittedAt).toLocaleDateString('en-GB', {
                     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
@@ -135,19 +135,19 @@ export default async function ExitNoticeDetailPage({ params }: Props) {
 
         {/* Reason row */}
         <div className={cn(
-          'mt-4 pt-4 border-t flex items-center gap-3 text-sm',
+          'mt-4 pt-4 border-t flex items-center gap-3 text-base',
         )}>
-          <p className="text-muted-foreground text-xs">Exit Reason:</p>
+          <p className="text-muted-foreground text-sm">Exit Reason:</p>
           <Badge variant="outline" className="capitalize font-semibold">
             {reasonLabels[notice.reason] ?? notice.reason}
           </Badge>
           {notice.customReason && (
-            <span className="text-muted-foreground text-xs italic">— {notice.customReason}</span>
+            <span className="text-muted-foreground text-sm italic">— {notice.customReason}</span>
           )}
         </div>
 
         {notice.additionalNotes && (
-          <div className="mt-3 rounded-lg bg-muted/30 p-3 text-sm text-muted-foreground">
+          <div className="mt-3 rounded-lg bg-muted/30 p-3 text-base text-muted-foreground">
             <span className="font-medium text-foreground">Notes: </span>
             {notice.additionalNotes}
           </div>
@@ -156,7 +156,7 @@ export default async function ExitNoticeDetailPage({ params }: Props) {
 
       {/* Clearance Pipeline */}
       <div className="rounded-xl border bg-card p-5">
-        <h2 className="text-sm font-semibold mb-6 flex items-center gap-2">
+        <h2 className="text-base font-semibold mb-6 flex items-center gap-2">
           <Shield className="h-4 w-4 text-muted-foreground" />
           Clearance Pipeline
         </h2>

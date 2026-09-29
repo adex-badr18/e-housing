@@ -217,7 +217,7 @@ export function HousingUnitsTable({
         ].map(({ label, count, cls }) => (
           <div
             key={label}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium ${cls}`}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-base font-medium ${cls}`}
           >
             <span className="text-lg font-bold">{count}</span>
             <span className="opacity-75">{label}</span>
@@ -290,7 +290,7 @@ export function HousingUnitsTable({
         </Button>
       </div>
 
-      <p className="text-xs text-muted-foreground">
+      <p className="text-sm text-muted-foreground">
         Showing <span className="font-semibold text-foreground">{filtered.length}</span> of{' '}
         {units.length} units
       </p>
@@ -330,21 +330,21 @@ export function HousingUnitsTable({
                     onClick={() => setDetailTarget(unit)}
                   >
                     <TableCell className="font-semibold">{unit.name}</TableCell>
-                    <TableCell className="text-sm font-medium">{unit.houseNumber ?? '—'}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{unit.roadNumber ?? '—'}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground max-w-[180px] truncate">
+                    <TableCell className="text-base font-medium">{unit.houseNumber ?? '—'}</TableCell>
+                    <TableCell className="text-base text-muted-foreground">{unit.roadNumber ?? '—'}</TableCell>
+                    <TableCell className="text-base text-muted-foreground max-w-[180px] truncate">
                       {ht?.name ?? '—'}
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground capitalize">
+                    <TableCell className="text-base text-muted-foreground capitalize">
                       {ht ? ht.buildingType.charAt(0) + ht.buildingType.slice(1).toLowerCase() : '—'}
                     </TableCell>
                     <TableCell>
                       {ht?.hasBQ ? (
-                        <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-xs font-medium">
+                        <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-sm font-medium">
                           1 BQ
                         </Badge>
                       ) : (
-                        <span className="text-muted-foreground text-xs">None</span>
+                        <span className="text-muted-foreground text-sm">None</span>
                       )}
                     </TableCell>
                     <TableCell>
@@ -357,7 +357,7 @@ export function HousingUnitsTable({
                           variant="ghost"
                           size="sm"
                           onClick={() => openStatusEdit(unit)}
-                          className="gap-1.5 h-8 text-xs hover:bg-primary/10 hover:text-primary"
+                          className="gap-1.5 h-8 text-sm hover:bg-primary/10 hover:text-primary"
                         >
                           <RefreshCw className="h-3 w-3" />
                           Status
@@ -393,7 +393,7 @@ export function HousingUnitsTable({
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-1">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Page <span className="font-semibold text-foreground">{page + 1}</span> of{' '}
             <span className="font-semibold text-foreground">{totalPages}</span>
             {' '}·{' '}
@@ -413,7 +413,7 @@ export function HousingUnitsTable({
                 <button
                   key={pageNum}
                   onClick={() => setPage(pageNum)}
-                  className={`h-8 w-8 rounded-lg border text-xs font-medium transition ${
+                  className={`h-8 w-8 rounded-lg border text-sm font-medium transition ${
                     pageNum === page
                       ? 'bg-primary text-primary-foreground border-primary'
                       : 'hover:bg-muted'

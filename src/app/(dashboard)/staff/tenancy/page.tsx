@@ -30,7 +30,7 @@ export default async function StaffTenancyPage() {
     return (
       <div className="w-full py-12 text-center space-y-3">
         <p className="text-destructive font-medium">{result.error}</p>
-        <Link href="/staff" className="text-sm text-primary hover:underline">← Back to Dashboard</Link>
+        <Link href="/staff" className="text-base text-primary hover:underline">← Back to Dashboard</Link>
       </div>
     );
   }
@@ -46,7 +46,7 @@ export default async function StaffTenancyPage() {
     return (
       <div className="w-full space-y-6">
         <div>
-          <Link href="/staff" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1.5 mb-6 group">
+          <Link href="/staff" className="text-base text-muted-foreground hover:text-primary flex items-center gap-1.5 mb-6 group">
             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
             Back to Dashboard
           </Link>
@@ -56,13 +56,13 @@ export default async function StaffTenancyPage() {
         <div className="rounded-2xl border-2 border-dashed border-border bg-secondary/30 p-12 text-center space-y-4">
           <Lock className="h-14 w-14 text-muted-foreground/40 mx-auto" />
           <h2 className="text-xl font-semibold">Not Available</h2>
-          <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+          <p className="text-base text-muted-foreground max-w-sm mx-auto">
             Your Tenancy Agreement is only accessible after you accept a housing allocation offer.
             You do not currently have an accepted offer.
           </p>
           <Link
             href="/staff/housing"
-            className="inline-flex items-center gap-2 mt-4 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center gap-2 mt-4 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-base font-semibold hover:bg-primary/90 transition-colors"
           >
             View Housing Offer
           </Link>
@@ -76,7 +76,7 @@ export default async function StaffTenancyPage() {
     return (
       <div className="w-full space-y-6">
         <div>
-          <Link href="/staff" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1.5 mb-6 group">
+          <Link href="/staff" className="text-base text-muted-foreground hover:text-primary flex items-center gap-1.5 mb-6 group">
             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
             Back to Dashboard
           </Link>
@@ -86,14 +86,14 @@ export default async function StaffTenancyPage() {
         <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50/40 p-12 text-center space-y-4">
           <CheckCircle2 className="h-14 w-14 text-emerald-500 mx-auto" />
           <h2 className="text-xl font-semibold text-emerald-800">Tenancy Finalized</h2>
-          <p className="text-sm text-emerald-700/80 max-w-sm mx-auto">
+          <p className="text-base text-emerald-700/80 max-w-sm mx-auto">
             Your tenancy has been officially finalized and your occupancy is now active.
             The Tenancy Agreement PDF was only available during the acceptance window.
             Please contact the Housing Secretariat if you need another copy.
           </p>
           <Link
             href="/staff"
-            className="inline-flex items-center gap-2 mt-4 px-6 py-2.5 rounded-xl bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800 transition-colors"
+            className="inline-flex items-center gap-2 mt-4 px-6 py-2.5 rounded-xl bg-emerald-700 text-white text-base font-semibold hover:bg-emerald-800 transition-colors"
           >
             View My Occupancy
           </Link>
@@ -130,7 +130,7 @@ export default async function StaffTenancyPage() {
   return (
     <div className="w-full space-y-4">
       <div className="print-hide">
-        <Link href="/staff" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1.5 mb-6 group">
+        <Link href="/staff" className="text-base text-muted-foreground hover:text-primary flex items-center gap-1.5 mb-6 group">
           <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
           Back to Dashboard
         </Link>

@@ -41,7 +41,7 @@ export default async function ManagementApplicationHistoryPage() {
         </Link>
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-oau-navy">All Applications (History)</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
+          <p className="text-muted-foreground mt-1 text-base">
             View all housing applications across the system, including withdrawn and terminated ones.
           </p>
         </div>

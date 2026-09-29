@@ -95,36 +95,36 @@ export function DependantsEditForm({ initialData }: DependantsEditFormProps) {
       <div className="rounded-xl border border-border bg-muted/30 overflow-hidden">
         <div className="flex items-center gap-2 px-5 py-3.5 border-b bg-background/60">
           <Heart className="size-4 text-rose-500 shrink-0" />
-          <span className="text-sm font-semibold text-foreground">Spouse Details</span>
+          <span className="text-base font-semibold text-foreground">Spouse Details</span>
         </div>
 
         <div className="p-5 grid gap-4 sm:grid-cols-2">
           {/* Spouse Name */}
           <div className="space-y-1.5">
-            <Label htmlFor="spouseName" className="text-xs font-semibold flex items-center gap-1.5">
+            <Label htmlFor="spouseName" className="text-sm font-semibold flex items-center gap-1.5">
               <Heart className="size-3 text-rose-400" /> Name of Spouse
             </Label>
             <Input
               id="spouseName"
               placeholder="e.g. Dr. (Mrs) Funke Bakare"
-              className="text-sm"
+              className="text-base"
               {...form.register('spouseName')}
             />
             {form.formState.errors.spouseName && (
-              <p className="text-xs text-destructive">{form.formState.errors.spouseName.message}</p>
+              <p className="text-sm text-destructive">{form.formState.errors.spouseName.message}</p>
             )}
           </div>
 
           {/* Spouse Employed in OAU */}
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold flex items-center gap-1.5">
+            <Label className="text-sm font-semibold flex items-center gap-1.5">
               <Building2 className="size-3 text-blue-400" /> Is Spouse Employed in OAU?
             </Label>
             <Select
               value={watchSpouseInOAU ? 'yes' : 'no'}
               onValueChange={(val) => form.setValue('spouseEmployedInOAU', val === 'yes')}
             >
-              <SelectTrigger className="text-sm">
+              <SelectTrigger className="text-base">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -137,13 +137,13 @@ export function DependantsEditForm({ initialData }: DependantsEditFormProps) {
           {/* Spouse Department (conditional) */}
           {watchSpouseInOAU && (
             <div className="space-y-1.5">
-              <Label htmlFor="spouseDepartment" className="text-xs font-semibold flex items-center gap-1.5">
+              <Label htmlFor="spouseDepartment" className="text-sm font-semibold flex items-center gap-1.5">
                 <Building2 className="size-3 text-blue-400" /> Spouse's Department / Unit in OAU
               </Label>
               <Input
                 id="spouseDepartment"
                 placeholder="e.g. Department of Biochemistry"
-                className="text-sm"
+                className="text-base"
                 {...form.register('spouseDepartment')}
               />
             </div>
@@ -151,13 +151,13 @@ export function DependantsEditForm({ initialData }: DependantsEditFormProps) {
 
           {/* Spouse Employment Address */}
           <div className={`space-y-1.5 ${watchSpouseInOAU ? '' : 'sm:col-span-2'}`}>
-            <Label htmlFor="spouseEmploymentAddress" className="text-xs font-semibold flex items-center gap-1.5">
+            <Label htmlFor="spouseEmploymentAddress" className="text-sm font-semibold flex items-center gap-1.5">
               <MapPin className="size-3 text-green-400" /> Spouse's Employment Address
             </Label>
             <Input
               id="spouseEmploymentAddress"
               placeholder="e.g. OAUTHC, Ile-Ife"
-              className="text-sm"
+              className="text-base"
               {...form.register('spouseEmploymentAddress')}
             />
           </div>
@@ -168,7 +168,7 @@ export function DependantsEditForm({ initialData }: DependantsEditFormProps) {
       <div className="rounded-xl border border-border bg-muted/30 overflow-hidden">
         <div className="flex items-center gap-2 px-5 py-3.5 border-b bg-background/60">
           <Baby className="size-4 text-amber-500 shrink-0" />
-          <span className="text-sm font-semibold text-foreground">Child Dependants</span>
+          <span className="text-base font-semibold text-foreground">Child Dependants</span>
           <Badge variant="outline" className="ml-auto text-[11px]">
             {childFields.length} {childFields.length === 1 ? 'child' : 'children'}
           </Badge>
@@ -177,7 +177,7 @@ export function DependantsEditForm({ initialData }: DependantsEditFormProps) {
             size="sm"
             variant="outline"
             onClick={() => appendChild({ name: '', age: 0 })}
-            className="h-7 text-xs gap-1 border-dashed border-amber-500 text-amber-800 hover:bg-amber-50"
+            className="h-7 text-sm gap-1 border-dashed border-amber-500 text-amber-800 hover:bg-amber-50"
           >
             <Plus className="size-3.5" /> Add Child
           </Button>
@@ -187,13 +187,13 @@ export function DependantsEditForm({ initialData }: DependantsEditFormProps) {
           {childFields.length === 0 ? (
             <div className="text-center py-8 border border-dashed rounded-lg bg-background/50">
               <Baby className="size-8 text-muted-foreground/40 mx-auto mb-2" />
-              <p className="text-xs text-muted-foreground mb-3">No child dependants added yet.</p>
+              <p className="text-sm text-muted-foreground mb-3">No child dependants added yet.</p>
               <Button
                 type="button"
                 variant="link"
                 size="sm"
                 onClick={() => appendChild({ name: '', age: 0 })}
-                className="text-xs text-amber-700 h-auto p-0"
+                className="text-sm text-amber-700 h-auto p-0"
               >
                 + Add a child dependant
               </Button>
@@ -213,16 +213,16 @@ export function DependantsEditForm({ initialData }: DependantsEditFormProps) {
                   key={field.id}
                   className="grid grid-cols-[2rem_1fr_6rem_2.5rem] gap-3 items-start"
                 >
-                  <span className="text-xs font-bold text-muted-foreground pt-2.5">{index + 1}</span>
+                  <span className="text-sm font-bold text-muted-foreground pt-2.5">{index + 1}</span>
 
                   <div>
                     <Input
                       placeholder="Child's full name"
-                      className="text-sm"
+                      className="text-base"
                       {...form.register(`children.${index}.name` as const)}
                     />
                     {form.formState.errors.children?.[index]?.name && (
-                      <p className="text-xs text-destructive mt-1">
+                      <p className="text-sm text-destructive mt-1">
                         {form.formState.errors.children[index]?.name?.message}
                       </p>
                     )}
@@ -234,11 +234,11 @@ export function DependantsEditForm({ initialData }: DependantsEditFormProps) {
                       placeholder="Age"
                       min={0}
                       max={30}
-                      className="text-sm"
+                      className="text-base"
                       {...form.register(`children.${index}.age` as const)}
                     />
                     {form.formState.errors.children?.[index]?.age && (
-                      <p className="text-xs text-destructive mt-1">
+                      <p className="text-sm text-destructive mt-1">
                         {form.formState.errors.children[index]?.age?.message}
                       </p>
                     )}
@@ -258,7 +258,7 @@ export function DependantsEditForm({ initialData }: DependantsEditFormProps) {
               ))}
 
               {/* Summary */}
-              <div className="pt-3 border-t border-border/60 flex items-center gap-1.5 text-xs text-muted-foreground">
+              <div className="pt-3 border-t border-border/60 flex items-center gap-1.5 text-sm text-muted-foreground">
                 <Users className="size-3.5" />
                 <span>
                   Total dependants will be recorded as{' '}

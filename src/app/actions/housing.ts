@@ -339,6 +339,7 @@ export async function addBQOccupantAction(data: unknown) {
     });
     revalidatePath('/staff/housing');
     revalidatePath('/staff/bq');
+    revalidatePath('/staff/occupancy');
     return { success: true, data: occupant };
   } catch (err) {
     return { success: false, error: err instanceof Error ? err.message : 'Failed to add BQ occupant' };
@@ -378,6 +379,7 @@ export async function updateBQOccupantAction(
     });
     revalidatePath('/staff/housing');
     revalidatePath('/staff/bq');
+    revalidatePath('/staff/occupancy');
     return { success: true, data: updated };
   } catch (err) {
     return { success: false, error: err instanceof Error ? err.message : 'Failed to update BQ occupant' };

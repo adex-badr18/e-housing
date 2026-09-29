@@ -757,6 +757,7 @@ export async function finalizeApplication(params: {
       mockDB.tenancyAgreements[agreementIdx] = {
         ...mockDB.tenancyAgreements[agreementIdx],
         occupancyId: occupancy.id,
+        signed: true,
       };
     }
   }

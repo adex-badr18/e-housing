@@ -257,7 +257,7 @@ export default async function StaffDashboardPage() {
                 </div>
                 {activeOccupancy && (
                   <Link
-                    href={`/management/occupancies/${activeOccupancy.id}`}
+                    href={`/staff/occupancy`}
                     className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
                   >
                     <MapPin className="h-3.5 w-3.5" />

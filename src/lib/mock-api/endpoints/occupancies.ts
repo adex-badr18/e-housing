@@ -193,7 +193,22 @@ export async function getOccupancyDetails(id: string): Promise<OccupancyDetails 
   );
 
   // BQs and BQ occupants for this unit
-  const bqs = mockDB.getBQsForUnit(occupancy.housingUnitId);
+  let bqs = mockDB.getBQsForUnit(occupancy.housingUnitId);
+  
+  // Auto-provision BQ if the housing type has a BQ but none exist yet in mockDB
+  if (housingType?.hasBQ && bqs.length === 0) {
+    const newBq = {
+      id: mockDB.generateId('bq'),
+      housingUnitId: occupancy.housingUnitId,
+      label: 'BQ 1',
+      status: 'VACANT' as const,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    mockDB.bqs.push(newBq);
+    bqs = [newBq];
+  }
+
   const bqOccupants = bqs.flatMap(bq => mockDB.getBQOccupantsForBQ(bq.id));
 
   return {

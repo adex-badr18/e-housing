@@ -62,9 +62,9 @@ function OccupancyStatusBadge({ status }: { status: OccupancyStatus }) {
 
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex items-start justify-between py-2 border-b border-gray-50 last:border-0 gap-4">
-      <span className="text-xs font-medium text-gray-500 shrink-0 min-w-[140px]">{label}</span>
-      <span className="text-xs text-gray-900 text-right">{value ?? '—'}</span>
+    <div className="flex items-start justify-between py-3 border-b border-gray-50 last:border-0 gap-4">
+      <span className="text-sm font-medium text-gray-500 shrink-0 min-w-[140px]">{label}</span>
+      <span className="text-sm text-gray-900 text-right">{value ?? '—'}</span>
     </div>
   );
 }
@@ -86,7 +86,7 @@ function SectionCard({
         <div className={cn('p-2 rounded-lg', iconColor)}>
           <Icon className="h-4 w-4" />
         </div>
-        <h2 className="text-sm font-semibold text-gray-800">{title}</h2>
+        <h2 className="text-base font-semibold text-gray-800">{title}</h2>
       </div>
       <div className="px-5 py-4">{children}</div>
     </div>
@@ -183,7 +183,7 @@ export default async function StaffOccupancyPage() {
               <h1 className="text-xl font-bold text-gray-900">My Housing Allocation</h1>
               <OccupancyStatusBadge status={occupancy.status} />
             </div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-xs text-gray-500">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-sm text-gray-500">
               {unit && <span>Unit: <strong className="text-gray-700">{unit.name}</strong></span>}
               <span>Check-in: <strong className="text-gray-700">{fmt(occupancy.checkInDate)}</strong></span>
             </div>
@@ -195,7 +195,7 @@ export default async function StaffOccupancyPage() {
                 href={tenancyAgreement.documentUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 <ScrollText className="h-4 w-4 text-blue-600" />
                 View Agreement
@@ -222,15 +222,24 @@ export default async function StaffOccupancyPage() {
         <SectionCard title="Housing Unit Information" icon={Building2} iconColor="bg-teal-100 text-teal-600">
           <div className="space-y-0">
             <InfoRow label="Unit Name" value={<strong className="text-teal-700">{unit?.name}</strong>} />
-            <InfoRow label="Housing Type" value={housingType?.name} />
+            <InfoRow label="House Number" value={unit?.houseNumber} />
+            <InfoRow label="Road Number" value={unit?.roadNumber} />
             
+            <div className="pt-2 mt-2 border-t border-gray-100"></div>
+            
+            <InfoRow label="Housing Type" value={housingType?.name} />
+            <InfoRow label="Building Type" value={housingType?.buildingType === 'BUNGALOW' ? 'Bungalow' : 'Storey'} />
+            <InfoRow label="Annual Rent" value={housingType?.annualRent ? `₦${housingType.annualRent.toLocaleString()}` : '—'} />
+
             <div className="pt-4 mt-4 border-t border-gray-100">
-              <div className="grid grid-cols-2 gap-3 text-xs text-gray-500">
-                <span className="flex items-center gap-1.5"><Home className="h-4 w-4 shrink-0 text-gray-400" /> {housingType?.buildingType === 'BUNGALOW' ? 'Bungalow' : 'Storey'}</span>
+              <div className="grid grid-cols-2 gap-3 text-sm text-gray-500">
                 <span className="flex items-center gap-1.5"><BedDouble className="h-4 w-4 shrink-0 text-gray-400" /> {housingType?.numberOfBedrooms} Bedrooms</span>
                 <span className="flex items-center gap-1.5"><Bath className="h-4 w-4 shrink-0 text-gray-400" /> {housingType?.numberOfBathrooms} Bathrooms</span>
+                <span className="flex items-center gap-1.5"><Bath className="h-4 w-4 shrink-0 text-gray-400" /> {housingType?.numberOfToilets} Toilets</span>
                 <span className="flex items-center gap-1.5"><Car className="h-4 w-4 shrink-0 text-gray-400" /> {housingType?.parkingSpace} Parking</span>
                 {housingType?.hasBQ && <span className="flex items-center gap-1.5"><Trees className="h-4 w-4 shrink-0 text-gray-400" /> With BQ</span>}
+                {housingType?.hasStudyRoom && <span className="flex items-center gap-1.5"><ScrollText className="h-4 w-4 shrink-0 text-gray-400" /> Study Room</span>}
+                {housingType?.hasCourtyard && <span className="flex items-center gap-1.5"><Trees className="h-4 w-4 shrink-0 text-gray-400" /> Courtyard</span>}
               </div>
             </div>
           </div>

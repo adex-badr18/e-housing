@@ -115,6 +115,7 @@ export default async function StaffDashboardPage() {
         housingTypes={housingTypes}
         currentHousingStatus={profile?.currentHousingStatus}
         hasActiveApplication={!!activeApplication}
+        activeApplicationId={activeApplication?.id}
       />
 
       {/* Row 1: KPI Cards */}

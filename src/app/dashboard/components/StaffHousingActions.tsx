@@ -25,12 +25,14 @@ interface StaffHousingActionsProps {
   housingTypes?: HousingType[];
   currentHousingStatus?: string;
   hasActiveApplication?: boolean;
+  activeApplicationId?: string;
 }
 
 export function StaffHousingActions({
   housingTypes = [],
   currentHousingStatus,
   hasActiveApplication,
+  activeApplicationId,
 }: StaffHousingActionsProps) {
   const router = useRouter();
   const [claimOpen, setClaimOpen] = useState(false);
@@ -116,12 +118,21 @@ export function StaffHousingActions({
           </div>
         </CardContent>
         <CardFooter className="pt-2">
-          <Link href="/staff/applications" className="w-full">
-            <Button className="w-full bg-[rgb(27,34,50)] hover:bg-[rgb(27,34,50)]/90 text-amber-300 text-xs font-semibold gap-2 py-5 shadow">
-              {hasActiveApplication ? 'View Application Status' : 'Start Application Wizard'}
-              <ArrowRight className="size-4" />
-            </Button>
-          </Link>
+          {hasActiveApplication && activeApplicationId ? (
+            <Link href={`/staff/applications/${activeApplicationId}`} className="w-full">
+              <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold gap-2 py-5 shadow">
+                View Application Status
+                <ArrowRight className="size-4" />
+              </Button>
+            </Link>
+          ) : (
+            <Link href="/staff/applications/new" className="w-full">
+              <Button className="w-full bg-[rgb(27,34,50)] hover:bg-[rgb(27,34,50)]/90 text-amber-300 text-xs font-semibold gap-2 py-5 shadow">
+                Start Application Wizard
+                <ArrowRight className="size-4" />
+              </Button>
+            </Link>
+          )}
         </CardFooter>
       </Card>
 

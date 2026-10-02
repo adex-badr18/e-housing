@@ -50,6 +50,7 @@ export function Sidebar({ role, showTenancyLink = false }: SidebarProps) {
           alt="OAU Logo"
           width={40}
           height={40}
+          priority
           className="object-contain rounded-sm"
         />
         <div className="flex flex-col">

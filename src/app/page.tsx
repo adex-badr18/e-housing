@@ -27,7 +27,7 @@ function Navbar() {
                 width={180}
                 height={30}
                 className="object-contain h-10 w-auto rounded-sm"
-                loading="eager"
+                priority
               />
             </div>
             <div className="hidden sm:block">

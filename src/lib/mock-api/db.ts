@@ -1359,102 +1359,102 @@ const initialOccupancies: Occupancy[] = [
 
 const sampleInspectionData_hu2: InspectionData = {
   'hu-2': {
-    'str-walls':     'GOOD',
-    'str-roof':      'FAIR',
-    'str-floors':    'GOOD',
-    'str-windows':   'GOOD',
-    'util-water':    'GOOD',
+    'str-walls': 'GOOD',
+    'str-roof': 'FAIR',
+    'str-floors': 'GOOD',
+    'str-windows': 'GOOD',
+    'util-water': 'GOOD',
     'util-drainage': 'GOOD',
     'util-sanitary': 'FAIR',
-    'env-compound':  'GOOD',
-    'env-waste':     'GOOD',
-    'bq-cond':       'NA',
+    'env-compound': 'GOOD',
+    'env-waste': 'GOOD',
+    'bq-cond': 'NA',
   },
 };
 
 const sampleInspectionData_hu8: InspectionData = {
   'hu-8': {
-    'str-walls':     'GOOD',
-    'str-roof':      'GOOD',
-    'str-floors':    'GOOD',
-    'str-windows':   'FAIR',
-    'util-water':    'FAIR',
+    'str-walls': 'GOOD',
+    'str-roof': 'GOOD',
+    'str-floors': 'GOOD',
+    'str-windows': 'FAIR',
+    'util-water': 'FAIR',
     'util-drainage': 'GOOD',
     'util-sanitary': 'GOOD',
-    'env-compound':  'FAIR',
-    'env-waste':     'GOOD',
-    'bq-cond':       'GOOD',
+    'env-compound': 'FAIR',
+    'env-waste': 'GOOD',
+    'bq-cond': 'GOOD',
   },
 };
 
 const sampleInspectionData_hu10: InspectionData = {
   'hu-10': {
-    'str-walls':     'GOOD',
-    'str-roof':      'GOOD',
-    'str-floors':    'FAIR',
-    'str-windows':   'GOOD',
-    'util-water':    'GOOD',
+    'str-walls': 'GOOD',
+    'str-roof': 'GOOD',
+    'str-floors': 'FAIR',
+    'str-windows': 'GOOD',
+    'util-water': 'GOOD',
     'util-drainage': 'FAIR',
     'util-sanitary': 'GOOD',
-    'env-compound':  'GOOD',
-    'env-waste':     'GOOD',
-    'bq-cond':       'NA',
+    'env-compound': 'GOOD',
+    'env-waste': 'GOOD',
+    'bq-cond': 'NA',
   },
 };
 
 // Dual-unit inspection: HS suggested hu-5, EO selected hu-8 (different)
 const sampleInspectionData_dual_hu5_hu8: InspectionData = {
   'hu-5': {
-    'str-walls':     'GOOD',
-    'str-roof':      'FAIR',
-    'str-floors':    'GOOD',
-    'str-windows':   'GOOD',
-    'util-water':    'FAIR',
+    'str-walls': 'GOOD',
+    'str-roof': 'FAIR',
+    'str-floors': 'GOOD',
+    'str-windows': 'GOOD',
+    'util-water': 'FAIR',
     'util-drainage': 'GOOD',
     'util-sanitary': 'GOOD',
-    'env-compound':  'GOOD',
-    'env-waste':     'FAIR',
-    'bq-cond':       'GOOD',
+    'env-compound': 'GOOD',
+    'env-waste': 'FAIR',
+    'bq-cond': 'GOOD',
   },
   'hu-8': {
-    'str-walls':     'GOOD',
-    'str-roof':      'GOOD',
-    'str-floors':    'FAIR',
-    'str-windows':   'GOOD',
-    'util-water':    'GOOD',
+    'str-walls': 'GOOD',
+    'str-roof': 'GOOD',
+    'str-floors': 'FAIR',
+    'str-windows': 'GOOD',
+    'util-water': 'GOOD',
     'util-drainage': 'GOOD',
     'util-sanitary': 'FAIR',
-    'env-compound':  'GOOD',
-    'env-waste':     'GOOD',
-    'bq-cond':       'GOOD',
+    'env-compound': 'GOOD',
+    'env-waste': 'GOOD',
+    'bq-cond': 'GOOD',
   },
 };
 
 // Dual-unit inspection: HS suggested hu-2, EO selected hu-10 (different)
 const sampleInspectionData_dual_hu2_hu10: InspectionData = {
   'hu-2': {
-    'str-walls':     'GOOD',
-    'str-roof':      'FAIR',
-    'str-floors':    'GOOD',
-    'str-windows':   'GOOD',
-    'util-water':    'GOOD',
+    'str-walls': 'GOOD',
+    'str-roof': 'FAIR',
+    'str-floors': 'GOOD',
+    'str-windows': 'GOOD',
+    'util-water': 'GOOD',
     'util-drainage': 'FAIR',
     'util-sanitary': 'GOOD',
-    'env-compound':  'GOOD',
-    'env-waste':     'GOOD',
-    'bq-cond':       'NA',
+    'env-compound': 'GOOD',
+    'env-waste': 'GOOD',
+    'bq-cond': 'NA',
   },
   'hu-10': {
-    'str-walls':     'GOOD',
-    'str-roof':      'GOOD',
-    'str-floors':    'GOOD',
-    'str-windows':   'FAIR',
-    'util-water':    'GOOD',
+    'str-walls': 'GOOD',
+    'str-roof': 'GOOD',
+    'str-floors': 'GOOD',
+    'str-windows': 'FAIR',
+    'util-water': 'GOOD',
     'util-drainage': 'GOOD',
     'util-sanitary': 'GOOD',
-    'env-compound':  'FAIR',
-    'env-waste':     'GOOD',
-    'bq-cond':       'NA',
+    'env-compound': 'FAIR',
+    'env-waste': 'GOOD',
+    'bq-cond': 'NA',
   },
 };
 
@@ -1478,16 +1478,16 @@ const initialHousingApplications: HousingApplication[] = [
     estateSuggestedUnitId: 'hu-3',
     inspectionData: {
       'hu-3': {
-        'str-walls':     'GOOD',
-        'str-roof':      'GOOD',
-        'str-floors':    'GOOD',
-        'str-windows':   'GOOD',
-        'util-water':    'GOOD',
+        'str-walls': 'GOOD',
+        'str-roof': 'GOOD',
+        'str-floors': 'GOOD',
+        'str-windows': 'GOOD',
+        'util-water': 'GOOD',
         'util-drainage': 'GOOD',
         'util-sanitary': 'GOOD',
-        'env-compound':  'FAIR',
-        'env-waste':     'GOOD',
-        'bq-cond':       'GOOD',
+        'env-compound': 'FAIR',
+        'env-waste': 'GOOD',
+        'bq-cond': 'GOOD',
       },
     },
     additionalNotes: 'Requesting junior housing close to Science faculty.',
@@ -2593,7 +2593,8 @@ export class MockDB {
         a.status !== 'APPROVED' &&
         a.status !== 'REJECTED' &&
         a.status !== 'WITHDRAWN' &&
-        a.status !== 'TERMINATED'
+        a.status !== 'TERMINATED' &&
+        a.status !== 'FINALIZED'
     );
   }
 

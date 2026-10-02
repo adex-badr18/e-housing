@@ -136,7 +136,8 @@ export function StaffHousingActions({
         </CardFooter>
       </Card>
 
-      {/* CARD 2: Claim / Register Existing Allocation */}
+      {/* CARD 2: Claim / Register Existing Allocation — only shown when staff does NOT have an active allocation */}
+      {currentHousingStatus !== 'HAS_ALLOCATION' && (
       <Card className="border-2 border-amber-200/80 shadow-md hover:shadow-lg transition-all bg-gradient-to-br from-amber-50/30 to-white flex flex-col justify-between">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
@@ -249,6 +250,7 @@ export function StaffHousingActions({
           </Dialog>
         </CardFooter>
       </Card>
+      )}
     </div>
   );
 }

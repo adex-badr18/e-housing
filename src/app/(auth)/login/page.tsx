@@ -142,6 +142,7 @@ export default function LoginPage() {
               alt="OAU Logo" 
               width={180}
               height={30}
+              priority
               className="h-20 w-auto object-contain"
             />
           </div>

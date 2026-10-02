@@ -116,6 +116,7 @@ export default function RegisterPage() {
               alt="OAU Logo"
               width={180}
               height={30}
+              priority
               className="h-10 w-auto object-contain"
             />
           </div>

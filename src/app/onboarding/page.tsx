@@ -27,6 +27,7 @@ export default async function OnboardingPage() {
             width={160}
             height={40}
             className="h-12 w-auto object-contain"
+            priority
           />
           <div>
             <h1 className="text-xl font-extrabold text-[rgb(27,34,50)]">OAU E-Housing Portal</h1>

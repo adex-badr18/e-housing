@@ -2,7 +2,7 @@
 // CompletedStageCard — read-only summary of a finished review stage
 // =============================================================================
 
-import { CheckCircle2, XCircle, ChevronRight, RotateCcw, Save } from 'lucide-react';
+import { CheckCircle2, XCircle, ChevronRight, RotateCcw, Save, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import type { ApplicationReview, ApplicationStage } from '@/lib/mock-api/db';
 
@@ -42,6 +42,12 @@ const DECISION_CONFIG = {
     label: 'Draft Review',
     cls:   'text-blue-600 bg-blue-50 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800',
     iconCls: 'text-blue-500',
+  },
+  QUEUED: {
+    icon:  Clock,
+    label: 'Placed in Queue',
+    cls:   'text-amber-700 bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800',
+    iconCls: 'text-amber-500',
   },
 };
 

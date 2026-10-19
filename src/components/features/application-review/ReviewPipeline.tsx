@@ -107,14 +107,27 @@ export function ReviewPipeline({
     : null;
 
   // ── Build completed-stage review list ──
-  // Only include non-draft, finalised reviews for stages that have been fully passed.
+  // Include non-draft finalised reviews for:
+  //  - Stages already surpassed in the current cycle (isStageCompleted)
+  //  - Any stage with a review record when the application is REJECTED or RETURNED
+  //    (RETURNED means the full HOUSING → ESTATE → DVC cycle already ran; we need
+  //     to surface that history even though currentStage has been reset to HOUSING).
   const nonDraftReviews = reviews.filter(r => !r.isDraft);
+  const isReturnedOrRejected = status === 'RETURNED' || status === 'REJECTED';
   const completedReviews = (
     ['HOUSING', 'ESTATE', 'DVC'] as Exclude<ApplicationStage, 'COMPLETED'>[]
   )
-    .filter(s => isStageCompleted(s, currentStage) || (status === 'REJECTED' && nonDraftReviews.some(r => r.stage === s)))
+    .filter(s => isStageCompleted(s, currentStage) || (isReturnedOrRejected && nonDraftReviews.some(r => r.stage === s)))
     .map(s => nonDraftReviews.find(r => r.stage === s))
     .filter(Boolean) as ApplicationReview[];
+
+  // ── Authoritative score for the Scoring & Evaluation section ──
+  // Use the last finalised HOUSING review's breakdown rather than
+  // application.pointsBreakdown, which can drift as the HS re-edits scores
+  // before re-forwarding (producing a mismatch with the Completed Reviews card).
+  const lastHousingReview = [...nonDraftReviews]
+    .filter(r => r.stage === 'HOUSING')
+    .sort((a, b) => new Date(b.reviewedAt).getTime() - new Date(a.reviewedAt).getTime())[0] ?? null;
 
   // ── Determine access state ──
   const isRejected  = status === 'REJECTED';
@@ -199,6 +212,7 @@ export function ReviewPipeline({
         secretarySuggestedType={secretarySuggestedType ?? undefined}
         estateSuggestedUnit={estateSuggestedUnit}
         estateSuggestedType={estateSuggestedType ?? undefined}
+        authorativeHousingReviewScore={lastHousingReview?.score ?? null}
       />
 
       {/* Terminal state banners */}

@@ -180,13 +180,13 @@ export const applicationReviewSchema = z
       .max(1000, 'Comments must be under 1000 characters')
       .optional()
       .or(z.literal('')),
-    // Only HOUSING stage sets a score
-    score: z.coerce.number().int().min(0).max(100).optional().nullable(),
-    // Points breakdown provided by Housing Secretary
-    baseTypePoints: z.coerce.number().int().min(0).optional(),
-    seniorityBonus: z.coerce.number().int().min(0).optional(),
-    dependentsBonus: z.coerce.number().int().min(0).optional(),
-    maritalStatusBonus: z.coerce.number().int().min(0).optional(),
+    // Only HOUSING stage sets a score (scoring engine max is 120 points)
+    score: z.coerce.number().int().min(0).max(120).optional().nullable(),
+    // Points breakdown provided by Housing Secretary (matching scoring dimensions)
+    baseTypePoints: z.coerce.number().int().min(0).max(70).optional(),
+    seniorityBonus: z.coerce.number().int().min(0).max(25).optional(),
+    dependentsBonus: z.coerce.number().int().min(0).max(15).optional(),
+    maritalStatusBonus: z.coerce.number().int().min(0).max(10).optional(),
     // ── New workflow fields ─────────────────────────────────────────────────
     /** Housing Secretary's optional unit suggestion (Stage 1 only) */
     secretarySuggestedUnitId: z.string().optional().nullable(),

@@ -18,7 +18,6 @@ import {
   getApplicationDetail,
   getApplicationWithProfile,
   getVacantUnitsForApplication,
-  requeueApplication,
   submitQuitRequest,
   reviewQuitRequest,
   type EnrichedQuitRequest,
@@ -30,7 +29,6 @@ import {
   applicationSubmitSchema,
   applicationReviewSchema,
   allocationResponseSchema,
-  requeueApplicationSchema,
   submitQuitRequestSchema,
   reviewQuitRequestSchema,
   adminTerminateSchema,
@@ -249,7 +247,10 @@ export async function reviewApplicationAction(data: unknown) {
 
   const parsed = applicationReviewSchema.safeParse(data);
   if (!parsed.success) {
-    return { success: false, error: 'Validation failed', details: parsed.error.format() };
+    const errorDetails = parsed.error.issues
+      .map(i => `${i.path.join('.') || 'form'}: ${i.message}`)
+      .join('; ');
+    return { success: false, error: `Validation failed: ${errorDetails}`, details: parsed.error.format() };
   }
 
   // Build points breakdown if Housing Secretary is scoring
@@ -341,43 +342,12 @@ export async function getVacantUnitsForApplicationAction(applicationId: string) 
   }
 }
 
-
 // ---------------------------------------------------------------------------
-// Estate Officer: Re-activate a queued application with a selected unit
+// NOTE: requeueApplicationAction has been removed.
+// The Estate Officer now re-activates queued applications through the standard
+// reviewApplicationAction() (FORWARDED decision at ESTATE stage), which also
+// enforces the physical inspection scoring requirement.
 // ---------------------------------------------------------------------------
-
-export async function requeueApplicationAction(data: unknown) {
-  const session = await auth();
-  if (!session?.user) return { success: false, error: 'Unauthorized' };
-  if (session.user.role !== 'ESTATE_OFFICER' && session.user.role !== 'SUPER_ADMIN') {
-    return { success: false, error: 'Only Estate Officer can re-activate queued applications' };
-  }
-
-  const parsed = requeueApplicationSchema.safeParse(data);
-  if (!parsed.success) {
-    return { success: false, error: 'Validation failed', details: parsed.error.format() };
-  }
-
-  try {
-    const application = await requeueApplication(
-      parsed.data.applicationId,
-      parsed.data.allocatedUnitId
-    );
-    await writeAuditEntry({
-      actorId: session.user.id,
-      action: 'APPLICATION_REQUEUED',
-      entityType: 'HousingApplication',
-      entityId: parsed.data.applicationId,
-      status: 'SUCCESS',
-      metadata: { allocatedUnitId: parsed.data.allocatedUnitId },
-    });
-    revalidatePath('/management/applications');
-    revalidatePath(`/management/applications/${parsed.data.applicationId}`);
-    return { success: true, data: application };
-  } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : 'Failed to re-activate application' };
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Management: Create Allocation (post-DVC approval)

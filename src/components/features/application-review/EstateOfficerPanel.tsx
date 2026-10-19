@@ -11,12 +11,13 @@
 //      - If the EO accepts the HS suggestion, only one inspection form is shown.
 //      - If the EO picks a different unit, a tabbed interface allows the officer
 //        to rate BOTH units independently.
-//   3. Forward to DVC Admin (requires unit selection) OR
+//   3. Forward to DVC Admin (requires unit selection + ALL inspection metrics rated) OR
 //      Place application in Queue (no unit selected yet) OR
 //      Reject the application
 //
-// When the application is already QUEUED, the panel shows a re-activation form
-// where the officer can pick a newly-vacant unit and send it back to DVC.
+// When the application is already QUEUED, the panel shows the same full form
+// with a status banner so the officer can select a unit, record inspection
+// scores, and forward to DVC Admin — no separate requeue flow needed.
 // =============================================================================
 
 import { useState, useTransition, useEffect } from 'react';
@@ -34,7 +35,6 @@ import { cn } from '@/lib/utils';
 import {
   reviewApplicationAction,
   getVacantUnitsForApplicationAction,
-  requeueApplicationAction,
 } from '@/app/actions/applications';
 import type { HousingApplication, PointsBreakdown, HousingUnit, HousingType, ApplicationReview } from '@/lib/mock-api/db';
 import { VacantUnitsGrid, type VacantUnitData } from './VacantUnitsGrid';
@@ -72,13 +72,6 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
-
-// Re-queue form schema (for already-queued applications)
-const requeueFormSchema = z.object({
-  allocatedUnitId: z.string().min(1, 'Please select a housing unit to re-activate'),
-  notes: z.string().max(500, 'Notes must be under 500 characters').optional().or(z.literal('')),
-});
-type RequeueFormValues = z.infer<typeof requeueFormSchema>;
 
 
 
@@ -274,112 +267,6 @@ function InspectionPanel({
 }
 
 // ---------------------------------------------------------------------------
-// Re-queue Panel — shown when application is already QUEUED
-// ---------------------------------------------------------------------------
-
-function RequeuePanel({
-  application,
-  vacantUnits,
-  loadingUnits,
-}: {
-  application: HousingApplication;
-  vacantUnits: VacantUnitData[];
-  loadingUnits: boolean;
-}) {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
-
-  const form = useForm<RequeueFormValues>({
-    resolver: zodResolver(requeueFormSchema),
-    defaultValues: { allocatedUnitId: '', notes: '' },
-  });
-
-  function onSubmit(values: RequeueFormValues) {
-    startTransition(async () => {
-      const res = await requeueApplicationAction({
-        applicationId: application.id,
-        allocatedUnitId: values.allocatedUnitId,
-      });
-      if (res.success) {
-        toast.success('Application re-activated and forwarded to DVC Admin');
-        router.refresh();
-      } else {
-        toast.error(res.error ?? 'Failed to re-activate application');
-      }
-    });
-  }
-
-  return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-      {/* Vacant unit picker */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h4 className="text-base font-semibold flex items-center gap-2">
-            <Home className="h-4 w-4 text-primary" />
-            Select a Vacant Unit
-          </h4>
-          {loadingUnits && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-        </div>
-
-        {!loadingUnits && vacantUnits.length === 0 && (
-          <div className="flex items-center gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-800">
-            <AlertCircle className="h-5 w-5 shrink-0" />
-            <p className="text-base">No vacant housing units are currently available. Check back later.</p>
-          </div>
-        )}
-
-        {!loadingUnits && vacantUnits.length > 0 && (
-          <VacantUnitsGrid
-            vacantUnits={vacantUnits}
-            selectedUnitId={selectedUnitId}
-            onSelectUnit={(id) => {
-              setSelectedUnitId(id);
-              form.setValue('allocatedUnitId', id ?? '', { shouldValidate: true });
-            }}
-          />
-        )}
-        {form.formState.errors.allocatedUnitId && (
-          <p className="text-sm text-destructive">{form.formState.errors.allocatedUnitId?.message}</p>
-        )}
-      </div>
-
-      {/* Notes */}
-      <div className="space-y-2">
-        <label className="text-base font-semibold">
-          Re-activation Notes <span className="text-sm font-normal text-muted-foreground">(Optional)</span>
-        </label>
-        <textarea
-          {...form.register('notes')}
-          rows={3}
-          placeholder="Explain why the application is being re-activated now (optional)..."
-          className={cn(
-            'w-full text-base px-3 py-2 rounded-xl border bg-background resize-none',
-            'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition'
-          )}
-        />
-        {form.formState.errors.notes && (
-          <p className="text-sm text-destructive">{form.formState.errors.notes.message}</p>
-        )}
-      </div>
-
-      <button
-        type="submit"
-        disabled={isPending || !selectedUnitId || vacantUnits.length === 0}
-        className={cn(
-          'w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-base transition-all',
-          'bg-primary text-primary-foreground hover:bg-primary/90',
-          'disabled:opacity-50 disabled:cursor-not-allowed shadow-sm'
-        )}
-      >
-        {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-        Re-activate & Forward to DVC Admin
-      </button>
-    </form>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Main Component
 // ---------------------------------------------------------------------------
 
@@ -498,6 +385,9 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
     return INSPECTION_METRICS.every(m => r[m.id] !== null && r[m.id] !== undefined);
   });
 
+  // Inspection is required before forwarding (must have a unit AND all metrics rated)
+  const canForward = !!selectedUnitId && allRated;
+
   const badCount = Object.values(activeUnitRatings).filter(v => v === 'BAD').length;
 
   function executeSubmit(values: FormValues) {
@@ -530,7 +420,11 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
         if (values.decision === 'SAVE_DRAFT') {
           toast.success('Draft review and inspection notes saved');
         } else if (values.decision === 'FORWARDED') {
-          toast.success('Unit allocated — application forwarded to DVC Admin');
+          toast.success(
+            isQueued
+              ? 'Application re-activated — forwarded to DVC Admin'
+              : 'Unit allocated — application forwarded to DVC Admin'
+          );
         } else if (values.decision === 'QUEUED') {
           toast.success('Application placed in queue — awaiting a suitable unit');
         } else {
@@ -568,49 +462,22 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
     })();
   }
 
-  // ── If application is QUEUED, show the re-queue panel instead ──
-  if (isQueued) {
-    return (
-      <div className="space-y-6">
-        {/* Queued status banner */}
+  return (
+    <div className="space-y-6">
+      {/* ── QUEUED status banner ── */}
+      {isQueued && (
         <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50">
           <Clock className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
           <div>
             <p className="text-base font-semibold text-amber-800">Application is in Queue</p>
             <p className="text-sm text-amber-700 mt-0.5">
-              This application is awaiting a suitable vacant unit. Once a unit becomes available,
-              select it below and forward the application to DVC Admin.
+              Select a vacant unit, complete the physical inspection scoring below, then forward to DVC Admin.
+              You cannot forward without completing all inspection metrics.
             </p>
           </div>
         </div>
+      )}
 
-        {/* Previous score from Stage 1 */}
-        {pointsBreakdown && (
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/5 border border-primary/20">
-            <Building2 className="h-5 w-5 text-primary shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Housing Secretary Score</p>
-              <p className="text-base font-semibold text-foreground mt-0.5">
-                {pointsBreakdown.totalPoints} pts
-                <span className="font-normal text-muted-foreground ml-2">
-                  (Base {pointsBreakdown.baseTypePoints} + Seniority {pointsBreakdown.seniorityBonus} + Dependents {pointsBreakdown.dependentsBonus} + Marital {pointsBreakdown.maritalStatusBonus})
-                </span>
-              </p>
-            </div>
-          </div>
-        )}
-
-        <RequeuePanel
-          application={application}
-          vacantUnits={vacantUnits}
-          loadingUnits={loadingUnits}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
       {/* DVC Return Banner */}
       {application.status === 'RETURNED' && (
         <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-4 dark:bg-amber-950/40 dark:border-amber-800 space-y-2">
@@ -781,6 +648,11 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
               ) : (
                 <p className="text-sm text-muted-foreground mt-0.5">
                   Record the physical inspection score for the selected unit.
+                  {isQueued && (
+                    <span className="ml-1 font-semibold text-amber-700">
+                      All metrics must be rated before forwarding.
+                    </span>
+                  )}
                 </p>
               )}
             </div>
@@ -891,7 +763,7 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
         {/* Field notes */}
         <div className="space-y-2">
           <label className="text-base font-semibold">
-            Field Notes & Observations <span className="text-sm font-normal text-muted-foreground">(Optional)</span>
+            Field Notes &amp; Observations <span className="text-sm font-normal text-muted-foreground">(Optional)</span>
           </label>
           <textarea
             {...form.register('comments')}
@@ -927,29 +799,39 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
           >
             <XCircle className="mr-2 h-4 w-4" /> Reject
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="flex-1 text-amber-600 border-amber-200 hover:bg-amber-50 dark:hover:bg-amber-950 min-w-[120px]"
-            onClick={() => handleActionClick('QUEUED')}
-            disabled={isPending}
-          >
-            <Clock className="mr-2 h-4 w-4" /> Queue
-          </Button>
+          {/* Hide the "Queue" button when application is already queued */}
+          {!isQueued && (
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1 text-amber-600 border-amber-200 hover:bg-amber-50 dark:hover:bg-amber-950 min-w-[120px]"
+              onClick={() => handleActionClick('QUEUED')}
+              disabled={isPending}
+            >
+              <Clock className="mr-2 h-4 w-4" /> Queue
+            </Button>
+          )}
           <Button
             type="button"
             className="flex-1 sm:flex-none sm:w-auto min-w-[220px]"
             onClick={() => handleActionClick('FORWARDED')}
-            disabled={isPending || !allRated}
+            disabled={isPending || !canForward}
           >
-            <ChevronRight className="mr-2 h-4 w-4" /> Forward to DVC Admin
+            {isQueued
+              ? <RefreshCw className="mr-2 h-4 w-4" />
+              : <ChevronRight className="mr-2 h-4 w-4" />
+            }
+            {isQueued ? 'Re-activate & Forward to DVC Admin' : 'Forward to DVC Admin'}
           </Button>
         </div>
 
-        {!allRated && (
+        {/* Hint text when forward is blocked */}
+        {!canForward && (
           <p className="text-sm text-center text-amber-600">
-            Rate all {INSPECTION_METRICS.length} inspection metrics
-            {showTwoTabs ? ' for both units' : ''} to proceed with forwarding.
+            {!selectedUnitId
+              ? 'Select a housing unit to proceed with forwarding.'
+              : `Rate all ${INSPECTION_METRICS.length} inspection metrics${showTwoTabs ? ' for both units' : ''} to proceed with forwarding.`
+            }
           </p>
         )}
       </form>
@@ -959,12 +841,16 @@ export function EstateOfficerPanel({ application, pointsBreakdown, draftReview }
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {pendingValues?.decision === 'FORWARDED' && 'Confirm Allocation'}
+              {pendingValues?.decision === 'FORWARDED' && (isQueued ? 'Confirm Re-activation' : 'Confirm Allocation')}
               {pendingValues?.decision === 'QUEUED' && 'Confirm Queuing'}
               {pendingValues?.decision === 'REJECTED' && 'Confirm Rejection'}
             </DialogTitle>
             <DialogDescription>
-              {pendingValues?.decision === 'FORWARDED' && 'Are you sure you want to finalize this unit allocation and forward it to the DVC Admin?'}
+              {pendingValues?.decision === 'FORWARDED' && (
+                isQueued
+                  ? 'Are you sure you want to re-activate this application and forward it to DVC Admin with the recorded inspection scores?'
+                  : 'Are you sure you want to finalize this unit allocation and forward it to the DVC Admin?'
+              )}
               {pendingValues?.decision === 'QUEUED' && 'Are you sure you want to place this application in the queue? It will wait until a suitable unit becomes available.'}
               {pendingValues?.decision === 'REJECTED' && 'Are you sure you want to reject this application? This action is final.'}
             </DialogDescription>

@@ -392,6 +392,16 @@ export async function reviewApplication(params: {
     throw new Error('Please select a housing unit before forwarding to DVC Admin');
   }
 
+  // ---- Estate Officer: FORWARDED requires physical inspection data ----
+  if (params.decision === 'FORWARDED' && params.stage === 'ESTATE') {
+    const hasInspection =
+      (params.inspectionData && Object.keys(params.inspectionData).length > 0) ||
+      (application.inspectionData && Object.keys(application.inspectionData).length > 0);
+    if (!hasInspection) {
+      throw new Error('Physical inspection scores are required before forwarding to DVC Admin. Please complete the inspection form.');
+    }
+  }
+
   // ---- Validate the estate-selected unit is still vacant (if provided & not draft) ----
   const unitToValidate = params.estateSuggestedUnitId || params.allocatedUnitId;
   if (unitToValidate && params.decision !== 'SAVE_DRAFT') {
@@ -475,7 +485,7 @@ export async function reviewApplication(params: {
     reviewerRole: params.reviewerRole,
     stage: params.stage,
     score: params.score ?? null,
-    decision: (params.decision === 'QUEUED' ? 'FORWARDED' : params.decision) as ReviewDecision,
+    decision: params.decision as ReviewDecision,
     comments: params.comments ?? '',
     suggestedUnitId: reviewSuggestedUnitId,
     isDraft: false,
@@ -812,50 +822,11 @@ export async function getVacantUnitsForApplication(
 // ---------------------------------------------------------------------------
 // Estate Officer: Re-activate a queued application
 // ---------------------------------------------------------------------------
-
-export async function requeueApplication(
-  applicationId: string,
-  allocatedUnitId: string
-): Promise<HousingApplication> {
-  await delay(500);
-
-  const application = mockDB.findApplicationById(applicationId);
-  if (!application) throw new Error('Application not found');
-  if (application.status !== 'QUEUED') {
-    throw new Error('Only QUEUED applications can be re-activated');
-  }
-
-  const unit = mockDB.findUnitById(allocatedUnitId);
-  if (!unit || unit.status !== 'VACANT') {
-    throw new Error('The selected housing unit is not available');
-  }
-
-  const now = new Date().toISOString();
-  const appIdx = mockDB.housingApplications.findIndex(a => a.id === applicationId);
-  mockDB.housingApplications[appIdx] = {
-    ...application,
-    status: 'UNDER_REVIEW',
-    currentStage: 'DVC',
-    // Store as the EO's suggestion — allocatedUnitId is only set by DVC on final APPROVED decision
-    estateSuggestedUnitId: allocatedUnitId,
-    updatedAt: now,
-  };
-
-  // Record this as an ESTATE review (re-activation)
-  mockDB.applicationReviews.push({
-    id: mockDB.generateId('rev'),
-    applicationId,
-    reviewerId: 'system',
-    reviewerRole: 'ESTATE_OFFICER',
-    stage: 'ESTATE',
-    score: null,
-    decision: 'FORWARDED',
-    comments: `Re-activated from queue. Unit ${unit.name} selected and forwarded to DVC Admin.`,
-    reviewedAt: now,
-  });
-
-  return { ...mockDB.housingApplications[appIdx] };
-}
+// NOTE: This standalone function has been deprecated.
+// Re-activation of queued applications is now handled through the unified
+// reviewApplication() function (FORWARDED decision at ESTATE stage), which
+// also enforces the physical inspection scoring requirement.
+// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 // Quit Requests & Termination

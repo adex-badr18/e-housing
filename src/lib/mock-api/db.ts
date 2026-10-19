@@ -28,7 +28,7 @@ export type MaritalStatus = 'SINGLE' | 'MARRIED' | 'DIVORCED' | 'WIDOWED';
 export type OccupancyStatus = 'ACTIVE' | 'EXITED';
 export type ApplicationStatus = 'PENDING' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'QUEUED' | 'RETURNED' | 'QUIT_REQUESTED' | 'WITHDRAWN' | 'TERMINATED' | 'OFFER_SENT' | 'OFFER_ACCEPTED' | 'OFFER_REJECTED' | 'FINALIZED';
 export type ApplicationStage = 'HOUSING' | 'ESTATE' | 'DVC' | 'COMPLETED';
-export type ReviewDecision = 'APPROVED' | 'REJECTED' | 'FORWARDED' | 'RETURNED' | 'SAVE_DRAFT';
+export type ReviewDecision = 'APPROVED' | 'REJECTED' | 'FORWARDED' | 'RETURNED' | 'SAVE_DRAFT' | 'QUEUED';
 export type AllocationStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED';
 export type InspectionStatus = 'PENDING' | 'PASSED' | 'FAILED';
 
@@ -690,6 +690,34 @@ const initialUsers: User[] = [
     phoneNumber: '08088991122',
     createdAt: '2024-09-01T00:00:00.000Z',
   },
+  {
+    // u-20: new staff user — avoids app-11 conflicting with app-19 (both previously u-12)
+    id: 'u-20',
+    firstName: 'Tunde',
+    lastName: 'Adesanya',
+    email: 'staff15@oauife.edu.ng',
+    password: 'password',
+    role: 'STAFF',
+    isActive: true,
+    mustChangePassword: false,
+    profileCompleted: true,
+    phoneNumber: '08099112233',
+    createdAt: '2024-09-15T00:00:00.000Z',
+  },
+  {
+    // u-21: new staff user — avoids app-20 conflicting with app-13 (both previously u-14)
+    id: 'u-21',
+    firstName: 'Ngozi',
+    lastName: 'Eze',
+    email: 'staff16@oauife.edu.ng',
+    password: 'password',
+    role: 'STAFF',
+    isActive: true,
+    mustChangePassword: false,
+    profileCompleted: true,
+    phoneNumber: '08011223344',
+    createdAt: '2024-10-01T00:00:00.000Z',
+  },
 ];
 
 const initialStaffProfiles: StaffProfile[] = [
@@ -1071,6 +1099,59 @@ const initialStaffProfiles: StaffProfile[] = [
     currentHousingStatus: 'NO_ALLOCATION',
     createdAt: '2024-09-01T00:00:00.000Z',
     updatedAt: '2024-09-01T00:00:00.000Z',
+  },
+  {
+    // sp-15: profile for u-20 (Tunde Adesanya)
+    id: 'sp-15',
+    userId: 'u-20',
+    staffId: 'STF-015',
+    ippisNumber: 'IPPIS-883015',
+    phoneNumber: '08099112233',
+    middleName: 'Babatunde',
+    gender: 'MALE',
+    department: 'Physics',
+    faculty: 'Science',
+    rank: 'Lecturer II',
+    salaryLevel: 'CONUASS 3',
+    salaryStep: 'Step 2',
+    salaryGradeLevel: 'CONUASS 3 Step 2',
+    employmentDate: '2019-03-01',
+    maritalStatus: 'MARRIED',
+    numberOfDependents: 2,
+    children: [
+      { name: 'Ifeoluwa Adesanya', age: 5 },
+      { name: 'Oluseun Adesanya', age: 3 },
+    ],
+    currentHousingStatus: 'NO_ALLOCATION',
+    createdAt: '2024-09-15T00:00:00.000Z',
+    updatedAt: '2024-09-15T00:00:00.000Z',
+  },
+  {
+    // sp-16: profile for u-21 (Ngozi Eze)
+    id: 'sp-16',
+    userId: 'u-21',
+    staffId: 'STF-016',
+    ippisNumber: 'IPPIS-883016',
+    phoneNumber: '08011223344',
+    middleName: 'Chidinma',
+    gender: 'FEMALE',
+    department: 'Engineering & Technology',
+    faculty: 'Technology',
+    rank: 'Associate Professor',
+    salaryLevel: 'CONUASS 6',
+    salaryStep: 'Step 3',
+    salaryGradeLevel: 'CONUASS 6 Step 3',
+    employmentDate: '2011-08-01',
+    maritalStatus: 'MARRIED',
+    numberOfDependents: 3,
+    children: [
+      { name: 'Chidubem Eze', age: 14 },
+      { name: 'Adaeze Eze', age: 11 },
+      { name: 'Emeka Eze', age: 8 },
+    ],
+    currentHousingStatus: 'NO_ALLOCATION',
+    createdAt: '2024-10-01T00:00:00.000Z',
+    updatedAt: '2024-10-01T00:00:00.000Z',
   },
 ];
 
@@ -1649,9 +1730,11 @@ const initialHousingApplications: HousingApplication[] = [
   // ── NEW APPLICATIONS FOR THOROUGH TESTING ──────────────────────────────────
 
   {
-    // app-11: PENDING at Stage 1 — freshly submitted by Olawale
+    // app-11: PENDING at Stage 1 — freshly submitted by Tunde Adesanya (u-20)
+    // Re-assigned from u-12 to avoid concurrent active-application conflict
+    // (u-12 already has app-19 which is UNDER_REVIEW at ESTATE stage)
     id: 'app-11',
-    userId: 'u-12',
+    userId: 'u-20',
     preferredHousingTypeIds: ['ht-4', 'ht-2'],
     status: 'PENDING',
     currentStage: 'HOUSING',
@@ -1825,9 +1908,11 @@ const initialHousingApplications: HousingApplication[] = [
     updatedAt: '2026-07-07T15:00:00.000Z',
   },
   {
-    // app-20: RETURNED at Stage 1 (HOUSING) — DVC returned all the way back
+    // app-20: RETURNED at Stage 1 (HOUSING)
+    // Re-assigned from u-14 to u-21 (Ngozi Eze) to avoid concurrent active-application conflict
+    // (u-14 already has app-13 which is UNDER_REVIEW at ESTATE stage)
     id: 'app-20',
-    userId: 'u-14',
+    userId: 'u-21',
     preferredHousingTypeIds: ['ht-3', 'ht-2'],
     status: 'RETURNED',
     currentStage: 'HOUSING',

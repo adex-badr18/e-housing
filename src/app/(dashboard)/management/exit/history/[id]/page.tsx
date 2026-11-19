@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth';
 import { redirect, notFound } from 'next/navigation';
 import { getExitNoticeWithProfileAction } from '@/app/actions/exit';
-import { ExitStatusTracker } from '@/components/features/exit/ExitStatusTracker';
+import { ExitNoticeReadOnlyView } from '@/components/features/exit/ExitNoticeReadOnlyView';
 import { AdminTerminateButton } from '@/components/features/application-review/AdminTerminateButton';
 import Link from 'next/link';
 import { ArrowLeft, User, Building2 } from 'lucide-react';
@@ -28,6 +28,10 @@ export default async function ManagementExitHistoryDetailPage({
   if (!res.success || !res.data) notFound();
 
   const { notice, applicantUser, applicantProfile, unit } = res.data;
+  const initiator = notice?.initiatedByUserId
+    ? mockDB.users.find(u => u.id === notice.initiatedByUserId)
+    : null;
+  const initiatorName = initiator ? `${initiator.firstName} ${initiator.lastName}` : null;
   
   const hasPendingQuitRequest = mockDB.quitRequests.some(
     q => q.entityId === notice.id && q.entityType === 'ExitNotice' && q.status === 'PENDING'
@@ -96,7 +100,7 @@ export default async function ManagementExitHistoryDetailPage({
       </div>
 
       <div className="bg-card border rounded-2xl p-6">
-        <ExitStatusTracker notice={notice} hasPendingQuitRequest={hasPendingQuitRequest} />
+        <ExitNoticeReadOnlyView notice={notice} initiatorName={initiatorName} />
       </div>
     </div>
   );

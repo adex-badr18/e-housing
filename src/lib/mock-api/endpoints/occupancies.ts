@@ -304,10 +304,22 @@ export async function triggerOccupantExit(params: {
     customReason: params.customReason ?? null,
     additionalNotes: params.additionalNotes ?? null,
 
+    // New canonical fields (Phase 1)
+    housingPaymentStatus: 'PENDING',
+    housingPaymentClearedById: null,
+    housingPaymentClearedAt: null,
+
+    // @deprecated — kept for backward-compat until Phase 6 cleanup
     housingInspectionStatus: 'PENDING',
     housingInspectedById: null,
     housingInspectionDate: null,
 
+    // New canonical fields (Phase 1)
+    electricalFittingStatus: 'PENDING',
+    electricalFittingClearedById: null,
+    electricalFittingClearedAt: null,
+
+    // @deprecated — kept for backward-compat until Phase 6 cleanup
     electricalInspectionStatus: 'PENDING',
     electricalInspectedById: null,
     electricalInspectionDate: null,
@@ -315,6 +327,7 @@ export async function triggerOccupantExit(params: {
     estateInspectionStatus: 'PENDING',
     estateInspectedById: null,
     estateInspectionDate: null,
+    estateInspectionNotes: null,
 
     isCleared: false,
     clearedAt: null,

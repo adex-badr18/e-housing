@@ -116,7 +116,9 @@ export async function getHousingSecretaryDashboardData() {
   );
   const forwardedCount = mockDB.housingApplications.filter(a => a.currentStage === 'ESTATE' || a.currentStage === 'DVC').length;
   const activeExits = mockDB.exitNotices.filter(e => !e.isCleared);
-  const pendingHousingInspections = activeExits.filter(e => e.housingInspectionStatus === 'PENDING').length;
+  const pendingHousingInspections = activeExits.filter(
+    e => (e.housingPaymentStatus ?? e.housingInspectionStatus ?? 'PENDING') === 'PENDING'
+  ).length;
 
   const queueSnapshot = myQueueApps
     .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())
@@ -125,7 +127,7 @@ export async function getHousingSecretaryDashboardData() {
     .filter(Boolean);
 
   const exitSnapshot = activeExits
-    .filter(e => e.housingInspectionStatus === 'PENDING')
+    .filter(e => (e.housingPaymentStatus ?? e.housingInspectionStatus ?? 'PENDING') === 'PENDING')
     .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())
     .slice(0, 5)
     .map(e => enrichExitNotice(e.id))
@@ -160,8 +162,8 @@ export async function getEstateDashboardData() {
 
   const pendingEstateExits = mockDB.exitNotices.filter(
     e => !e.isCleared &&
-      e.housingInspectionStatus === 'PASSED' &&
-      e.electricalInspectionStatus === 'PASSED' &&
+      (e.housingPaymentStatus ?? e.housingInspectionStatus) === 'PASSED' &&
+      (e.electricalFittingStatus ?? e.electricalInspectionStatus) === 'PASSED' &&
       e.estateInspectionStatus === 'PENDING'
   );
 
@@ -248,26 +250,27 @@ export async function getDvcDashboardData() {
 export async function getElectricalDashboardData() {
   await delay(200);
 
+  // Parallel model: Electrical stage is always open — no gate on Housing status
   const myQueue = mockDB.exitNotices.filter(
-    e => e.housingInspectionStatus === 'PASSED' &&
-      e.electricalInspectionStatus === 'PENDING' &&
-      !e.isCleared
+    e => (e.electricalFittingStatus ?? e.electricalInspectionStatus ?? 'PENDING') === 'PENDING' &&
+      !e.isCleared && !e.isAdminTerminated
   );
 
   const recentlyPassed = mockDB.exitNotices.filter(
-    e => e.electricalInspectionStatus === 'PASSED'
+    e => (e.electricalFittingStatus ?? e.electricalInspectionStatus) === 'PASSED'
   );
 
   const awaitingCount = myQueue.length;
   const passedThisWeek = recentlyPassed.filter(e => {
-    if (!e.electricalInspectionDate) return false;
+    const dateField = e.electricalFittingClearedAt ?? e.electricalInspectionDate;
+    if (!dateField) return false;
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
-    return new Date(e.electricalInspectionDate) >= weekAgo;
+    return new Date(dateField) >= weekAgo;
   }).length;
 
   const failedCount = mockDB.exitNotices.filter(
-    e => e.electricalInspectionStatus === 'FAILED' && !e.isCleared
+    e => (e.electricalFittingStatus ?? e.electricalInspectionStatus) === 'FAILED' && !e.isCleared
   ).length;
 
   const myQueueSnapshot = myQueue
@@ -309,19 +312,20 @@ export async function getManagementMetrics() {
   // Exit notice pipeline metrics
   const activeExitNotices = mockDB.exitNotices.filter(e => !e.isCleared).length;
   const pendingHousingInspections = mockDB.exitNotices.filter(
-    e => !e.isCleared && e.housingInspectionStatus === 'PENDING'
+    e => !e.isCleared && (e.housingPaymentStatus ?? e.housingInspectionStatus ?? 'PENDING') === 'PENDING'
   ).length;
+  // Note: in the parallel model, electrical is not gated on housing.
+  // These metrics show overall pending counts per stage.
   const pendingElectricalInspections = mockDB.exitNotices.filter(
     e =>
       !e.isCleared &&
-      e.housingInspectionStatus === 'PASSED' &&
-      e.electricalInspectionStatus === 'PENDING'
+      (e.electricalFittingStatus ?? e.electricalInspectionStatus ?? 'PENDING') === 'PENDING'
   ).length;
   const pendingEstateInspections = mockDB.exitNotices.filter(
     e =>
       !e.isCleared &&
-      e.housingInspectionStatus === 'PASSED' &&
-      e.electricalInspectionStatus === 'PASSED' &&
+      (e.housingPaymentStatus ?? e.housingInspectionStatus) === 'PASSED' &&
+      (e.electricalFittingStatus ?? e.electricalInspectionStatus) === 'PASSED' &&
       e.estateInspectionStatus === 'PENDING'
   ).length;
 

@@ -37,6 +37,7 @@ export const exitReasonSchema = z.enum([
   'RESIGNATION',
   'RELOCATION',
   'TRANSFER',
+  'ALLOCATION_CHANGE', // Higher housing type approved after promotion
   'OTHER',
 ]);
 export const incidentStatusSchema = z.enum(['OPEN', 'IN_PROGRESS', 'RESOLVED']);
@@ -286,6 +287,12 @@ export type AdminTerminateValues = z.infer<typeof adminTerminateSchema>;
 // 6. Exit Notice — staff submission
 // ---------------------------------------------------------------------------
 
+/**
+ * @deprecated Staff can no longer self-initiate exits.
+ * Use managementInitiateExitSchema instead (Estate Officer only).
+ * Retained here only to avoid breaking any remaining import references
+ * during the Phase 1→2 transition; remove after Phase 6.
+ */
 export const exitNoticeSubmitSchema = z
   .object({
     housingUnitId: z.string().min(1, 'Housing unit reference is required'),
@@ -309,6 +316,60 @@ export const exitNoticeSubmitSchema = z
 export type ExitNoticeSubmitValues = z.infer<typeof exitNoticeSubmitSchema>;
 
 // ---------------------------------------------------------------------------
+// 6b. Estate Officer — Initiate Exit on behalf of an occupant (replaces 6)
+// ---------------------------------------------------------------------------
+
+export const managementInitiateExitSchema = z
+  .object({
+    /** ID of the active Occupancy record (used to derive staffUserId + housingUnitId). */
+    occupancyId: z.string().min(1, 'Occupancy ID is required'),
+    reason: exitReasonSchema,
+    customReason: z
+      .string()
+      .max(300, 'Custom reason must be under 300 characters')
+      .optional()
+      .or(z.literal('')),
+    additionalNotes: z
+      .string()
+      .max(500, 'Additional notes must be under 500 characters')
+      .optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.reason === 'OTHER' && !data.customReason?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Please specify a reason when selecting "Other"',
+        path: ['customReason'],
+      });
+    }
+  });
+
+export type ManagementInitiateExitValues = z.infer<typeof managementInitiateExitSchema>;
+
+// ---------------------------------------------------------------------------
+// 6c. Grace Period Extension — Estate Officer / Super Admin
+// ---------------------------------------------------------------------------
+
+export const extendGracePeriodSchema = z.object({
+  exitNoticeId: z.string().min(1, 'Exit notice ID is required'),
+  /**
+   * Number of additional calendar days to add to the current gracePeriodDeadline.
+   * Must be between 1 and 180 days.
+   */
+  additionalDays: z
+    .number({ message: 'Additional days must be a number' })
+    .int('Additional days must be a whole number')
+    .min(1, 'Extension must be at least 1 day')
+    .max(180, 'Extension cannot exceed 180 days in a single request'),
+  reason: z
+    .string()
+    .min(5, 'Please provide a reason for the extension (min 5 characters)')
+    .max(500, 'Reason must be under 500 characters'),
+});
+
+export type ExtendGracePeriodValues = z.infer<typeof extendGracePeriodSchema>;
+
+// ---------------------------------------------------------------------------
 // 7. Exit Inspection Update — management users
 // ---------------------------------------------------------------------------
 
@@ -317,12 +378,21 @@ export const exitInspectionSchema = z.object({
   /**
    * Which inspection stage this update is for.
    * The server action enforces that only the correct role can update each stage.
+   *
+   * Stage semantics (post-refactor):
+   *   HOUSING    → Housing Payment Clearance   (HOUSING_SECRETARY)
+   *   ELECTRICAL → Electrical Fittings Clearance (ELECTRICAL_OFFICER)
+   *   ESTATE     → Pre-Vacation Site Inspection  (ESTATE_OFFICER)
+   *
+   * Re-submission: A FAILED result may be updated to PASSED by the same
+   * authorised role once the occupant has rectified the issue.
    */
   stage: z.enum(['HOUSING', 'ELECTRICAL', 'ESTATE']),
   result: z.enum(['PASSED', 'FAILED'], {
     message: 'Result must be either PASSED or FAILED',
   }),
-  inspectionNotes: z.string().max(500).optional(),
+  /** On-site observations — used only for the ESTATE stage. */
+  inspectionNotes: z.string().max(1000).optional(),
 });
 
 export type ExitInspectionValues = z.infer<typeof exitInspectionSchema>;

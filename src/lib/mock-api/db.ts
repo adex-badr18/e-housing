@@ -44,6 +44,7 @@ export type ExitReason =
   | 'RESIGNATION'
   | 'RELOCATION'
   | 'TRANSFER'
+  | 'ALLOCATION_CHANGE' // Higher housing type approved after promotion
   | 'OTHER';
 export type AuditStatus = 'SUCCESS' | 'FAILURE';
 export type IncidentStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED';
@@ -342,7 +343,7 @@ export interface TenancyAgreement {
 
 export interface ExitNotice {
   id: string;
-  /** FK → User */
+  /** FK → User (the outgoing occupant — always STAFF) */
   userId: string;
   /** FK → HousingUnit */
   housingUnitId: string;
@@ -351,30 +352,90 @@ export interface ExitNotice {
   customReason?: string | null;
   additionalNotes?: string | null;
 
-  // ---- Housing Inspection (Stage 1) ----
-  housingInspectionStatus: InspectionStatus;
-  /** FK → User (HOUSING_SECRETARY who performed it) */
+  // ---- Initiation — always Estate Officer ----
+  /**
+   * FK → User (Estate Officer who opened the exit notice).
+   * Required on all new records; optional on legacy seed rows.
+   */
+  initiatedByUserId?: string | null;
+
+  // ---- Grace Period — universal for ALL exits ----
+  /**
+   * ISO date string: submittedAt + 90 days.
+   * Applies to every exit regardless of reason.
+   * Required on all new records; optional on legacy seed rows.
+   */
+  gracePeriodDeadline?: string | null;
+  /** True when management has manually extended the original 90-day deadline. */
+  gracePeriodExtended?: boolean;
+  /** Number of additional days that have been granted across all extensions. */
+  gracePeriodExtensionDays?: number | null;
+  /** Reason recorded for the last grace period extension. */
+  gracePeriodExtensionReason?: string | null;
+
+  // ---- Stage A: Housing Unit — Outstanding Payment Clearance ----
+  // Parallel with Stage B (no sequential lock between A and B).
+  /** @new Replaces housingInspectionStatus */
+  housingPaymentStatus: InspectionStatus;
+  /** @new FK → User (HOUSING_SECRETARY who issued the clearance). Replaces housingInspectedById */
+  housingPaymentClearedById?: string | null;
+  /** @new ISO timestamp of clearance action. Replaces housingInspectionDate */
+  housingPaymentClearedAt?: string | null;
+
+  /**
+   * @deprecated Use housingPaymentStatus instead.
+   * Retained for backward-compat until all consumers are updated.
+   */
+  housingInspectionStatus?: InspectionStatus;
+  /** @deprecated Use housingPaymentClearedById */
   housingInspectedById?: string | null;
+  /** @deprecated Use housingPaymentClearedAt */
   housingInspectionDate?: string | null;
 
-  // ---- Electrical Inspection (Stage 2) — unlocked after Housing PASSED ----
-  electricalInspectionStatus: InspectionStatus;
-  /** FK → User (ELECTRICAL_OFFICER who performed it) */
+  // ---- Stage B: Electrical Unit — Fittings Condition Clearance ----
+  // Parallel with Stage A (no sequential lock between A and B).
+  /** @new Replaces electricalInspectionStatus */
+  electricalFittingStatus: InspectionStatus;
+  /** @new FK → User (ELECTRICAL_OFFICER who issued the clearance). Replaces electricalInspectedById */
+  electricalFittingClearedById?: string | null;
+  /** @new ISO timestamp of clearance action. Replaces electricalInspectionDate */
+  electricalFittingClearedAt?: string | null;
+
+  /**
+   * @deprecated Use electricalFittingStatus instead.
+   * Retained for backward-compat until all consumers are updated.
+   */
+  electricalInspectionStatus?: InspectionStatus;
+  /** @deprecated Use electricalFittingClearedById */
   electricalInspectedById?: string | null;
+  /** @deprecated Use electricalFittingClearedAt */
   electricalInspectionDate?: string | null;
 
-  // ---- Estate Inspection (Stage 3) — unlocked after Electrical PASSED ----
+  // ---- Stage C: Estate Office — Pre-Vacation Site Inspection ----
+  // Unlocked ONLY when both Stage A and Stage B are PASSED.
   estateInspectionStatus: InspectionStatus;
-  /** FK → User (ESTATE_OFFICER who performed it) */
+  /** FK → User (ESTATE_OFFICER who conducted the site walkthrough) */
   estateInspectedById?: string | null;
   estateInspectionDate?: string | null;
+  /** On-site observations recorded by the Estate Officer during the walkthrough. */
+  estateInspectionNotes?: string | null;
 
-  // ---- Final Completion ----
+  // ---- Final Clearance ----
   isCleared: boolean;
   clearedAt?: string | null;
   clearanceCertificateUrl?: string | null;
 
-  // ---- Withdrawal / Termination ----
+  // ---- Administrative Termination (Estate Officer / Super Admin) ----
+  /** True when an officer has administratively closed the notice (distinct from staff withdrawal). */
+  isAdminTerminated?: boolean;
+  /** FK → User (officer who terminated the notice). */
+  adminTerminatedById?: string | null;
+  /** ISO timestamp of administrative termination. */
+  adminTerminatedAt?: string | null;
+  /** Reason provided by the officer at the time of termination. */
+  adminTerminatedReason?: string | null;
+
+  // ---- Staff-Initiated Withdrawal (via QuitRequest approval) ----
   isWithdrawn?: boolean;
   withdrawnAt?: string | null;
 
@@ -2273,24 +2334,39 @@ const initialTenancyAgreements: TenancyAgreement[] = [
 
 const initialExitNotices: ExitNotice[] = [
   {
-    // Mid-pipeline: Housing PASSED, Electrical still PENDING
+    // exit-1: Housing payment PASSED (Stage A), Electrical fittings PENDING (Stage B)
+    // Demonstrates parallel-stage model: estate still locked until both A and B pass.
     id: 'exit-1',
     userId: 'u-6',
     housingUnitId: 'hu-1',
     reason: 'RELOCATION',
     additionalNotes: 'Moving to personal residence in Ibadan.',
+    initiatedByUserId: 'u-3', // Estate Officer
+    gracePeriodDeadline: '2026-09-08T08:00:00.000Z', // submittedAt + 90 days
 
+    // Stage A — Housing Payment Clearance
+    housingPaymentStatus: 'PASSED',
+    housingPaymentClearedById: 'u-2',
+    housingPaymentClearedAt: '2026-06-15T10:00:00.000Z',
+    // @deprecated aliases (kept for backward-compat)
     housingInspectionStatus: 'PASSED',
     housingInspectedById: 'u-2',
     housingInspectionDate: '2026-06-15T10:00:00.000Z',
 
+    // Stage B — Electrical Fittings Clearance
+    electricalFittingStatus: 'PENDING',
+    electricalFittingClearedById: null,
+    electricalFittingClearedAt: null,
+    // @deprecated aliases
     electricalInspectionStatus: 'PENDING',
     electricalInspectedById: null,
     electricalInspectionDate: null,
 
+    // Stage C — Pre-Vacation Site Inspection (locked until A + B pass)
     estateInspectionStatus: 'PENDING',
     estateInspectedById: null,
     estateInspectionDate: null,
+    estateInspectionNotes: null,
 
     isCleared: false,
     clearedAt: null,
@@ -2300,24 +2376,38 @@ const initialExitNotices: ExitNotice[] = [
     updatedAt: '2026-06-15T10:00:00.000Z',
   },
   {
-    // Early pipeline: All three inspections PENDING
+    // exit-2: All stages PENDING — fresh exit, both A and B open simultaneously
     id: 'exit-2',
     userId: 'u-8',
     housingUnitId: 'hu-6',
     reason: 'RETIREMENT',
     additionalNotes: 'Retiring after 16 years of service.',
+    initiatedByUserId: 'u-3', // Estate Officer
+    gracePeriodDeadline: '2026-09-23T07:30:00.000Z', // submittedAt + 90 days
 
+    // Stage A — Housing Payment Clearance
+    housingPaymentStatus: 'PENDING',
+    housingPaymentClearedById: null,
+    housingPaymentClearedAt: null,
+    // @deprecated aliases
     housingInspectionStatus: 'PENDING',
     housingInspectedById: null,
     housingInspectionDate: null,
 
+    // Stage B — Electrical Fittings Clearance
+    electricalFittingStatus: 'PENDING',
+    electricalFittingClearedById: null,
+    electricalFittingClearedAt: null,
+    // @deprecated aliases
     electricalInspectionStatus: 'PENDING',
     electricalInspectedById: null,
     electricalInspectionDate: null,
 
+    // Stage C — Pre-Vacation Site Inspection (locked)
     estateInspectionStatus: 'PENDING',
     estateInspectedById: null,
     estateInspectionDate: null,
+    estateInspectionNotes: null,
 
     isCleared: false,
     clearedAt: null,
@@ -2327,24 +2417,38 @@ const initialExitNotices: ExitNotice[] = [
     updatedAt: '2026-06-25T07:30:00.000Z',
   },
   {
-    // Fully cleared exit — historical record
+    // exit-3: Fully cleared — historical record with certificate issued
     id: 'exit-3',
     userId: 'u-10',
     housingUnitId: 'hu-7',
     reason: 'RESIGNATION',
     additionalNotes: null,
+    initiatedByUserId: 'u-3', // Estate Officer
+    gracePeriodDeadline: '2026-08-13T09:00:00.000Z', // submittedAt + 90 days
 
+    // Stage A — Housing Payment Clearance
+    housingPaymentStatus: 'PASSED',
+    housingPaymentClearedById: 'u-2',
+    housingPaymentClearedAt: '2026-05-20T10:00:00.000Z',
+    // @deprecated aliases
     housingInspectionStatus: 'PASSED',
     housingInspectedById: 'u-2',
     housingInspectionDate: '2026-05-20T10:00:00.000Z',
 
+    // Stage B — Electrical Fittings Clearance
+    electricalFittingStatus: 'PASSED',
+    electricalFittingClearedById: 'u-5',
+    electricalFittingClearedAt: '2026-05-22T14:00:00.000Z',
+    // @deprecated aliases
     electricalInspectionStatus: 'PASSED',
     electricalInspectedById: 'u-5',
     electricalInspectionDate: '2026-05-22T14:00:00.000Z',
 
+    // Stage C — Pre-Vacation Site Inspection (completed)
     estateInspectionStatus: 'PASSED',
     estateInspectedById: 'u-3',
     estateInspectionDate: '2026-05-25T11:00:00.000Z',
+    estateInspectionNotes: 'Property vacated in good condition. All keys returned. No defects noted.',
 
     isCleared: true,
     clearedAt: '2026-05-25T11:30:00.000Z',
@@ -2354,50 +2458,130 @@ const initialExitNotices: ExitNotice[] = [
     updatedAt: '2026-05-25T11:30:00.000Z',
   },
   {
-    // Stage 3 Exit Notice: Housing PASSED, Electrical PASSED, Estate PENDING
+    // exit-4: Both A and B PASSED — Stage C (estate pre-vacation inspection) now unlocked
     id: 'exit-4',
     userId: 'u-10',
     housingUnitId: 'hu-7',
     reason: 'TRANSFER',
     additionalNotes: 'Transferring to Lagos campus.',
+    initiatedByUserId: 'u-3', // Estate Officer
+    gracePeriodDeadline: '2026-09-08T10:00:00.000Z', // submittedAt + 90 days
+
+    // Stage A — Housing Payment Clearance
+    housingPaymentStatus: 'PASSED',
+    housingPaymentClearedById: 'u-2',
+    housingPaymentClearedAt: '2026-06-12T09:00:00.000Z',
+    // @deprecated aliases
     housingInspectionStatus: 'PASSED',
     housingInspectedById: 'u-2',
     housingInspectionDate: '2026-06-12T09:00:00.000Z',
+
+    // Stage B — Electrical Fittings Clearance
+    electricalFittingStatus: 'PASSED',
+    electricalFittingClearedById: 'u-5',
+    electricalFittingClearedAt: '2026-06-14T11:30:00.000Z',
+    // @deprecated aliases
     electricalInspectionStatus: 'PASSED',
     electricalInspectedById: 'u-5',
     electricalInspectionDate: '2026-06-14T11:30:00.000Z',
+
+    // Stage C — Pre-Vacation Site Inspection (unlocked — awaiting Estate Officer)
     estateInspectionStatus: 'PENDING',
     estateInspectedById: null,
     estateInspectionDate: null,
+    estateInspectionNotes: null,
+
     isCleared: false,
     clearedAt: null,
     clearanceCertificateUrl: null,
+
     submittedAt: '2026-06-10T10:00:00.000Z',
     updatedAt: '2026-06-14T11:30:00.000Z',
   },
   {
-    // Withdrawn Exit Notice
+    // exit-5: Withdrawn notice (staff QuitRequest was approved)
     id: 'exit-5',
     userId: 'u-7',
     housingUnitId: 'hu-3',
     reason: 'OTHER',
     customReason: 'Personal Reasons',
     additionalNotes: 'Decided to extend stay.',
+    initiatedByUserId: 'u-3', // Estate Officer
+    gracePeriodDeadline: '2026-09-16T08:00:00.000Z', // submittedAt + 90 days
+
+    // Stage A — Housing Payment Clearance
+    housingPaymentStatus: 'PENDING',
+    housingPaymentClearedById: null,
+    housingPaymentClearedAt: null,
+    // @deprecated aliases
     housingInspectionStatus: 'PENDING',
     housingInspectedById: null,
     housingInspectionDate: null,
+
+    // Stage B — Electrical Fittings Clearance
+    electricalFittingStatus: 'PENDING',
+    electricalFittingClearedById: null,
+    electricalFittingClearedAt: null,
+    // @deprecated aliases
     electricalInspectionStatus: 'PENDING',
     electricalInspectedById: null,
     electricalInspectionDate: null,
+
+    // Stage C — Pre-Vacation Site Inspection (locked)
     estateInspectionStatus: 'PENDING',
     estateInspectedById: null,
     estateInspectionDate: null,
+    estateInspectionNotes: null,
+
     isCleared: false,
     isWithdrawn: true,
     withdrawnAt: '2026-06-20T14:00:00.000Z',
     clearanceCertificateUrl: null,
+
     submittedAt: '2026-06-18T08:00:00.000Z',
     updatedAt: '2026-06-20T14:00:00.000Z',
+  },
+  {
+    // exit-6: NEW — demonstrates ALLOCATION_CHANGE reason and management-initiated exit.
+    // Electrical fittings clearance already submitted; housing payment still pending.
+    id: 'exit-6',
+    userId: 'u-9',
+    housingUnitId: 'hu-2',
+    reason: 'ALLOCATION_CHANGE',
+    additionalNotes: 'Promoted to Professor — approved for a 5-bedroom storey building.',
+    initiatedByUserId: 'u-3', // Estate Officer (u-3)
+    gracePeriodDeadline: '2026-10-28T09:00:00.000Z', // submittedAt + 90 days
+
+    // Stage A — Housing Payment Clearance (still pending)
+    housingPaymentStatus: 'PENDING',
+    housingPaymentClearedById: null,
+    housingPaymentClearedAt: null,
+    // @deprecated aliases
+    housingInspectionStatus: 'PENDING',
+    housingInspectedById: null,
+    housingInspectionDate: null,
+
+    // Stage B — Electrical Fittings Clearance (already submitted — parallel to Stage A)
+    electricalFittingStatus: 'PASSED',
+    electricalFittingClearedById: 'u-5',
+    electricalFittingClearedAt: '2026-07-30T10:00:00.000Z',
+    // @deprecated aliases
+    electricalInspectionStatus: 'PASSED',
+    electricalInspectedById: 'u-5',
+    electricalInspectionDate: '2026-07-30T10:00:00.000Z',
+
+    // Stage C — Pre-Vacation Site Inspection (locked — Stage A still pending)
+    estateInspectionStatus: 'PENDING',
+    estateInspectedById: null,
+    estateInspectionDate: null,
+    estateInspectionNotes: null,
+
+    isCleared: false,
+    clearedAt: null,
+    clearanceCertificateUrl: null,
+
+    submittedAt: '2026-07-29T09:00:00.000Z',
+    updatedAt: '2026-07-30T10:00:00.000Z',
   },
 ];
 

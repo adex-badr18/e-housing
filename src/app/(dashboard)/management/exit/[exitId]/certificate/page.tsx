@@ -3,12 +3,13 @@ import { redirect, notFound } from 'next/navigation';
 import { getExitNoticeById } from '@/lib/mock-api/endpoints/exit';
 import { mockDB } from '@/lib/mock-api/db';
 import Link from 'next/link';
-import { ArrowLeft, Printer } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import { PrintCertificateButton } from '@/components/features/exit/PrintCertificateButton';
 
 export const metadata = { title: 'Clearance Certificate — OAU E-Housing' };
 
 const MANAGEMENT_ROLES = [
-  'SUPER_ADMIN', 'HOUSING_SECRETARY', 'ELECTRICAL_OFFICER', 'ESTATE_OFFICER',
+  'SUPER_ADMIN', 'HOUSING_SECRETARY', 'ELECTRICAL_OFFICER', 'ESTATE_OFFICER', 'DVC_ADMIN',
 ] as const;
 type ManagementRole = typeof MANAGEMENT_ROLES[number];
 
@@ -60,14 +61,7 @@ export default async function ClearanceCertificatePage({ params }: Props) {
           <ArrowLeft className="h-4 w-4" />
           Back to Exit Notice
         </Link>
-        <button
-          onClick={() => { if (typeof window !== 'undefined') window.print(); }}
-          suppressHydrationWarning
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-oau-navy text-oau-cream text-base font-semibold hover:bg-oau-navy/90 transition shadow-md"
-        >
-          <Printer className="h-4 w-4" />
-          Print Certificate
-        </button>
+        <PrintCertificateButton />
       </div>
 
       {/* ============================================================

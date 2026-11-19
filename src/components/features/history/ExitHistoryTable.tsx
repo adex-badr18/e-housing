@@ -13,8 +13,8 @@ const PAGE_SIZE = 10;
 
 function PipelineMini({ notice }: { notice: ExitNotice }) {
   const stages = [
-    { status: notice.housingInspectionStatus, Icon: Home },
-    { status: notice.electricalInspectionStatus, Icon: Zap },
+    { status: (notice.housingPaymentStatus ?? notice.housingInspectionStatus ?? 'PENDING'), Icon: Home },
+    { status: (notice.electricalFittingStatus ?? notice.electricalInspectionStatus ?? 'PENDING'), Icon: Zap },
     { status: notice.estateInspectionStatus, Icon: Building2 },
   ];
   return (

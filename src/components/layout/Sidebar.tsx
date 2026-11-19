@@ -1,11 +1,11 @@
 "use client";
 
-import Link from 'next/link';
-import Image from 'next/image';
-import { usePathname } from 'next/navigation';
-import { signOut } from 'next-auth/react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -15,12 +15,12 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogClose,
-} from '@/components/ui/dialog';
-import { Role } from '@/lib/mock-api/db';
-import { 
-  Home, 
-  FileText, 
-  LogOut, 
+} from "@/components/ui/dialog";
+import { Role } from "@/lib/mock-api/db";
+import {
+  Home,
+  FileText,
+  LogOut,
   Building,
   CheckSquare,
   ShieldCheck,
@@ -30,7 +30,7 @@ import {
   MessageSquareDot,
   Activity,
   Users2,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface SidebarProps {
   role: Role;
@@ -54,26 +54,38 @@ export function Sidebar({ role, showTenancyLink = false }: SidebarProps) {
           className="object-contain rounded-sm"
         />
         <div className="flex flex-col">
-          <h2 className="text-sm font-bold text-oau-cream leading-tight">OAU E-Housing</h2>
-          <p className="text-oau-gold text-xs font-medium tracking-wide">Portal Access</p>
+          <h2 className="text-sm font-bold text-oau-cream leading-tight">
+            OAU E-Housing
+          </h2>
+          <p className="text-oau-gold text-xs font-medium tracking-wide">
+            Portal Access
+          </p>
         </div>
       </div>
       <div className="flex-1 py-6 flex flex-col gap-2 px-4 overflow-y-auto">
-        <p className="px-2 text-xs font-semibold text-oau-cream/40 uppercase tracking-wider mb-2">Menu</p>
+        <p className="px-2 text-xs font-semibold text-oau-cream/40 uppercase tracking-wider mb-2">
+          Menu
+        </p>
         {navItems.map((item) => {
-          const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+          const isActive =
+            pathname === item.href || pathname?.startsWith(`${item.href}/`);
           return (
             <Link key={item.href} href={item.href}>
               <Button
                 variant="ghost"
                 className={cn(
                   "w-full justify-start transition-all duration-200 rounded-lg h-11",
-                  isActive 
-                    ? "bg-oau-gold/15 text-oau-gold hover:bg-oau-gold/25 hover:text-oau-gold font-semibold" 
-                    : "text-oau-cream hover:text-oau-cream hover:bg-white/5 font-medium"
+                  isActive
+                    ? "bg-oau-gold/15 text-oau-gold hover:bg-oau-gold/25 hover:text-oau-gold font-semibold"
+                    : "text-oau-cream hover:text-oau-cream hover:bg-white/5 font-medium",
                 )}
               >
-                <item.icon className={cn("mr-3 h-5 w-5", isActive ? "text-oau-gold" : "text-oau-cream")} />
+                <item.icon
+                  className={cn(
+                    "mr-3 h-5 w-5",
+                    isActive ? "text-oau-gold" : "text-oau-cream",
+                  )}
+                />
                 {item.label}
               </Button>
             </Link>
@@ -84,10 +96,12 @@ export function Sidebar({ role, showTenancyLink = false }: SidebarProps) {
         <Dialog>
           <DialogTrigger
             render={
-              <button className={cn(
-                "w-full flex items-center justify-start gap-3 px-3 rounded-lg h-11 font-medium text-sm",
-                "text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-all duration-200"
-              )} />
+              <button
+                className={cn(
+                  "w-full flex items-center justify-start gap-3 px-3 rounded-lg h-11 font-medium text-sm",
+                  "text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-all duration-200",
+                )}
+              />
             }
           >
             <LogOut className="h-5 w-5" />
@@ -104,13 +118,16 @@ export function Sidebar({ role, showTenancyLink = false }: SidebarProps) {
               <DialogClose render={<Button variant="outline" />}>
                 Cancel
               </DialogClose>
-              <Button variant="destructive" onClick={() => signOut({ callbackUrl: '/auth/login' })}>
+              <Button
+                variant="destructive"
+                onClick={() => signOut({ callbackUrl: "/auth/login" })}
+              >
                 Log Out
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        
+
         <div className="rounded-xl bg-white/5 p-4 flex flex-col items-center text-center">
           <ShieldCheck className="h-6 w-6 text-oau-gold mb-2 opacity-80" />
           <p className="text-xs text-oau-cream leading-relaxed">
@@ -123,71 +140,110 @@ export function Sidebar({ role, showTenancyLink = false }: SidebarProps) {
 }
 
 function getNavItemsForRole(role: Role, showTenancyLink = false) {
-  if (role === 'STAFF') {
+  if (role === "STAFF") {
     const items = [
-      { href: '/staff', label: 'Dashboard', icon: Home },
-      { href: '/staff/applications', label: 'My Applications', icon: FileText },
-      { href: '/staff/housing', label: 'Housing Offer', icon: KeyRound },
+      { href: "/staff", label: "Dashboard", icon: Home },
+      { href: "/staff/applications", label: "My Applications", icon: FileText },
+      { href: "/staff/housing", label: "Housing Offer", icon: KeyRound },
       // Tenancy Agreement only shown when application is in OFFER_ACCEPTED phase
-      ...(showTenancyLink ? [{ href: '/staff/tenancy', label: 'Tenancy Agreement', icon: Scroll }] : []),
-      { href: '/staff/bq', label: 'BQ Management', icon: Building },
-      { href: '/staff/profile', label: 'My Profile', icon: DoorOpen },
-      { href: '/staff/exit', label: 'Housing Exit', icon: LogOut },
+      ...(showTenancyLink
+        ? [{ href: "/staff/tenancy", label: "Tenancy Agreement", icon: Scroll }]
+        : []),
+      { href: "/staff/bq", label: "BQ Management", icon: Building },
+      { href: "/staff/profile", label: "My Profile", icon: DoorOpen },
+      { href: "/staff/exit", label: "Housing Exit", icon: LogOut },
     ];
     return items;
   }
 
-  if (role === 'SUPER_ADMIN') {
+  if (role === "SUPER_ADMIN") {
     return [
-      { href: '/dashboard', label: 'Dashboard', icon: Home },
-      { href: '/management/applications', label: 'All Applications', icon: FileText },
-      { href: '/management/occupancies', label: 'Housing Occupancies', icon: Users2 },
-      { href: '/admin/inventory', label: 'Housing Inventory', icon: Building },
-      { href: '/management/exit', label: 'Exit Pipeline', icon: DoorOpen },
-      { href: '/admin/audit', label: 'Audit Logs', icon: Activity },
-      { href: '/admin/helpdesk', label: 'Helpdesk', icon: MessageSquareDot },
+      { href: "/dashboard", label: "Dashboard", icon: Home },
+      {
+        href: "/management/applications",
+        label: "All Applications",
+        icon: FileText,
+      },
+      {
+        href: "/management/occupancies",
+        label: "Housing Occupancies",
+        icon: Users2,
+      },
+      { href: "/admin/inventory", label: "Housing Inventory", icon: Building },
+      { href: "/management/exit", label: "Exits", icon: DoorOpen },
+      { href: "/admin/audit", label: "Audit Logs", icon: Activity },
+      { href: "/admin/helpdesk", label: "Helpdesk", icon: MessageSquareDot },
     ];
   }
 
-  if (role === 'HOUSING_SECRETARY') {
+  if (role === "HOUSING_SECRETARY") {
     return [
-      { href: '/dashboard', label: 'Dashboard', icon: Home },
-      { href: '/management/applications', label: 'Review Queue', icon: CheckSquare },
-      { href: '/management/occupancies', label: 'Housing Occupancies', icon: Users2 },
-      { href: '/management/exit', label: 'Exit Pipeline', icon: DoorOpen },
-      { href: '/admin/inventory', label: 'Housing Inventory', icon: Building },
+      { href: "/dashboard", label: "Dashboard", icon: Home },
+      {
+        href: "/management/applications",
+        label: "Applications",
+        icon: CheckSquare,
+      },
+      {
+        href: "/management/occupancies",
+        label: "Housing Occupancies",
+        icon: Users2,
+      },
+      { href: "/management/exit", label: "Exits", icon: DoorOpen },
+      { href: "/admin/inventory", label: "Housing Inventory", icon: Building },
     ];
   }
 
-  if (role === 'ESTATE_OFFICER') {
+  if (role === "ESTATE_OFFICER") {
     return [
-      { href: '/dashboard', label: 'Dashboard', icon: Home },
-      { href: '/management/applications', label: 'Review Queue', icon: CheckSquare },
-      { href: '/management/occupancies', label: 'Housing Occupancies', icon: Users2 },
-      { href: '/management/exit', label: 'Exit Pipeline', icon: DoorOpen },
-      { href: '/admin/inventory', label: 'Housing Inventory', icon: Building },
+      { href: "/dashboard", label: "Dashboard", icon: Home },
+      {
+        href: "/management/applications",
+        label: "Applications",
+        icon: CheckSquare,
+      },
+      {
+        href: "/management/occupancies",
+        label: "Housing Occupancies",
+        icon: Users2,
+      },
+      { href: "/management/exit", label: "Exits", icon: DoorOpen },
+      { href: "/admin/inventory", label: "Housing Inventory", icon: Building },
     ];
   }
 
-  if (role === 'ELECTRICAL_OFFICER') {
+  if (role === "ELECTRICAL_OFFICER") {
     return [
-      { href: '/dashboard', label: 'Dashboard', icon: Home },
-      { href: '/management/exit', label: 'Exit Pipeline', icon: ShieldCheck },
+      { href: "/dashboard", label: "Dashboard", icon: Home },
+      { href: "/management/exit", label: "Exits", icon: ShieldCheck },
     ];
   }
 
-  if (role === 'DVC_ADMIN') {
+  if (role === "DVC_ADMIN") {
     return [
-      { href: '/dashboard', label: 'Dashboard', icon: Home },
-      { href: '/management/applications', label: 'Review Queue', icon: CheckSquare },
-      { href: '/management/occupancies', label: 'Housing Occupancies', icon: Users2 },
+      { href: "/dashboard", label: "Dashboard", icon: Home },
+      {
+        href: "/management/applications",
+        label: "Applications",
+        icon: CheckSquare,
+      },
+      {
+        href: "/management/occupancies",
+        label: "Housing Occupancies",
+        icon: Users2,
+      },
+      { href: "/management/exit", label: "Exits", icon: DoorOpen },
     ];
   }
 
   // Fallback
   return [
-    { href: '/dashboard', label: 'Dashboard', icon: Home },
-    { href: '/management/applications', label: 'All Applications', icon: FileText },
-    { href: '/admin/inventory', label: 'Housing Inventory', icon: Building },
+    { href: "/dashboard", label: "Dashboard", icon: Home },
+    {
+      href: "/management/applications",
+      label: "All Applications",
+      icon: FileText,
+    },
+    { href: "/admin/inventory", label: "Housing Inventory", icon: Building },
   ];
 }

@@ -150,7 +150,7 @@ export async function HousingSecretaryDashboard() {
               {
                 key: 'housing',
                 header: 'Housing',
-                render: r => <InspectionBadge status={r.housingInspectionStatus} />,
+                render: r => <InspectionBadge status={r.housingPaymentStatus ?? r.housingInspectionStatus ?? 'PENDING'} />,
               },
               {
                 key: 'submitted',

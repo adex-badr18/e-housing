@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth';
 import { redirect, notFound } from 'next/navigation';
 import { mockDB } from '@/lib/mock-api/db';
-import { ExitStatusTracker } from '@/components/features/exit/ExitStatusTracker';
+import { ExitNoticeReadOnlyView } from '@/components/features/exit/ExitNoticeReadOnlyView';
 import Link from 'next/link';
 import { ArrowLeft, Home } from 'lucide-react';
 
@@ -21,6 +21,10 @@ export default async function StaffExitHistoryDetailPage({
   if (!notice) notFound();
 
   const unit = mockDB.findUnitById(notice.housingUnitId);
+  const initiator = notice?.initiatedByUserId
+    ? mockDB.users.find(u => u.id === notice.initiatedByUserId)
+    : null;
+  const initiatorName = initiator ? `${initiator.firstName} ${initiator.lastName}` : null;
 
   return (
     <div className="space-y-6 w-full">
@@ -54,7 +58,7 @@ export default async function StaffExitHistoryDetailPage({
         </div>
       </div>
 
-      <ExitStatusTracker notice={notice} />
+      <ExitNoticeReadOnlyView notice={notice} initiatorName={initiatorName} />
     </div>
   );
 }

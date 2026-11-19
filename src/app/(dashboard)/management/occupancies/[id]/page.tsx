@@ -32,6 +32,7 @@ import { cn } from '@/lib/utils';
 import { RevokeAllocationModal } from '@/components/features/occupancies/ActionModals';
 import { TriggerExitModal } from '@/components/features/occupancies/ActionModals';
 import { UpdateOccupancyModal } from '@/components/features/occupancies/ActionModals';
+import { InitiateExitModal } from '@/components/features/exit/InitiateExitModal';
 
 export const metadata = {
   title: 'Occupancy Details — OAU E-Housing',
@@ -170,8 +171,8 @@ export default async function OccupancyDetailsPage({
   const canUpdate = UPDATE_ROLES.includes(userRole);
   const fullName = user ? `${user.firstName} ${user.lastName}` : 'Unknown Occupant';
 
-  // Active exit notice (latest uncleared)
-  const activeExitNotice = exitNotices.find(e => !e.isCleared && !e.isWithdrawn);
+  // Active exit notice (latest uncleared, non-terminated notice)
+  const activeExitNotice = exitNotices.find(e => !e.isCleared && !e.isWithdrawn && !e.isAdminTerminated);
 
   return (
     <div className="w-full space-y-6">
@@ -226,8 +227,17 @@ export default async function OccupancyDetailsPage({
                 currentCheckOut={occupancy.checkOutDate}
               />
             )}
-            {canTriggerExit && (
-              <TriggerExitModal occupancyId={occupancy.id} occupantName={fullName} />
+            {canTriggerExit && !activeExitNotice && (
+              <InitiateExitModal
+                occupancyId={occupancy.id}
+                occupantName={fullName}
+                unitName={unit?.name}
+              />
+            )}
+            {canTriggerExit && activeExitNotice && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-amber-300 bg-amber-50 text-amber-700 text-sm font-medium">
+                Exit in Progress
+              </span>
             )}
             {canRevoke && (
               <RevokeAllocationModal
@@ -505,8 +515,8 @@ export default async function OccupancyDetailsPage({
 
                     <div className="grid grid-cols-3 gap-2">
                       {[
-                        { stage: 'Housing', status: notice.housingInspectionStatus, date: notice.housingInspectionDate },
-                        { stage: 'Electrical', status: notice.electricalInspectionStatus, date: notice.electricalInspectionDate },
+                        { stage: 'Housing', status: notice.housingPaymentStatus ?? notice.housingInspectionStatus ?? 'PENDING', date: notice.housingPaymentClearedAt ?? notice.housingInspectionDate },
+                        { stage: 'Electrical', status: notice.electricalFittingStatus ?? notice.electricalInspectionStatus ?? 'PENDING', date: notice.electricalFittingClearedAt ?? notice.electricalInspectionDate },
                         { stage: 'Estate', status: notice.estateInspectionStatus, date: notice.estateInspectionDate },
                       ].map(({ stage, status, date }) => (
                         <div key={stage} className="bg-white rounded-lg border border-gray-200 p-2 text-center">

@@ -74,7 +74,7 @@ export default async function StaffDashboardPage() {
     : 'No active application';
 
   const exitStatusText = activeExitNotice
-    ? `Cleared: ${activeExitNotice.housingInspectionStatus === 'PASSED' ? 'Housing ' : ''}${activeExitNotice.electricalInspectionStatus === 'PASSED' ? 'Elec ' : ''}${activeExitNotice.estateInspectionStatus === 'PASSED' ? 'Estate ' : ''}`
+    ? `Cleared: ${(activeExitNotice.housingPaymentStatus ?? activeExitNotice.housingInspectionStatus) === 'PASSED' ? 'Housing ' : ''}${(activeExitNotice.electricalFittingStatus ?? activeExitNotice.electricalInspectionStatus) === 'PASSED' ? 'Elec ' : ''}${activeExitNotice.estateInspectionStatus === 'PASSED' ? 'Estate ' : ''}`
     : 'No exit request';
 
   return (
@@ -366,25 +366,25 @@ export default async function StaffDashboardPage() {
                       <p className="text-muted-foreground text-[10px]">Performed by Housing Secretary</p>
                     </div>
                     <Badge variant="outline" className={cn(
-                      activeExitNotice.housingInspectionStatus === 'PASSED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                      activeExitNotice.housingInspectionStatus === 'FAILED' ? 'bg-red-50 text-red-700 border-red-200' :
+                      (activeExitNotice.housingPaymentStatus ?? activeExitNotice.housingInspectionStatus) === 'PASSED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                      (activeExitNotice.housingPaymentStatus ?? activeExitNotice.housingInspectionStatus) === 'FAILED' ? 'bg-red-50 text-red-700 border-red-200' :
                       'bg-amber-50 text-amber-700 border-amber-200'
                     )}>
-                      {activeExitNotice.housingInspectionStatus}
+                      {activeExitNotice.housingPaymentStatus ?? activeExitNotice.housingInspectionStatus ?? 'PENDING'}
                     </Badge>
                   </div>
                   {/* Electrical */}
                   <div className="flex justify-between items-center border-b pb-2 border-border/40">
                     <div>
                       <p className="font-semibold text-oau-navy">2. Electrical Inspection</p>
-                      <p className="text-muted-foreground text-[10px]">Requires Housing inspection to pass</p>
+                      <p className="text-muted-foreground text-[10px]">Parallel to Housing — no sequential dependency</p>
                     </div>
                     <Badge variant="outline" className={cn(
-                      activeExitNotice.electricalInspectionStatus === 'PASSED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                      activeExitNotice.electricalInspectionStatus === 'FAILED' ? 'bg-red-50 text-red-700 border-red-200' :
+                      (activeExitNotice.electricalFittingStatus ?? activeExitNotice.electricalInspectionStatus) === 'PASSED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                      (activeExitNotice.electricalFittingStatus ?? activeExitNotice.electricalInspectionStatus) === 'FAILED' ? 'bg-red-50 text-red-700 border-red-200' :
                       'bg-amber-50 text-amber-700 border-amber-200'
                     )}>
-                      {activeExitNotice.electricalInspectionStatus}
+                      {activeExitNotice.electricalFittingStatus ?? activeExitNotice.electricalInspectionStatus ?? 'PENDING'}
                     </Badge>
                   </div>
                   {/* Estate */}

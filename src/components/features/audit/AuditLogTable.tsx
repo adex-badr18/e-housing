@@ -15,10 +15,11 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
   ChevronLeft, ChevronRight, CheckCircle2, XCircle,
-  Search, ChevronDown, ChevronUp, SlidersHorizontal,
+  Search, SlidersHorizontal, Eye,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { AuditLog, User } from '@/lib/mock-api/db';
+import { AuditLogDetailModal } from './AuditLogDetailModal';
 
 const PAGE_SIZE = 10;
 
@@ -29,11 +30,11 @@ interface AuditLogTableProps {
 
 function StatusCell({ status }: { status: 'SUCCESS' | 'FAILURE' }) {
   return status === 'SUCCESS' ? (
-    <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 border gap-1 text-sm">
+    <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 border gap-1 text-sm font-medium">
       <CheckCircle2 className="h-3 w-3" /> Success
     </Badge>
   ) : (
-    <Badge className="bg-red-100 text-red-700 border-red-200 border gap-1 text-sm">
+    <Badge className="bg-red-100 text-red-700 border-red-200 border gap-1 text-sm font-medium">
       <XCircle className="h-3 w-3" /> Failure
     </Badge>
   );
@@ -44,7 +45,7 @@ export function AuditLogTable({ logs, users }: AuditLogTableProps) {
   const [search, setSearch] = useState('');
   const [actorFilter, setActorFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState<'' | 'SUCCESS' | 'FAILURE'>('');
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
 
   const userMap = useMemo(() => {
     const m: Record<string, User> = {};
@@ -148,7 +149,7 @@ export function AuditLogTable({ logs, users }: AuditLogTableProps) {
               <TableHead className="text-sm font-semibold">Action</TableHead>
               <TableHead className="text-sm font-semibold">Entity</TableHead>
               <TableHead className="w-28 text-sm font-semibold">Status</TableHead>
-              <TableHead className="w-10" />
+              <TableHead className="w-16 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Details</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -161,71 +162,51 @@ export function AuditLogTable({ logs, users }: AuditLogTableProps) {
             ) : (
               paginated.map(log => {
                 const actor = userMap[log.actorId];
-                const isExpanded = expandedId === log.id;
                 return (
-                  <>
-                    <TableRow
-                      key={log.id}
-                      className={cn(
-                        'cursor-pointer hover:bg-muted/30 transition',
-                        isExpanded && 'bg-muted/20',
-                        log.status === 'FAILURE' && 'bg-red-50/50 hover:bg-red-50'
-                      )}
-                      onClick={() => setExpandedId(isExpanded ? null : log.id)}
-                    >
-                      <TableCell className="text-sm text-muted-foreground font-mono">
-                        {formatDate(log.createdAt)}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        <div>
-                          <p className="font-medium">
-                            {actor ? `${actor.firstName} ${actor.lastName}` : log.actorId}
-                          </p>
-                          {actor && (
-                            <p className="text-muted-foreground text-sm">{actor.role.replace('_', ' ')}</p>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <code className="text-sm bg-muted px-2 py-0.5 rounded font-mono">{log.action}</code>
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        <div>
-                          <p className="font-medium">{log.entityType}</p>
-                          <p className="text-muted-foreground font-mono">{log.entityId}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <StatusCell status={log.status} />
-                      </TableCell>
-                      <TableCell>
-                        {isExpanded
-                          ? <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                          : <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                        }
-                      </TableCell>
-                    </TableRow>
-
-                    {/* Expanded metadata */}
-                    {isExpanded && (
-                      <TableRow key={`${log.id}-expanded`} className="bg-muted/10 hover:bg-muted/10">
-                        <TableCell colSpan={6} className="py-3 px-6">
-                          <div className="rounded-lg bg-muted p-3">
-                            <p className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
-                              Metadata
-                            </p>
-                            {log.metadata ? (
-                              <pre className="text-sm font-mono text-foreground overflow-x-auto whitespace-pre-wrap">
-                                {JSON.stringify(log.metadata, null, 2)}
-                              </pre>
-                            ) : (
-                              <p className="text-sm text-muted-foreground italic">No metadata recorded</p>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
+                  <TableRow
+                    key={log.id}
+                    className={cn(
+                      'cursor-pointer hover:bg-muted/40 transition group',
+                      log.status === 'FAILURE' && 'bg-red-50/40 hover:bg-red-50/70'
                     )}
-                  </>
+                    onClick={() => setSelectedLog(log)}
+                  >
+                    <TableCell className="text-sm text-muted-foreground font-mono">
+                      {formatDate(log.createdAt)}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      <div>
+                        <p className="font-medium group-hover:text-primary transition-colors">
+                          {actor ? `${actor.firstName} ${actor.lastName}` : log.actorId}
+                        </p>
+                        {actor && (
+                          <p className="text-muted-foreground text-xs">{actor.role.replace('_', ' ')}</p>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <code className="text-xs bg-muted px-2 py-1 rounded font-mono font-medium">
+                        {log.action}
+                      </code>
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      <div>
+                        <p className="font-medium">{log.entityType}</p>
+                        <p className="text-muted-foreground font-mono text-xs truncate max-w-[150px]">
+                          {log.entityId}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <StatusCell status={log.status} />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground group-hover:text-primary transition-colors">
+                        <Eye className="h-4 w-4" />
+                        <span className="hidden sm:inline">View</span>
+                      </span>
+                    </TableCell>
+                  </TableRow>
                 );
               })
             )}
@@ -274,6 +255,15 @@ export function AuditLogTable({ logs, users }: AuditLogTableProps) {
           </div>
         </div>
       )}
+      {/* Detail Modal */}
+      <AuditLogDetailModal
+        log={selectedLog}
+        actorUser={selectedLog ? userMap[selectedLog.actorId] : null}
+        open={!!selectedLog}
+        onOpenChange={open => {
+          if (!open) setSelectedLog(null);
+        }}
+      />
     </div>
   );
 }

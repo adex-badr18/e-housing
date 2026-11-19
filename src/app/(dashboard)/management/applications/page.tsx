@@ -5,7 +5,7 @@ import { getQuitRequestsAction } from '@/app/actions/applications';
 import { History, ClipboardList } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import type { Role } from '@/lib/mock-api/db';
-import { QuitRequestsPanel } from '@/components/features/application-review/QuitRequestsPanel';
+import { WithdrawalRequestsTable } from '@/components/features/application-review/WithdrawalRequestsTable';
 import { ManagementApplicationsTableClient } from '@/components/features/application-review/ManagementApplicationsTableClient';
 
 export const metadata = {
@@ -76,10 +76,10 @@ export default async function ManagementApplicationsPage() {
         </div>
       </div>
 
-      {/* Quit requests panel */}
+      {/* Pending withdrawal requests table */}
       {quitRequests.length > 0 && (
         <div className="mb-6">
-          <QuitRequestsPanel requests={quitRequests} />
+          <WithdrawalRequestsTable requests={quitRequests} hideIfEmpty />
         </div>
       )}
 

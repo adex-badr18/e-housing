@@ -113,7 +113,7 @@ export default async function ExitAuditLogPage({ params }: Props) {
       </div>
 
       {/* Audit log table */}
-      <ExitAuditLogTable logs={logs} usersById={usersById} />
+      <ExitAuditLogTable logs={logs} users={users} usersById={usersById} />
     </div>
   );
 }

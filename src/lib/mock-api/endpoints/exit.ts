@@ -23,7 +23,17 @@
 //   7. AuditLog entry written
 // =============================================================================
 
-import { mockDB, ExitNotice, InspectionStatus, Role } from '../db';
+import {
+  mockDB,
+  ExitNotice,
+  InspectionStatus,
+  Role,
+  ExitReason,
+  User,
+  StaffProfile,
+  HousingUnit,
+  HousingType,
+} from '../db';
 
 const delay = (ms = 400) => new Promise(r => setTimeout(r, ms));
 
@@ -145,6 +155,170 @@ export async function getExitNoticeWithProfile(id: string): Promise<{
     : null;
   const unit = mockDB.findUnitById(notice.housingUnitId) ?? null;
   return { notice: { ...notice }, applicantUser, applicantProfile, unit };
+}
+
+// ---------------------------------------------------------------------------
+// Paginated Query with Server-side Search & Filters
+// ---------------------------------------------------------------------------
+
+export interface EnrichedExitNoticeRow {
+  notice: ExitNotice;
+  staffUser: User | null;
+  staffProfile: StaffProfile | null;
+  unit: HousingUnit | null;
+  housingType: HousingType | null;
+  daysRemaining: number | null;
+}
+
+export interface PaginatedExitNoticesResult {
+  notices: EnrichedExitNoticeRow[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export async function getPaginatedExitNotices(params: {
+  role: Role;
+  search?: string;
+  status?: string;
+  reason?: ExitReason | '';
+  page?: number;
+  limit?: number;
+}): Promise<PaginatedExitNoticesResult> {
+  await delay(200);
+
+  // 1. Get base notices accessible to this role
+  let baseNotices: ExitNotice[] = [];
+  switch (params.role) {
+    case 'HOUSING_SECRETARY':
+      baseNotices = mockDB.exitNotices.filter(
+        e => !e.isCleared && !e.isAdminTerminated && !e.isWithdrawn
+      );
+      break;
+    case 'ELECTRICAL_OFFICER':
+      baseNotices = mockDB.exitNotices.filter(
+        e => !e.isCleared && !e.isAdminTerminated && !e.isWithdrawn
+      );
+      break;
+    case 'ESTATE_OFFICER':
+    case 'DVC_ADMIN':
+    case 'SUPER_ADMIN':
+    default:
+      baseNotices = [...mockDB.exitNotices];
+      break;
+  }
+
+  // 2. Filter by status
+  const now = Date.now();
+  if (params.status && params.status !== 'ALL') {
+    if (params.status === 'ACTIVE') {
+      baseNotices = baseNotices.filter(n => !n.isCleared && !n.isAdminTerminated && !n.isWithdrawn);
+    } else if (params.status === 'CLEARED') {
+      baseNotices = baseNotices.filter(n => n.isCleared);
+    } else if (params.status === 'CLOSED') {
+      baseNotices = baseNotices.filter(n => n.isAdminTerminated || n.isWithdrawn);
+    } else if (params.status === 'OVERDUE') {
+      baseNotices = baseNotices.filter(n => {
+        if (n.isCleared || n.isAdminTerminated || n.isWithdrawn || !n.gracePeriodDeadline) return false;
+        const diff = new Date(n.gracePeriodDeadline).getTime() - now;
+        return Math.ceil(diff / (1000 * 60 * 60 * 24)) <= 0;
+      });
+    } else if (params.status === 'AWAITING_MY_STAGE') {
+      baseNotices = baseNotices.filter(n => {
+        if (n.isCleared || n.isAdminTerminated || n.isWithdrawn) return false;
+        const h = n.housingPaymentStatus ?? n.housingInspectionStatus ?? 'PENDING';
+        const e = n.electricalFittingStatus ?? n.electricalInspectionStatus ?? 'PENDING';
+        if (params.role === 'HOUSING_SECRETARY') return h === 'PENDING';
+        if (params.role === 'ELECTRICAL_OFFICER') return e === 'PENDING';
+        if (params.role === 'ESTATE_OFFICER') return h === 'PASSED' && e === 'PASSED' && n.estateInspectionStatus === 'PENDING';
+        return false;
+      });
+    }
+  }
+
+  // 3. Filter by exit reason
+  if (params.reason) {
+    baseNotices = baseNotices.filter(n => n.reason === params.reason);
+  }
+
+  // 4. Enrich & search
+  const query = (params.search ?? '').trim().toLowerCase();
+  const enriched: EnrichedExitNoticeRow[] = baseNotices.map(notice => {
+    const staffUser = mockDB.findUserById(notice.userId) ?? null;
+    const staffProfile = staffUser
+      ? (mockDB.staffProfiles.find(p => p.userId === staffUser.id) ?? null)
+      : null;
+    const unit = mockDB.findUnitById(notice.housingUnitId) ?? null;
+    const housingType = unit
+      ? (mockDB.housingTypes.find(t => t.id === unit.housingTypeId) ?? null)
+      : null;
+    const daysRemaining = notice.gracePeriodDeadline
+      ? Math.ceil((new Date(notice.gracePeriodDeadline).getTime() - now) / (1000 * 60 * 60 * 24))
+      : null;
+
+    return { notice, staffUser, staffProfile, unit, housingType, daysRemaining };
+  });
+
+  const searched = query
+    ? enriched.filter(({ notice, staffUser, staffProfile, unit }) => {
+        const fullName = staffUser ? `${staffUser.firstName} ${staffUser.lastName}`.toLowerCase() : '';
+        const email = staffUser?.email?.toLowerCase() ?? '';
+        const staffId = staffProfile?.staffId?.toLowerCase() ?? '';
+        const dept = staffProfile?.department?.toLowerCase() ?? '';
+        const rank = staffProfile?.rank?.toLowerCase() ?? '';
+        const unitName = unit?.name?.toLowerCase() ?? '';
+        const houseNumber = unit?.houseNumber?.toLowerCase() ?? '';
+        const roadNumber = unit?.roadNumber?.toLowerCase() ?? '';
+        const reason = notice.reason?.toLowerCase() ?? '';
+        const customReason = notice.customReason?.toLowerCase() ?? '';
+        const notes = notice.additionalNotes?.toLowerCase() ?? '';
+
+        return (
+          fullName.includes(query) ||
+          email.includes(query) ||
+          staffId.includes(query) ||
+          dept.includes(query) ||
+          rank.includes(query) ||
+          unitName.includes(query) ||
+          houseNumber.includes(query) ||
+          roadNumber.includes(query) ||
+          reason.includes(query) ||
+          customReason.includes(query) ||
+          notes.includes(query)
+        );
+      })
+    : enriched;
+
+  // 5. Default sorting: Active urgent first (earliest deadline), then submittedAt desc
+  searched.sort((a, b) => {
+    const aActive = !a.notice.isCleared && !a.notice.isAdminTerminated && !a.notice.isWithdrawn;
+    const bActive = !b.notice.isCleared && !b.notice.isAdminTerminated && !b.notice.isWithdrawn;
+    if (aActive && !bActive) return -1;
+    if (!aActive && bActive) return 1;
+    if (aActive && bActive) {
+      const dA = a.daysRemaining ?? 9999;
+      const dB = b.daysRemaining ?? 9999;
+      if (dA !== dB) return dA - dB;
+    }
+    return new Date(b.notice.submittedAt).getTime() - new Date(a.notice.submittedAt).getTime();
+  });
+
+  // 6. Pagination
+  const page = Math.max(1, params.page ?? 1);
+  const limit = Math.max(1, Math.min(100, params.limit ?? 10));
+  const total = searched.length;
+  const totalPages = Math.ceil(total / limit) || 1;
+  const startIndex = (page - 1) * limit;
+  const paginatedItems = searched.slice(startIndex, startIndex + limit);
+
+  return {
+    notices: paginatedItems,
+    total,
+    page,
+    limit,
+    totalPages,
+  };
 }
 
 // ---------------------------------------------------------------------------

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Search, ChevronLeft, ChevronRight, ArrowRight, SlidersHorizontal, Home, Zap, Building2 } from 'lucide-react';
@@ -35,7 +36,9 @@ function PipelineMini({ notice }: { notice: ExitNotice }) {
 
 function NoticeStatusBadge({ notice }: { notice: ExitNotice }) {
   if (notice.isCleared) return <span className="text-sm font-semibold px-2 py-0.5 rounded-full border bg-emerald-100 text-emerald-800 border-emerald-200">Cleared</span>;
-  if (notice.isWithdrawn) return <span className="text-sm font-semibold px-2 py-0.5 rounded-full border bg-slate-200 text-slate-800 border-slate-300">Withdrawn</span>;
+  if (notice.isWithdrawn || notice.isAdminTerminated) {
+    return <span className="text-sm font-semibold px-2 py-0.5 rounded-full border bg-slate-200 text-slate-800 border-slate-300">{notice.isAdminTerminated ? 'Terminated' : 'Withdrawn'}</span>;
+  }
   return <span className="text-sm font-semibold px-2 py-0.5 rounded-full border bg-amber-100 text-amber-800 border-amber-200">In Progress</span>;
 }
 
@@ -46,6 +49,7 @@ interface ExitHistoryTableProps {
 }
 
 export function ExitHistoryTable({ notices, detailBasePath, userMap }: ExitHistoryTableProps) {
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ExitStatusFilter>('ALL');
   const [page, setPage] = useState(1);
@@ -63,8 +67,8 @@ export function ExitHistoryTable({ notices, detailBasePath, userMap }: ExitHisto
       );
     }
     if (statusFilter === 'CLEARED') list = list.filter(n => n.isCleared);
-    else if (statusFilter === 'WITHDRAWN') list = list.filter(n => n.isWithdrawn && !n.isCleared);
-    else if (statusFilter === 'IN_PROGRESS') list = list.filter(n => !n.isCleared && !n.isWithdrawn);
+    else if (statusFilter === 'WITHDRAWN') list = list.filter(n => (n.isWithdrawn || n.isAdminTerminated) && !n.isCleared);
+    else if (statusFilter === 'IN_PROGRESS') list = list.filter(n => !n.isCleared && !n.isWithdrawn && !n.isAdminTerminated);
     return list;
   }, [notices, search, statusFilter, userMap]);
 
@@ -157,7 +161,11 @@ export function ExitHistoryTable({ notices, detailBasePath, userMap }: ExitHisto
                 {paged.map(notice => {
                   const applicant = userMap?.[notice.userId];
                   return (
-                    <tr key={notice.id} className="hover:bg-muted/20 transition-colors group">
+                    <tr
+                      key={notice.id}
+                      onClick={() => router.push(`${detailBasePath}/${notice.id}`)}
+                      className="hover:bg-muted/20 transition-colors group cursor-pointer"
+                    >
                       <td className="px-4 py-3.5">
                         <p className="font-mono text-sm font-semibold">{notice.id}</p>
                       </td>
@@ -181,6 +189,7 @@ export function ExitHistoryTable({ notices, detailBasePath, userMap }: ExitHisto
                       <td className="px-4 py-3.5 text-right">
                         <Link
                           href={`${detailBasePath}/${notice.id}`}
+                          onClick={(e) => e.stopPropagation()}
                           className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline group-hover:gap-2 transition-all"
                         >
                           View <ArrowRight className="h-3.5 w-3.5" />

@@ -5,6 +5,7 @@ import { mockDB } from '@/lib/mock-api/db';
 import { ClearancePipeline } from '@/components/features/exit/ClearancePipeline';
 import { GracePeriodBanner } from '@/components/features/exit/GracePeriodBanner';
 import { ExtendGracePeriodModal } from '@/components/features/exit/ExtendGracePeriodModal';
+import { AdminTerminateButton } from '@/components/features/application-review/AdminTerminateButton';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -57,6 +58,7 @@ export default async function ExitNoticeDetailPage({ params }: Props) {
 
   const userRole = session.user.role as AllowedRole;
   const canExtend = EXTEND_ROLES.includes(userRole) && !notice.isCleared && !notice.isAdminTerminated;
+  const canTerminate = (userRole === 'ESTATE_OFFICER' || userRole === 'SUPER_ADMIN') && !notice.isCleared && !notice.isAdminTerminated && !notice.isWithdrawn;
   const canViewAudit = AUDIT_ROLES.includes(userRole);
   const isDvcAdmin = userRole === 'DVC_ADMIN';
 
@@ -102,6 +104,9 @@ export default async function ExitNoticeDetailPage({ params }: Props) {
               currentDeadline={notice.gracePeriodDeadline}
               alreadyExtended={notice.gracePeriodExtended}
             />
+          )}
+          {canTerminate && (
+            <AdminTerminateButton entityId={notice.id} entityType="ExitNotice" />
           )}
           {notice.isCleared && (
             <Link

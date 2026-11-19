@@ -188,26 +188,8 @@ export async function getPaginatedExitNotices(params: {
 }): Promise<PaginatedExitNoticesResult> {
   await delay(200);
 
-  // 1. Get base notices accessible to this role
-  let baseNotices: ExitNotice[] = [];
-  switch (params.role) {
-    case 'HOUSING_SECRETARY':
-      baseNotices = mockDB.exitNotices.filter(
-        e => !e.isCleared && !e.isAdminTerminated && !e.isWithdrawn
-      );
-      break;
-    case 'ELECTRICAL_OFFICER':
-      baseNotices = mockDB.exitNotices.filter(
-        e => !e.isCleared && !e.isAdminTerminated && !e.isWithdrawn
-      );
-      break;
-    case 'ESTATE_OFFICER':
-    case 'DVC_ADMIN':
-    case 'SUPER_ADMIN':
-    default:
-      baseNotices = [...mockDB.exitNotices];
-      break;
-  }
+  // 1. Get base notices — full database accessible for unified management and history ledger
+  let baseNotices: ExitNotice[] = [...mockDB.exitNotices];
 
   // 2. Filter by status
   const now = Date.now();

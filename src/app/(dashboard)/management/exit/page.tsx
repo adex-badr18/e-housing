@@ -1,17 +1,14 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { getExitNoticesForRole } from '@/lib/mock-api/endpoints/exit';
-import { mockDB } from '@/lib/mock-api/db';
-import Link from 'next/link';
+import { getExitNoticesForRole, getPaginatedExitNotices } from '@/lib/mock-api/endpoints/exit';
 import {
-  ClipboardCheck, Clock, CheckCircle2, Shield, History, AlertTriangle,
+  ClipboardCheck, Clock, CheckCircle2, Shield, AlertTriangle,
 } from 'lucide-react';
-import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import type { ExitNotice } from '@/lib/mock-api/db';
+import type { ExitNotice, Role, ExitReason } from '@/lib/mock-api/db';
 import { ExitPipelineTableClient } from '@/components/features/exit/ExitPipelineTableClient';
 
-export const metadata = { title: 'Exit Pipeline — OAU E-Housing' };
+export const metadata = { title: 'Exit Pipeline & History — OAU E-Housing' };
 
 const ALLOWED_ROLES = [
   'SUPER_ADMIN', 'HOUSING_SECRETARY', 'ELECTRICAL_OFFICER',
@@ -53,18 +50,41 @@ function awaitingMyStage(notice: ExitNotice, role: string): boolean {
 // Page
 // ---------------------------------------------------------------------------
 
-export default async function ExitPipelinePage() {
+interface PageProps {
+  searchParams: Promise<{
+    search?: string;
+    status?: string;
+    reason?: string;
+    page?: string;
+    limit?: string;
+  }>;
+}
+
+export default async function ExitPipelinePage({ searchParams }: PageProps) {
   const session = await auth();
   if (!session?.user) redirect('/login');
   if (!ALLOWED_ROLES.includes(session.user.role as AllowedRole)) redirect('/staff');
 
-  const notices = await getExitNoticesForRole(session.user.role);
+  const sp = await searchParams;
+  const search = sp.search ?? '';
+  const status = sp.status ?? 'ALL';
+  const reason = (sp.reason as ExitReason) || '';
+  const page = Math.max(1, parseInt(sp.page ?? '1', 10) || 1);
+  const limit = [10, 20, 50].includes(parseInt(sp.limit ?? '10', 10))
+    ? parseInt(sp.limit ?? '10', 10)
+    : 10;
 
-  // Build user map for the table
-  const userMap = mockDB.users.reduce((acc, user) => {
-    acc[user.id] = user;
-    return acc;
-  }, {} as Record<string, typeof mockDB.users[0]>);
+  const [notices, paginatedResult] = await Promise.all([
+    getExitNoticesForRole(session.user.role),
+    getPaginatedExitNotices({
+      role: session.user.role,
+      search,
+      status,
+      reason,
+      page,
+      limit,
+    }),
+  ]);
 
   // Statistics
   const active = notices.filter(n => !n.isCleared && !n.isAdminTerminated && !n.isWithdrawn);
@@ -83,16 +103,11 @@ export default async function ExitPipelinePage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-oau-navy">Exit Clearance Pipeline</h1>
-            <p className="text-base text-muted-foreground mt-1">{roleLabel}</p>
+            <p className="text-base text-muted-foreground mt-1">
+              {roleLabel} · Unified management queue & historical ledger
+            </p>
           </div>
         </div>
-        <Link
-          href="/management/exit/history"
-          className={buttonVariants({ variant: 'outline', size: 'sm', className: 'gap-2 rounded-xl text-muted-foreground' })}
-        >
-          <History className="h-4 w-4" />
-          View Full History
-        </Link>
       </div>
 
       {/* Stats */}
@@ -124,13 +139,15 @@ export default async function ExitPipelinePage() {
       </div>
 
       {/* Exit Clearance Pipeline Table */}
-      <div className="bg-card border rounded-2xl p-6 shadow-sm">
-        <ExitPipelineTableClient
-          notices={notices}
-          detailBasePath="/management/exit"
-          userMap={userMap}
-        />
-      </div>
+      <ExitPipelineTableClient
+        initialData={paginatedResult}
+        viewerRole={session.user.role}
+        initialSearch={search}
+        initialStatus={status}
+        initialReason={reason}
+        initialPage={page}
+        initialLimit={limit}
+      />
     </div>
   );
 }

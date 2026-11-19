@@ -1,16 +1,13 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
 import { getQuitRequestsAction } from '@/app/actions/applications';
-import { History, ClipboardList } from 'lucide-react';
-import { buttonVariants } from '@/components/ui/button';
 import type { Role } from '@/lib/mock-api/db';
 import { WithdrawalRequestsTable } from '@/components/features/application-review/WithdrawalRequestsTable';
 import { ManagementApplicationsTableClient } from '@/components/features/application-review/ManagementApplicationsTableClient';
 
 export const metadata = {
-  title: 'Application Review Queue — OAU E-Housing',
-  description: 'Review and process housing applications through the multi-stage pipeline.',
+  title: 'Application Queue & History — OAU E-Housing',
+  description: 'Review, process, and inspect all housing applications across the multi-stage pipeline and historical ledger.',
 };
 
 const ROLE_HEADINGS: Partial<Record<Role, { title: string; subtitle: string }>> = {
@@ -67,12 +64,6 @@ export default async function ManagementApplicationsPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-oau-navy">{heading.title}</h1>
           <p className="text-muted-foreground mt-1 text-base">{heading.subtitle}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link href="/management/applications/history" className={buttonVariants({ variant: 'outline', className: 'gap-2 rounded-xl text-muted-foreground' })}>
-            <History className="h-4 w-4" />
-            View Full History
-          </Link>
         </div>
       </div>
 

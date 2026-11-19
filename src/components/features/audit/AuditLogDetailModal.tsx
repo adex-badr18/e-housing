@@ -98,7 +98,7 @@ export function AuditLogDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+      <DialogContent className="w-[95vw] sm:w-[40vw] sm:max-w-[40vw] max-h-[90vh] overflow-y-auto p-6">
         <DialogHeader className="space-y-2 border-b pb-4">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-2">

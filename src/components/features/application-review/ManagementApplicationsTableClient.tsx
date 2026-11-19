@@ -177,6 +177,8 @@ export function ManagementApplicationsTableClient({ userRole }: ManagementApplic
             <option value="RETURNED">RETURNED</option>
             <option value="APPROVED">APPROVED</option>
             <option value="REJECTED">REJECTED</option>
+            <option value="WITHDRAWN">WITHDRAWN</option>
+            <option value="TERMINATED">TERMINATED</option>
           </select>
 
           <Button

@@ -497,6 +497,10 @@ export interface IncidentTicket {
   status: IncidentStatus;
   createdAt?: string;
   updatedAt?: string;
+  housingUnitId?: string | null;
+  housingTypeName?: string | null;
+  unitName?: string | null;
+  roadNumber?: string | null;
 }
 
 // =============================================================================
@@ -2707,6 +2711,10 @@ const initialIncidentTickets: IncidentTicket[] = [
     status: 'IN_PROGRESS',
     createdAt: '2026-06-01T09:00:00.000Z',
     updatedAt: '2026-06-05T14:00:00.000Z',
+    housingUnitId: 'unit-1',
+    unitName: 'Qtrs 14',
+    roadNumber: 'Road 3',
+    housingTypeName: 'Type A Senior Staff',
   },
   {
     id: 'inc-2',
@@ -2716,6 +2724,10 @@ const initialIncidentTickets: IncidentTicket[] = [
     status: 'OPEN',
     createdAt: '2026-06-24T07:30:00.000Z',
     updatedAt: '2026-06-24T07:30:00.000Z',
+    housingUnitId: 'unit-3',
+    unitName: 'Qtrs 22',
+    roadNumber: 'Road 5',
+    housingTypeName: 'Type B Senior Staff',
   },
   {
     id: 'inc-3',
@@ -2725,6 +2737,10 @@ const initialIncidentTickets: IncidentTicket[] = [
     status: 'OPEN',
     createdAt: '2026-06-22T10:15:00.000Z',
     updatedAt: '2026-06-22T10:15:00.000Z',
+    housingUnitId: null,
+    unitName: null,
+    roadNumber: null,
+    housingTypeName: null,
   },
   {
     id: 'inc-4',
@@ -2734,6 +2750,10 @@ const initialIncidentTickets: IncidentTicket[] = [
     status: 'RESOLVED',
     createdAt: '2026-06-10T08:00:00.000Z',
     updatedAt: '2026-06-14T16:00:00.000Z',
+    housingUnitId: 'unit-2',
+    unitName: 'Prof Qtrs 02',
+    roadNumber: 'Road 1',
+    housingTypeName: 'Type A Senior Staff',
   },
   {
     id: 'inc-5',
@@ -2743,6 +2763,10 @@ const initialIncidentTickets: IncidentTicket[] = [
     status: 'IN_PROGRESS',
     createdAt: '2026-06-26T11:00:00.000Z',
     updatedAt: '2026-06-27T09:00:00.000Z',
+    housingUnitId: 'unit-5',
+    unitName: 'Qtrs 16',
+    roadNumber: 'Road 7',
+    housingTypeName: 'Type C Senior Staff',
   },
 ];
 

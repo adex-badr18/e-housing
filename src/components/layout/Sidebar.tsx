@@ -151,6 +151,7 @@ function getNavItemsForRole(role: Role, showTenancyLink = false) {
         : []),
       { href: "/staff/bq", label: "BQ Management", icon: Building },
       { href: "/staff/profile", label: "My Profile", icon: DoorOpen },
+      { href: "/staff/complaints", label: "Complaints", icon: MessageSquareDot },
       { href: "/staff/exit", label: "Housing Exit", icon: LogOut },
     ];
     return items;
@@ -191,6 +192,7 @@ function getNavItemsForRole(role: Role, showTenancyLink = false) {
       },
       { href: "/management/exit", label: "Exits", icon: DoorOpen },
       { href: "/admin/inventory", label: "Housing Inventory", icon: Building },
+      { href: "/management/helpdesk", label: "Helpdesk", icon: MessageSquareDot },
     ];
   }
 
@@ -209,6 +211,7 @@ function getNavItemsForRole(role: Role, showTenancyLink = false) {
       },
       { href: "/management/exit", label: "Exits", icon: DoorOpen },
       { href: "/admin/inventory", label: "Housing Inventory", icon: Building },
+      { href: "/management/helpdesk", label: "Helpdesk", icon: MessageSquareDot },
     ];
   }
 
@@ -233,6 +236,7 @@ function getNavItemsForRole(role: Role, showTenancyLink = false) {
         icon: Users2,
       },
       { href: "/management/exit", label: "Exits", icon: DoorOpen },
+      { href: "/management/helpdesk", label: "Helpdesk", icon: MessageSquareDot },
     ];
   }
 

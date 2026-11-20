@@ -109,6 +109,10 @@ export async function getPaginatedIncidentTickets(params: {
         const staffId = profile?.staffId?.toLowerCase() ?? '';
         const dept = profile?.department?.toLowerCase() ?? '';
 
+        const unitName = (ticket.unitName ?? '').toLowerCase();
+        const roadNumber = (ticket.roadNumber ?? '').toLowerCase();
+        const housingType = (ticket.housingTypeName ?? '').toLowerCase();
+
         return (
           idMatch ||
           titleMatch ||
@@ -116,7 +120,10 @@ export async function getPaginatedIncidentTickets(params: {
           userName.includes(query) ||
           userEmail.includes(query) ||
           staffId.includes(query) ||
-          dept.includes(query)
+          dept.includes(query) ||
+          unitName.includes(query) ||
+          roadNumber.includes(query) ||
+          housingType.includes(query)
         );
       })
     : enriched;
@@ -156,10 +163,78 @@ export async function updateIncidentTicketStatus(
   return mockDB.incidentTickets[idx];
 }
 
+export interface PaginatedMyIncidentTicketsResult {
+  tickets: IncidentTicket[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  myOpenCount: number;
+  myInProgressCount: number;
+  myResolvedCount: number;
+}
+
+export async function getPaginatedMyIncidentTickets(params: {
+  userId: string;
+  search?: string;
+  status?: string;
+  page?: number;
+  limit?: number;
+}): Promise<PaginatedMyIncidentTicketsResult> {
+  await delay(200);
+
+  let list = [...mockDB.incidentTickets]
+    .filter(t => t.userId === params.userId)
+    .sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime());
+
+  const myOpenCount = list.filter(t => t.status === 'OPEN').length;
+  const myInProgressCount = list.filter(t => t.status === 'IN_PROGRESS').length;
+  const myResolvedCount = list.filter(t => t.status === 'RESOLVED').length;
+
+  // Filter by status
+  if (params.status && params.status !== 'ALL') {
+    list = list.filter(t => t.status === params.status);
+  }
+
+  // Search within title and description
+  const query = (params.search ?? '').trim().toLowerCase();
+  const filtered = query
+    ? list.filter(t =>
+        t.id.toLowerCase().includes(query) ||
+        t.title.toLowerCase().includes(query) ||
+        t.description.toLowerCase().includes(query) ||
+        (t.unitName ?? '').toLowerCase().includes(query) ||
+        (t.housingTypeName ?? '').toLowerCase().includes(query)
+      )
+    : list;
+
+  const total = filtered.length;
+  const page = Math.max(1, params.page ?? 1);
+  const limit = Math.max(1, params.limit ?? 10);
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const offset = (page - 1) * limit;
+  const paginatedTickets = filtered.slice(offset, offset + limit);
+
+  return {
+    tickets: paginatedTickets,
+    total,
+    page,
+    limit,
+    totalPages,
+    myOpenCount,
+    myInProgressCount,
+    myResolvedCount,
+  };
+}
+
 export async function createIncidentTicket(params: {
   userId: string;
   title: string;
   description: string;
+  housingUnitId?: string | null;
+  housingTypeName?: string | null;
+  unitName?: string | null;
+  roadNumber?: string | null;
 }): Promise<IncidentTicket> {
   await delay(500);
   const now = new Date().toISOString();
@@ -168,6 +243,10 @@ export async function createIncidentTicket(params: {
     userId: params.userId,
     title: params.title,
     description: params.description,
+    housingUnitId: params.housingUnitId ?? null,
+    housingTypeName: params.housingTypeName ?? null,
+    unitName: params.unitName ?? null,
+    roadNumber: params.roadNumber ?? null,
     status: 'OPEN',
     createdAt: now,
     updatedAt: now,

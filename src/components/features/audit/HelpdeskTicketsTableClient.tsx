@@ -53,6 +53,7 @@ import {
   GraduationCap,
   Mail,
   Phone,
+  Home,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { updateIncidentStatusAction } from '@/app/actions/audit';
@@ -554,6 +555,42 @@ export function HelpdeskTicketsTableClient({
                     </span>
                   </div>
                 </div>
+              </div>
+
+              {/* Housing Context Card */}
+              <div className="rounded-xl border bg-muted/20 p-4 space-y-2.5">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  <Home className="h-3.5 w-3.5 text-primary" />
+                  <span>Housing Context</span>
+                </div>
+                {selectedTicketRow.ticket.unitName ||
+                selectedTicketRow.ticket.housingTypeName ||
+                selectedTicketRow.ticket.roadNumber ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <span className="text-muted-foreground block text-[11px]">Housing Unit</span>
+                      <span className="font-semibold text-foreground text-sm">
+                        {selectedTicketRow.ticket.unitName ?? '—'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block text-[11px]">Housing Type</span>
+                      <span className="font-medium text-foreground">
+                        {selectedTicketRow.ticket.housingTypeName ?? '—'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block text-[11px]">Road Number</span>
+                      <span className="font-medium text-foreground">
+                        {selectedTicketRow.ticket.roadNumber ?? '—'}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground italic">
+                    Not currently allocated (unhoused staff submission)
+                  </p>
+                )}
               </div>
 
               {/* Description */}

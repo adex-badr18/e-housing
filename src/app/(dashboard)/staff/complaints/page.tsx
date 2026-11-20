@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { getMyIncidentTicketsAction } from '@/app/actions/audit';
-import { StaffComplaintForm } from '@/components/features/complaints/StaffComplaintForm';
+import { StaffComplaintDialog } from '@/components/features/complaints/StaffComplaintDialog';
 import { StaffComplaintsTableClient } from '@/components/features/complaints/StaffComplaintsTableClient';
 import {
   MessageSquareDot,
@@ -57,19 +57,24 @@ export default async function StaffComplaintsPage({ searchParams }: PageProps) {
 
   return (
     <div className="flex flex-col gap-8">
-      {/* 1. Page Header */}
-      <div className="flex items-start gap-4">
-        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-          <MessageSquareDot className="h-6 w-6 text-primary" />
+      {/* 1. Page Header with Title and '+ New Complaint' Action Button */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <MessageSquareDot className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-oau-navy">
+              My Complaints & Helpdesk
+            </h1>
+            <p className="text-base text-muted-foreground mt-1">
+              Submit a housing complaint and track the status of your previous requests.
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-oau-navy">
-            My Complaints & Helpdesk
-          </h1>
-          <p className="text-base text-muted-foreground mt-1">
-            Submit a housing complaint and track the status of your previous requests.
-          </p>
-        </div>
+
+        {/* Action Button that triggers form dialog */}
+        <StaffComplaintDialog />
       </div>
 
       {/* 2. Blue Informational Alert if Open Complaints exist */}
@@ -132,24 +137,14 @@ export default async function StaffComplaintsPage({ searchParams }: PageProps) {
         })}
       </div>
 
-      {/* 4. Form Section */}
-      <div className="space-y-3">
-        <h2 className="text-lg font-bold text-oau-navy">Submit New Complaint</h2>
-        <StaffComplaintForm />
-      </div>
-
-      {/* 5. Table Section */}
-      <div className="space-y-3">
-        <h2 className="text-lg font-bold text-oau-navy">My Previous Complaints</h2>
-        <StaffComplaintsTableClient
-          initialData={data}
-          initialSearch={search}
-          initialStatus={status}
-          initialPage={page}
-          initialLimit={limit}
-        />
-      </div>
+      {/* 4. Tabular Complaints Table */}
+      <StaffComplaintsTableClient
+        initialData={data}
+        initialSearch={search}
+        initialStatus={status}
+        initialPage={page}
+        initialLimit={limit}
+      />
     </div>
   );
 }
-
